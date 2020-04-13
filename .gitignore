@@ -1,14 +1,19 @@
 .exe
 .git
-saves
-images
-emodji
-__pycache__
-bot_commands/__pycache__
-settings/__pycache__
+
+saves/
+images/
+emodji/
+__pycache__/
+bot_commands/__pycache__/
+settings/__pycache__/
 settings/logs.log
-instruments/__pycache__
+instruments/__pycache__/
+
 future.txt
+
+.idea/
+.iws
 
 # Environments
 .env
