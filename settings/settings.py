@@ -6,16 +6,16 @@ run_mode = 'production'
 
 
 # ====================================================================================================
-_debug_token = 'Njk4NTgwNzE5OTc4NDE0MTIw.XpH6IQ._NmoIlI8okvwwpWEmi97zp3l7A4'
-_debug_bot_id = 698580719978414120
+_debug_token = ''
+_debug_bot_id = 0
 
-_production_token = 'NjgwNTE2MjUyMjY3MTg0Mjg1.XnpCdg.RM2bxYUMAT1MFKumESOL_stU-SE'
-_production_bot_id = 680516252267184285
+_production_token = ''
+_production_bot_id = 0
 
 _debug_prefix = '!!'
 _production_prefix = '!!'
 
-_string_DB = "mongodb+srv://GligerOwner:Vfntvfnbrf2303@cluster0-kytaw.mongodb.net/test?retryWrites=true&w=majority"
+_string_DB = ""
 
 if run_mode == 'debug':
     token = _debug_token
