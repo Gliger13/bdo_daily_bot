@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-from pymongo import MongoClient
-import time
 
 
 def get_sec_left(time_end: str) -> int:
@@ -12,10 +10,6 @@ def get_sec_left(time_end: str) -> int:
     return delta_left.seconds
 
 
-def print_log(user, msg_command, result: bool):
-    print(f"{time.ctime()[-13:]}\tПользователь {user} использовал команду {msg_command}. {result}")
-
-
 def raid_table_in_time(time_leaving: str) -> iter:
     """Return list time for table display"""
     sec_left = get_sec_left(time_leaving)
@@ -24,7 +18,3 @@ def raid_table_in_time(time_leaving: str) -> iter:
     show_time_list.append(half_sec_inter // 2)
     show_time_list.append(half_sec_inter // 2)
     return show_time_list
-
-
-if __name__ == '__main__':
-    pass
