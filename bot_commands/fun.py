@@ -63,7 +63,7 @@ class Fun(commands.Cog):
             await ctx.bot.logout()
             return
 
-    @commands.command(name='где', help='Бот начинает осуждать человека.')
+    @commands.command(name='самая_сложная_команда_для_ввода_где', help='Бот начинает осуждать человека.')
     async def where(self, ctx, name: str):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         can_be = ['На мачте', 'на большой мачте', "на мачте у Ldov'a", 'на мачте у Тутттки', 'на маленькой мачте',

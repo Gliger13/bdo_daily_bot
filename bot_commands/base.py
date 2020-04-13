@@ -3,7 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from instruments import messages, check_input
+from instruments import messages
 
 module_logger = logging.getLogger('my_bot')
 
@@ -28,8 +28,8 @@ class Base(commands.Cog):
         commands_list = [command for command in self.bot.commands]
         if not command:
             # wrap text _ with * to ignore italicization
-            commands_list_str = '*\n*'.join([command.qualified_name for command in commands_list])
-            commands_list_str = '```css' + commands_list_str + '```'
+            commands_list_str = '\n'.join([command.qualified_name for command in commands_list])
+            commands_list_str = '`' + commands_list_str + '`'
             embed_obj.add_field(
                 name='Список команд',
                 value=commands_list_str,
@@ -58,7 +58,7 @@ class Base(commands.Cog):
                 if comm.qualified_name == command:
                     embed_obj.add_field(
                         name='Помощь по команде:',
-                        value='```css' + command + '```',
+                        value='`' + command + '`',
                         inline=False
                     )
                     embed_obj.add_field(
