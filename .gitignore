@@ -1,0 +1,19 @@
+.exe
+.git
+saves
+images
+emodji
+__pycache__
+bot_commands/__pycache__
+settings/__pycache__
+settings/logs.log
+instruments/__pycache__
+future.txt
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+

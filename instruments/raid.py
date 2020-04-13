@@ -1,11 +1,11 @@
 import datetime
-import random
+import json
 import os
+import random
+from datetime import datetime, timedelta
 
 import cv2
 import numpy as np
-import instruments
-from datetime import datetime, timedelta
 from PIL import ImageFont, ImageDraw, Image
 
 
@@ -14,64 +14,55 @@ class Raid:
     Create Raid Object that contain members amount of members and etc
 
     """
-    def __init__(self, captain_name, server, time_leaving, time_reservation_open, reservation_count=0):
+    def __init__(self, captain_name, server, time_leaving, time_reservation_open, reservation_count=2):
         self.captain_name = captain_name
+        self.member_dict = {}
         self.server = server
         self.time_leaving = time_leaving
         self.time_reservation_open = time_reservation_open
-        self.reservation_count = int(reservation_count) + 2
-        self.title = f"{self.captain_name} {self.server} {self.time_leaving}"
-        self.member_dict = {}
-        self.member_count = 0
-        self.members = self.member_count + self.reservation_count
-        self.places_left = 20 - self.members
-        current_time = datetime.now()
-        self.time_of_creation = str(current_time.hour) + '_' + str(current_time.minute) + '_' + str(current_time.second)
+        self.reservation_count = max(int(reservation_count), 1)
+        self.members_count = self.reservation_count
         self.image_link = None
         self.collection_msg = None
-        self.guild = None
         self.table_msg = None
-        self.info_msg = None
         self.time_to_display = []
         self.is_delete_raid = False
         self.task_list = []
+        current_time = datetime.now()
+        self._time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
+
+    @property
+    def places_left(self):
+        return 20 - self.members_count
 
     def __iadd__(self, name_new_member):
         if self.places_left == 0:
             return False
-        self.member_count += 1
-        self.members = self.member_count + self.reservation_count
-        self.places_left = 20 - self.members
-        self.member_dict.update({name_new_member: self.member_count})
+        self.members_count += 1
+        self.member_dict.update({name_new_member: self.members_count})
         return self
 
     def __isub__(self, name_remove_member):
         if self.member_dict.get(name_remove_member):
             del self.member_dict[name_remove_member]
-            self.member_count -= 1
-            self.members = self.member_count + self.reservation_count
-            self.places_left = 20 - self.members
+            self.members_count -= 1
             return self
         else:
             return False
 
     def __cmp__(self, other):
-        if self.members > other.members:
+        if self.members_count > other.members_count:
             return 1
-        elif self.members == other.members:
+        elif self.members_count == other.members_count:
             return 0
         else:
             return -1
 
     def __lt__(self, other):
-        return self.members < other.members
+        return self.members_count < other.members_count
 
     def __gt__(self, other):
-        return self.members > other.members
-
-    def update_info(self):
-        self.members = self.member_count + self.reservation_count
-        self.places_left = 20 - self.members
+        return self.members_count > other.members_count
 
     def time_left_to_display(self) -> (iter, iter):
         hours_end, minutes_end = tuple(map(int, self.time_leaving.split(':')))
@@ -93,24 +84,54 @@ class Raid:
             sec_show += sec
             hh = int(sec_show // 3600 if sec_show // 3600 < 24 else sec_show // 3600 - 24)
             mm = int((sec_show / 3600 - hh) * 60 if sec_show / 3600 < 24 else (sec_show / 3600 - hh - 24) * 60)
-            hh_mm = f'{hh}:{mm}' if mm > 10 else f'{hh}:0{mm}'
+            hh_mm = f'{hh}:{mm}' if len(str(mm)) == 2 else f'{hh}:0{mm}'
             self.time_to_display.append((sec, hh_mm))
         return self.time_to_display
 
+    def make_valid_time(self):
+        # not good solution for problem but valid solution
+        # remake in Raid.method
+        # Get time_reservation_open in sec:
+        hours_open, minutes_open = tuple(map(int, self.time_reservation_open.split(':')))
+        res_open = timedelta(hours=hours_open, minutes=minutes_open)
+        sec_open = res_open.total_seconds()
+
+        time_now = datetime.now()
+        sec_now = timedelta(hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second).total_seconds()
+
+        if sec_now < sec_open:
+            sec_now += 24 * 60 * 60
+        new_time_to_display = []
+        all_sec_left = 0
+        for sec_left, time_display in self.time_to_display:
+            if not sec_left and not time_display:
+                continue
+            all_sec_left += sec_left
+            if not sec_now > sec_open + all_sec_left:
+                new_time_to_display.append((sec_left, time_display))
+        return new_time_to_display
+
     def save_raid(self):
+        raid_information = {
+            "captain_name": self.captain_name,
+            "server": self.server,
+            "time_leaving": self.time_leaving,
+            "time_reservation_open": self.time_reservation_open,
+            "reservation_count": self.reservation_count,
+            "time_to_display": self.time_to_display,
+            "members_dict": self.member_dict,
+            "members_count": self.members_count
+        }
         # Find dir 'saves'. If not - create
         for file in os.listdir(path='.'):
             if file == 'saves':
                 break
         else:
-            os.mkdir('./saves')
+            os.mkdir('saves')
         # Save raid in txt file
-        file_name = f"./saves/{self.captain_name}_{'-'.join(self.time_leaving.split(':'))}.txt"
-        with open(file_name, 'w') as save_file:
-            save_file.write(f'{self.captain_name},{self.server},{self.time_leaving},'
-                            f'{self.time_reservation_open},{self.reservation_count}\n')
-            for name in self.member_dict:
-                save_file.write(name + ' ')
+        file_name = f"saves/{self.captain_name}_{'-'.join(self.time_leaving.split(':'))}.json"
+        with open(file_name, 'w', encoding='utf-8') as save_file:
+            json.dump(raid_information, save_file)
 
     def create_table(self):
         # Create a black image
@@ -141,7 +162,7 @@ class Raid:
         # Create random color block in top title
         cv2.rectangle(img, (0, max_high // columns), (max_widht, 0), color_title, -1)
         # Draw text
-        fontpath = "./cambria.ttc"  # Choose font in window local storage
+        fontpath = "settings/font_table.ttf"  # Choose font in window local storage
         font = ImageFont.truetype(fontpath, 18, encoding="UTF-8")  # Set size and encoding
         img_pil = Image.fromarray(img)  # Change type to work with Pillow
         draw = ImageDraw.Draw(img_pil)
@@ -151,7 +172,8 @@ class Raid:
             draw.text(point_name, name, font=font, fill=(0, 0, 0, 0))
             i += 1
         # Draw name of captain in title
-        draw.text((5, 0), self.title, font=font, fill=(0, 0, 0, 0))
+        title = f"{self.captain_name} {self.server} {self.time_leaving}"
+        draw.text((5, 0), title, font=font, fill=(0, 0, 0, 0))
         img = np.array(img_pil)  # Changing type back into NumPy array
 
         # Save image on local storage
@@ -160,14 +182,17 @@ class Raid:
             if file == 'images':
                 break
         else:
-            os.mkdir('./images')
-        image_link = "./images/raid_" + str(self.time_of_creation) + ".png"
+            os.mkdir('images')
+        image_link = "images/raid_" + str(self._time_of_creation) + ".png"
         cv2.imwrite(image_link, img)
         self.image_link = image_link
         return self.image_link
 
 
 if __name__ == "__main__":
-    my_raid = Raid("Captain", "K-1", "0:15", "14:50", 3)
+    my_raid = Raid("Хомя", "К-1", "0:50", "22:30")
+    print(my_raid.time_left_to_display())
+
+
 
 
