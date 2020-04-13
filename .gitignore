@@ -3,7 +3,7 @@
 
 saves/
 images/
-emodji/
+emodjis/
 __pycache__/
 bot_commands/__pycache__/
 settings/__pycache__/
@@ -12,6 +12,7 @@ instruments/__pycache__/
 
 future.txt
 
+.idea
 .idea/
 .iws
 
