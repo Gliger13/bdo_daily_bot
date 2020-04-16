@@ -1,26 +1,18 @@
-.exe
-.git
+.git/
 
+# Ignoring files created by script
 saves/
 images/
-emodjis/
+settings/logs.log
+# Ignoring pycaches
 __pycache__/
 bot_commands/__pycache__/
 settings/__pycache__/
-settings/logs.log
 instruments/__pycache__/
-
-future.txt
-
-.idea
+# Ignoring secrets
+settings/settings.py
+# Ignoring differents python interpretator and venv files
+.spec
 .idea/
-
-.iws
-
-# Environments
-.env
-.venv
-env/
 venv/
-ENV/
 
