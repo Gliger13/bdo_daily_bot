@@ -26,53 +26,19 @@ class Fun(commands.Cog):
         await asyncio.sleep(10)
         await bot_msg.edit(content='Я осуждаю его')
 
-    @commands.command(name='уйди_бот')
-    async def exit_by_users(self, ctx):
-        module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
-        if ctx.author.id in self.ignore_users_for_exit:
-            await ctx.send("Не-не, я тебя запомнил, приводи дружков тогда и поговорим.")
-            return
-        self.ignore_users_for_exit.add(ctx.author.id)
-        if self.exit_status == 0:
-            self.exit_status += 1
-            await ctx.send("Пфф, напугал. Я бот!")
-            return
-        if self.exit_status == 1:
-            self.exit_status += 1
-            await ctx.send("Ну-ну, продолжайте, я не слушаю")
-            return
-        if self.exit_status == 2:
-            self.exit_status += 1
-            await ctx.send("Так, постойте. Может переговорим?")
-            return
-        if self.exit_status == 3:
-            self.exit_status += 1
-            await ctx.send("Пожалуйста, может не надо?")
-            return
-        if self.exit_status == 4:
-            self.exit_status += 1
-            await ctx.send("Ребят, давайте жить дружно!")
-            return
-        if self.exit_status == 5:
-            self.exit_status += 1
-            await ctx.send("Я... Да я...")
-            return
-        if self.exit_status == 6:
-            self.exit_status += 1
-            await ctx.send("Я маме пожалуюсь! **со слезами на глазах бот выпилился**")
-            await ctx.bot.logout()
-            return
-
-    @commands.command(name='самая_сложная_команда_для_ввода_где', help='Бот начинает осуждать человека.')
+    @commands.command(name='где')
     async def where(self, ctx, name: str):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
-        can_be = ['На мачте', 'на большой мачте', "на мачте у Ldov'a", 'на мачте у Тутттки', 'на маленькой мачте',
-                  'только что слезла с мачты, но обещала вернуться', 'у Гурманова', 'На мачте у Уляля',
-                  'На мачте у BiPi', 'На мачте у WhiteSharkKiller', 'На мачте у Mandeson(pornhub)', 'На мачте у Эли']
-        random_index = random.randrange(0, len(can_be))
+        with_who = ["у Ldov'a", 'у BiPi', 'у Гурманова', 'у Уляля', 'у Эли',
+                    'был, но обещал вернуться', 'у Mandeson(pornhub)', 'у Тутттки']
+        woods = ['На маленькой ', 'На высокой ', 'На большой ', 'На средней', 'На пиратской ', 'На милой ']
+        random_index1 = random.randrange(0, len(with_who))
+        random_index2 = random.randrange(0, len(woods))
         name = name.lower()
-        if name == 'таня':
-            await ctx.send(can_be[random_index])
+        if name == 'ldov10' or name == 'bipi':
+            await ctx.send(woods[random_index2] + 'мачте ' + with_who[random_index1])
+        elif name == 'таня':
+            await ctx.send("На своей мачте")
         else:
             await ctx.send("В море наверное")
 
