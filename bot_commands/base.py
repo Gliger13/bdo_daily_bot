@@ -89,6 +89,12 @@ class Base(commands.Cog):
             await ctx.message.add_reaction('❌')
             module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}. Плохой канал')
 
+    @commands.command(name='заверши_работу')
+    async def start_exit(self, ctx):
+        if ctx.author.id == 324528465682366468:
+            module_logger.info(f'Программа была завершена по команде')
+            await self.bot.logout()
+
 
 def setup(bot):
     bot.add_cog(Base(bot))
