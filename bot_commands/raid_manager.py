@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import time
+import random
+from bot_commands import fun
 
 import discord
 from discord.ext import commands
@@ -330,7 +332,6 @@ class ManageRaid(commands.Cog):
             curr_raid.table_msg = await ctx.send('Тут будет таблица')
             if not curr_raid.time_to_display:
                 curr_raid.time_left_to_display()
-                print('создать новую таблицу')
             else:
                 curr_raid.make_valid_time()
                 for tasks in curr_raid.task_list:
@@ -377,19 +378,6 @@ class ManageRaid(commands.Cog):
             await ctx.message.add_reaction('❔')
             return
 
-        async def start_captain_task(curr_raid):
-            time_left_sec = instr.get_sec_left(time_reservation_open)
-            hour, minutes = time_reservation_open.split(':')
-            time_open = f"{hour}:{minutes}" if len(minutes) == 2 else f"{hour}:0{minutes}"
-            await ctx.send(f"Новый рейд создан! Теперь участники могут записатся к тебе!\n"
-                           f"Бронирование мест начнется в **{time_open}**")
-            await ctx.message.add_reaction('✔')
-            module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
-            await asyncio.sleep(time_left_sec)
-            task2 = asyncio.create_task(self.collection(ctx, captain_name, time_leaving))
-            curr_raid.task_list.append(task2)
-            await task2
-
         if not time_reservation_open:
             current_hour, current_minute = map(int, time.ctime()[11:16].split(':'))
             if current_minute + 1 < 60:
@@ -401,9 +389,16 @@ class ManageRaid(commands.Cog):
         new_raid = raid.Raid(captain_name, server, time_leaving, time_reservation_open, reservation_count)
         self.raid_list.append(new_raid)
         new_raid.guild = ctx.guild
-        task1 = asyncio.create_task(start_captain_task(new_raid))
-        new_raid.task_list.append(task1)
-        await task1
+
+        time_left_sec = instr.get_sec_left(time_reservation_open)
+        hour, minutes = time_reservation_open.split(':')
+        time_open = f"{hour}:{minutes}" if len(minutes) == 2 else f"{hour}:0{minutes}"
+        await ctx.send(f"Новый рейд создан! Теперь участники могут записатся к тебе!\n"
+                       f"Бронирование мест начнется в **{time_open}**")
+        await ctx.message.add_reaction('✔')
+        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+        await asyncio.sleep(time_left_sec)
+        await self.collection(ctx, captain_name, time_leaving)
 
 
 def setup(bot):
