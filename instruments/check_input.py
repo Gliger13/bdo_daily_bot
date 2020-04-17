@@ -12,10 +12,10 @@ is_name = re.compile(r'^([А-Я][А-я,0-9]{1,15}|[A-Z][A-z,0-9]{1,15})$')
 async def not_correct(ctx, error_text, error_arg=''):
     module_logger.info(f'{ctx.author} с ошибкой ввёл команду {ctx.message.content}')
     if error_arg:
-        await ctx.author.send(f'Команда ```css{ctx.message.content}``` была неправильно введена. '
+        await ctx.author.send(f'Команда `{ctx.message.content}` была неправильно введена. '
                               f'{error_text} **{error_arg}**.')
     else:
-        await ctx.author.send(f'Команда ```css{ctx.message.content}``` была неправильно введена. {error_text}')
+        await ctx.author.send(f'Команда `{ctx.message.content}` была неправильно введена. {error_text}')
     await ctx.message.add_reaction('❔')
 
 
@@ -38,3 +38,6 @@ async def is_corr_server(ctx, server):
         await not_correct(ctx, 'Неправильный сервер', server)
         return False
     return True
+
+if __name__ == '__main__':
+    print(re.match(is_name, 'Сусл'))
