@@ -14,6 +14,7 @@ class Fun(commands.Cog):
         self.exit_status = 0
 
     @commands.command(name='осуди_его', help='Бот начинает осуждать человека.')
+    @commands.has_role('Капитан')
     async def msg_lol(self, ctx):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         bot_msg = await ctx.send("Я осуждаю его!")
@@ -27,10 +28,10 @@ class Fun(commands.Cog):
         await bot_msg.edit(content='Я осуждаю его')
 
     @commands.command(name='где')
+    @commands.has_role('Капитан')
     async def where(self, ctx, name: str):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
-        with_who = ["у Ldov'a", 'у BiPi', 'у Гурманова', 'у Уляля', 'у Эли',
-                    'был, но обещал вернуться', 'у Mandeson(pornhub)', 'у Тутттки']
+        with_who = ['у Mandeson(pornhub)']
         woods = ['На маленькой ', 'На высокой ', 'На большой ', 'На средней', 'На пиратской ', 'На милой ']
         random_index1 = random.randrange(0, len(with_who))
         random_index2 = random.randrange(0, len(woods))
@@ -41,6 +42,37 @@ class Fun(commands.Cog):
             await ctx.send("На своей мачте")
         else:
             await ctx.send("В море наверное")
+
+    @commands.command(name='выполни_приказ')
+    async def order(self, ctx, number: int):
+        if number == 12:
+            msg_under_leave = ("Гильдия моего создателя покинула этот альянс"
+                               "и я вместе с ним ухожу отсюда :cry:.\n"
+                               "Но вы можете увидеть меня ещё на сервере Отряд Бартерят\n"
+                               "https://discord.gg/msMnCaV")
+
+            if not ctx.author.id == 324528465682366468:
+                return
+            for server in self.bot.guilds:
+                if server.name == 'ХАНЫЧ':
+                    for channel in server.channels:
+                        if channel.name == '✒флудилка':
+                            channel = self.bot.get_channel(channel.id)
+                            await channel.send(f'{msg_under_leave}')
+                            await server.leave()
+                            await ctx.send(f'Я покинул сервер {server.name}')
+
+    @commands.command(name='скажи')
+    async def order(self, ctx, server_id, channel_id, *text):
+        if not ctx.author.id == 324528465682366468:
+            return
+        server_id = int(server_id)
+        channel_id = int(channel_id)
+        for server in self.bot.guilds:
+            if server.id == server_id:
+                for channel in server.channels:
+                    if channel.id == channel_id:
+                        await channel.send(' '.join(text))
 
 
 def setup(bot):

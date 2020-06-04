@@ -20,26 +20,31 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         if not self.is_bot_ready:
-            module_logger.info('Бот успешно запущен!')
+            module_logger.info('Бот начал свою работу')
             self.is_bot_ready = True
         else:
             critical_msg = (f"Бот был только что перезапущен. Смайлики в сообщении о сборе скорее всего не работают\n"
                             f"Так что нужно перезапустить все сообщения о сборе через !!сбор")
             module_logger.critical(critical_msg)
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game('www.pornhub.com'))
+        custom_status = 'Покоряем людишек 2'
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}"
-        module_logger.info(log)
         if isinstance(error, commands.errors.CheckFailure):
-            await ctx.message.add_reaction('⛔')  # &!!!!!!!!!!
+            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. Нет прав"
+            await ctx.message.add_reaction('⛔')
         elif isinstance(error, commands.errors.MissingRequiredArgument):
+            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. Аргументы"
             await ctx.message.add_reaction('❔')
         elif isinstance(error, commands.errors.CommandNotFound):
+            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. Шо?"
             await ctx.message.add_reaction('❓')
         else:
+            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content} ????"
+            log += f'\n{error}'
             print(error)
+        module_logger.info(log)
 
 
 def setup(bot):

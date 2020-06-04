@@ -4,7 +4,7 @@ import logging
 import os
 import time
 import random
-from bot_commands import fun
+from cogs import fun
 
 import discord
 from discord.ext import commands
@@ -20,6 +20,7 @@ class ManageRaid(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.raid_list = list()  # contains current raids
+        self.msg_pvp_id = None
 
     # Initialization MongoDB
     module_logger.debug('Запуск базы данных')
@@ -50,9 +51,28 @@ class ManageRaid(commands.Cog):
         else:
             return
 
+    @commands.command(name='pvp')
+    @commands.has_role('Капитан')
+    async def pvp(self, ctx):
+        msg_pvp = await ctx.send('Если хочешь для себя открыть PVP контент, то нажми на ⚔️️')
+        await msg_pvp.add_reaction('⚔️')
+        self.msg_pvp_id = msg_pvp.id
+
+    async def set_pvp_role(self, reaction, user):
+        if reaction.message.id == self.msg_pvp_id:
+            role = discord.utils.get(user.guild.roles, name="PVP")
+            await user.add_roles(role)
+
+    async def remove_pvp_role(self, reaction, user):
+        if reaction.message.id == self.msg_pvp_id:
+            role = discord.utils.get(user.guild.roles, name="PVP")
+            await user.remove_roles(role)
+
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         collection_msg = reaction.message
+        if reaction.emoji == '⚔️' and not user.id == settings.bot_id:
+            await self.set_pvp_role(reaction, user)
         if reaction.emoji == '❤' and not user.id == settings.bot_id:  # Ignore bot action
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
@@ -94,6 +114,8 @@ class ManageRaid(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
         collection_msg = reaction.message
+        if reaction.emoji == '⚔️' and not user.id == settings.bot_id:
+            await self.remove_pvp_role(reaction, user)
         if reaction.emoji == '❤':
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
@@ -268,6 +290,24 @@ class ManageRaid(commands.Cog):
         else:
             msg_no_raids = "В данный момент никто не собирает рейд, или собирают, но не через меня :cry:"
             await ctx.send(msg_no_raids)
+
+    @commands.command(name='покажи_состав', help=messages.help_msg_load_raid)
+    @commands.has_role('Капитан')
+    async def show_text_raids(self, ctx, captain_name, time_leaving=''):
+        # Checking correct inputs arguments
+        if (not await check_input.is_corr_name(ctx, captain_name) or
+                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
+            return
+
+        curr_raid = self.find_raid(captain_name, time_leaving)
+        if curr_raid:
+            await ctx.send(curr_raid.create_text_table())
+            await ctx.message.add_reaction('✔')
+            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+        else:
+            await ctx.message.add_reaction('❌')
+            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
+
 
     @commands.command(name='покажи', help=messages.help_msg_show)
     @commands.has_role('Капитан')
