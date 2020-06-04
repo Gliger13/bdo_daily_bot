@@ -2,34 +2,30 @@ from settings import secrets
 # ====================================================================================================
 
 
-# Chose run mode. It's can be 'debug' or 'production'
-run_mode = 'debug'
+# Chose run mode. If False run production mode
+DEBUG = True
 
 
 # ====================================================================================================
-_debug_token = secrets.DEBUG_TOKEN
-_debug_bot_id = secrets.DEBUG_TOKEN_ID
 
-_production_token = secrets.PRODUCTION_TOKEN
-_production_bot_id = secrets.PRODUCTION_BOT_ID
+# Choose the symbols with which the command start
+DEBUG_PREFIX = '!!'
+PRODUCTION_PREFIX = '!!'
 
-_debug_prefix = '!!'
-_production_prefix = '!!'
+# ====================================================================================================
 
-_string_DB = secrets.DB_STRING
+# Check for required parameters
 
-if run_mode == 'debug':
-    token = _debug_token
-    bot_id = _debug_bot_id
-    string_DB = _string_DB
-    prefix = _debug_prefix
-elif run_mode == 'production':
-    token = _production_token
-    bot_id = _production_bot_id
-    string_DB = _string_DB
-    prefix = _production_prefix
+if DEBUG:
+    TOKEN = secrets.DEBUG_TOKEN
+    BOT_ID = secrets.DEBUG_BOT_ID
+    BD_STRING = secrets.DB_STRING
+    PREFIX = DEBUG_PREFIX
 else:
-    raise AttributeError('Wrong settings set')
+    TOKEN = secrets.PRODUCTION_TOKEN
+    BOT_ID = secrets.PRODUCTION_BOT_ID
+    BD_STRING = secrets.DB_STRING
+    PREFIX = PRODUCTION_PREFIX
 
-if not token or not string_DB or not prefix:
-    raise AttributeError('Wrong settings set')
+if not TOKEN or not BD_STRING or not PREFIX:
+    raise ImportError('Wrong settings set')

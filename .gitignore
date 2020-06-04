@@ -1,18 +1,22 @@
+# Git files
 .git/
 
-# Ignoring files created by script
-saves/
-images/
-settings/logs.log
-# Ignoring pycaches
-__pycache__/
-bot_commands/__pycache__/
-settings/__pycache__/
-instruments/__pycache__/
-# Ignoring secrets
-bot/settings/secrets.py
-# Ignoring differents python interpretator and venv files
-.spec
-.idea/
+# Virtual environment
 venv/
 
+# Byte-compiled
+__pycache__/
+
+# Distribution / packaging / PyInstaller
+*.spec
+.idea/
+
+# Files created by script and user data
+bot/saves/
+bot/images/
+bot/settings/logs.log
+bot/settings/not_dell_msgs.json
+bot/settings/correct_channels.json
+
+# Secrets
+bot/settings/secrets.py
