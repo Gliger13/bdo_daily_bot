@@ -188,6 +188,12 @@ class Raid:
         self.image_link = image_link
         return self.image_link
 
+    def create_text_table(self):
+        title = f">>> {self.captain_name} {self.server} {self.time_leaving}\n"
+        for name in self.member_dict:
+            title += f"{name}\n"
+        return title
+
 
 if __name__ == "__main__":
     my_raid = Raid("Хомя", "К-1", "0:50", "22:30")

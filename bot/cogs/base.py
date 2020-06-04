@@ -3,7 +3,9 @@ import logging
 import discord
 from discord.ext import commands
 
+from settings import settings
 from instruments import messages
+from instruments import tools
 
 module_logger = logging.getLogger('my_bot')
 
@@ -12,6 +14,8 @@ class Base(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.remove_command('help')  # To make custom help
+        self.correct_channels = tools.load_channels()
+        self.not_del_msgs = tools.load_not_dell_msgs()
 
     @commands.command(name='test', help='Команда для разработчика. Смысла не несёт')
     async def test(self, ctx):
@@ -22,13 +26,15 @@ class Base(commands.Cog):
     # Custom help
     @commands.command(name='help')
     async def help(self, ctx, command=''):
+        not_show_comms = ['где', 'не_удаляй', 'удалять_тут', 'заверши_работу', 'test', 'осуди_его', 'pvp']
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         embed_obj = discord.Embed(colour=discord.Colour.blue())
         embed_obj.set_author(name='Помощь')
         commands_list = [command for command in self.bot.commands]
         if not command:
             # wrap text _ with * to ignore italicization
-            commands_list_str = '\n'.join([command.qualified_name for command in commands_list])
+            commands_list_str = '\n'.join([command.qualified_name for command in commands_list
+                                           if command.qualified_name not in not_show_comms])
             commands_list_str = '`' + commands_list_str + '`'
             embed_obj.add_field(
                 name='Список команд',
@@ -72,16 +78,45 @@ class Base(commands.Cog):
             else:
                 await ctx.message.add_reaction('❌')
 
+    @commands.command(name='удалять_тут')
+    async def del_there(self, ctx):
+        if not ctx.author.id == 324528465682366468:
+            return
+        server_id = str(ctx.guild.id)
+        channel_id = ctx.channel.id
+        if server_id not in self.correct_channels:
+            self.correct_channels[server_id] = [channel_id]
+        elif channel_id not in self.correct_channels[server_id]:
+            self.correct_channels[server_id].append(channel_id)
+        else:
+            await ctx.message.delete()
+            return
+        tools.save_channels(self.correct_channels)
+        await ctx.message.delete()
+
+    @commands.command(name='не_удаляй')
+    async def not_dell_msg(self, ctx, msg_id):
+        if not ctx.author.id == 324528465682366468:
+            return
+        msg_id = int(msg_id)
+        server_id = str(ctx.guild.id)
+        if server_id not in self.not_del_msgs:
+            self.not_del_msgs[server_id] = [msg_id]
+        elif msg_id not in self.not_del_msgs[server_id]:
+            self.not_del_msgs[server_id].append(msg_id)
+        else:
+            return
+        tools.save_not_dell_msgs(self.not_del_msgs)
+
     @commands.command(name='очисти_чат', help=messages.help_msg_rem_msgs)
     @commands.has_role('Капитан')
     async def rem_msgs(self, ctx, amount=100):
+        server = str(ctx.guild.id)
         channel = ctx.message.channel
-        correct_channels = {696794932270071868, 676882231825924125, 677857180833021953}
-        not_del_msgs = {696795301444583534, 676883151565619242, 677857214282727459}
-        if channel.id in correct_channels:
+        if self.correct_channels.get(server) and channel.id in self.correct_channels[server]:
             messages = []
             async for msg in channel.history(limit=int(amount)):
-                if msg.id not in not_del_msgs:
+                if not self.not_del_msgs.get(server) or msg.id not in self.not_del_msgs[server]:
                     messages.append(msg)
             await channel.delete_messages(messages)
             module_logger.info(f'{ctx.author} успешно ввёл команду {ctx.message.content}')
