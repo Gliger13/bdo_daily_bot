@@ -10,7 +10,7 @@ bot_commands/__pycache__/
 settings/__pycache__/
 instruments/__pycache__/
 # Ignoring secrets
-settings/settings.py
+settings/secrets.py
 # Ignoring differents python interpretator and venv files
 .spec
 .idea/

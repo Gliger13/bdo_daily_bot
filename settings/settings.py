@@ -1,21 +1,22 @@
+from settings import secrets
 # ====================================================================================================
 
 
 # Chose run mode. It's can be 'debug' or 'production'
-run_mode = 'production'
+run_mode = 'debug'
 
 
 # ====================================================================================================
-_debug_token = ''
-_debug_bot_id = 0
+_debug_token = secrets.DEBUG_TOKEN
+_debug_bot_id = secrets.DEBUG_TOKEN_ID
 
-_production_token = ''
-_production_bot_id = 0
+_production_token = secrets.PRODUCTION_TOKEN
+_production_bot_id = secrets.PRODUCTION_BOT_ID
 
 _debug_prefix = '!!'
 _production_prefix = '!!'
 
-_string_DB = ""
+_string_DB = secrets.DB_STRING
 
 if run_mode == 'debug':
     token = _debug_token
