@@ -3,8 +3,6 @@ import json
 import logging
 import os
 import time
-import random
-from cogs import fun
 
 import discord
 from discord.ext import commands
@@ -24,7 +22,7 @@ class ManageRaid(commands.Cog):
 
     # Initialization MongoDB
     module_logger.debug('Запуск базы данных')
-    cluster = MongoClient(settings.string_DB)
+    cluster = MongoClient(settings.BD_STRING)
     db = cluster['discord']
     coll_mem_surname = db["user_nicknames"]
     module_logger.debug('База данных успешно загружена')
@@ -71,9 +69,9 @@ class ManageRaid(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         collection_msg = reaction.message
-        if reaction.emoji == '⚔️' and not user.id == settings.bot_id:
+        if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
             await self.set_pvp_role(reaction, user)
-        if reaction.emoji == '❤' and not user.id == settings.bot_id:  # Ignore bot action
+        if reaction.emoji == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
                         curr_raid.guild == collection_msg.guild):
@@ -114,7 +112,7 @@ class ManageRaid(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
         collection_msg = reaction.message
-        if reaction.emoji == '⚔️' and not user.id == settings.bot_id:
+        if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
             await self.remove_pvp_role(reaction, user)
         if reaction.emoji == '❤':
             for curr_raid in self.raid_list:
