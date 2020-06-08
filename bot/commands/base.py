@@ -3,7 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from settings import settings
+from instruments import check_input
 from instruments import messages
 from instruments import tools
 
@@ -19,6 +19,7 @@ class Base(commands.Cog):
 
     @commands.command(name='test', help='Команда для разработчика. Смысла не несёт')
     async def test(self, ctx):
+        await check_input.validation(**locals())
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         await ctx.message.add_reaction('❌')
         await ctx.message.add_reaction('✔')
