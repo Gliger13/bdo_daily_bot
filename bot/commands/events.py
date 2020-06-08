@@ -1,7 +1,7 @@
 import logging
 import discord
 from instruments import messages
-
+from discord import InvalidArgument
 from discord.ext import commands
 
 module_logger = logging.getLogger('my_bot')
@@ -31,19 +31,22 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.errors.CheckFailure):
-            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. Нет прав"
+        base_log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. "
+        if isinstance(error, commands.errors.BadArgument):
+            log = base_log + str(error)
+            await ctx.message.add_reaction('❔')
+        elif isinstance(error, commands.errors.CheckFailure):
+            log = base_log + "Нет прав"
             await ctx.message.add_reaction('⛔')
         elif isinstance(error, commands.errors.MissingRequiredArgument):
-            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. Аргументы"
+            log = base_log + "Неправильные аргументы"
             await ctx.message.add_reaction('❔')
         elif isinstance(error, commands.errors.CommandNotFound):
-            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. Шо?"
+            log = base_log + "Команда не найдена"
             await ctx.message.add_reaction('❓')
         else:
-            log = f"{ctx.author} неправильно ввёл команду {ctx.message.content} ????"
+            log = base_log + "????"
             log += f'\n{error}'
-            print(error)
         module_logger.info(log)
 
 

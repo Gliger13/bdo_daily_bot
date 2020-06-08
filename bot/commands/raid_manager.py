@@ -137,9 +137,8 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def load_raid(self, ctx, captain_name, time_leaving):
         # Checking correct input
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
+
         # Checking save file exists
         file_name = f"saves/{captain_name}_{'-'.join(time_leaving.split(':'))}.json"
         if not os.path.exists(file_name):
@@ -166,8 +165,8 @@ class ManageRaid(commands.Cog):
     @commands.command(name='рег', help=messages.help_msg_reg)
     async def reg(self, ctx, name: str):
         # Checking correct input
-        if not await check_input.is_corr_name(ctx, name):
-            return
+        await check_input.validation(**locals())
+
         # Try to find user in BD
         old_post = ManageRaid.coll_mem_surname.find_one({"discord_user": str(ctx.author)})
         if not old_post:  # If not find...
@@ -184,8 +183,7 @@ class ManageRaid(commands.Cog):
     @commands.command(name='перерег', help=messages.help_msg_rereg)
     async def rereg(self, ctx, name: str):
         # Checking correct input
-        if not await check_input.is_corr_name(ctx, name):
-            return
+        await check_input.validation(**locals())
         # Try to find user in BD
         old_post = ManageRaid.coll_mem_surname.find_one({"discord_user": str(ctx.author)})
         if old_post:  # If not find...
@@ -210,9 +208,7 @@ class ManageRaid(commands.Cog):
     @commands.command(name='сохрани_рейд', help='сохраняет рейд')
     async def save_raid(self, ctx, captain_name: str, time_leaving=''):
         # Checking correct input
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         # if not find raid to save
@@ -228,10 +224,7 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def reserve(self, ctx, name: str, captain_name='', time_leaving=''):
         # Checking correct input
-        if (not await check_input.is_corr_name(ctx, name) or
-                captain_name and not await check_input.is_corr_name(ctx, name) or
-                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid and not curr_raid.places_left == 0:
@@ -262,8 +255,7 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def remove_res(self, ctx, name: str):
         # Checking correct inputs arguments
-        if not await check_input.is_corr_name(ctx, name):
-            return
+        await check_input.validation(**locals())
 
         for finding_raid in self.raid_list:
             finding_raid -= name
@@ -293,9 +285,7 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def show_text_raids(self, ctx, captain_name, time_leaving=''):
         # Checking correct inputs arguments
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid:
@@ -311,9 +301,7 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def show(self, ctx, captain_name, time_leaving=''):
         # Checking correct inputs arguments
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid:
@@ -330,9 +318,7 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def remove_raid(self, ctx, captain_name, time_leaving=''):
         # Checking correct inputs arguments
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid:
@@ -350,9 +336,7 @@ class ManageRaid(commands.Cog):
     @commands.has_role('Капитан')
     async def collection(self, ctx, captain_name, time_leaving=''):
         # Checking correct inputs arguments
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                time_leaving and not await check_input.is_corr_time(ctx, time_leaving)):
-            return
+        await check_input.validation(**locals())
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid:
@@ -404,17 +388,7 @@ class ManageRaid(commands.Cog):
     async def captain(self, ctx, captain_name: str, server: str, time_leaving: str, time_reservation_open='',
                       reservation_count=0):
         # Checking correct inputs arguments
-        if (not await check_input.is_corr_name(ctx, captain_name) or
-                not await check_input.is_corr_server(ctx, server) or
-                not await check_input.is_corr_time(ctx, time_leaving) or
-                time_reservation_open and not await check_input.is_corr_time(ctx, time_reservation_open)):
-            return
-        try:
-            int(reservation_count)
-        except ValueError:
-            await ctx.author.send(f'Команда `{ctx.message.content}` была неправильно введена. Неверное число брони')
-            await ctx.message.add_reaction('❔')
-            return
+        await check_input.validation(**locals())
 
         if not time_reservation_open:
             current_hour, current_minute = map(int, time.ctime()[11:16].split(':'))
