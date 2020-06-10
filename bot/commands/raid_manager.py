@@ -289,13 +289,12 @@ class ManageRaid(commands.Cog):
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid:
-            await ctx.send(curr_raid.create_text_table())
+            await ctx.send(curr_raid.table.create_text_table())
             await ctx.message.add_reaction('✔')
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
         else:
             await ctx.message.add_reaction('❌')
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
-
 
     @commands.command(name='покажи', help=messages.help_msg_show)
     @commands.has_role('Капитан')
@@ -305,9 +304,9 @@ class ManageRaid(commands.Cog):
 
         curr_raid = self.find_raid(captain_name, time_leaving)
         if curr_raid:
-            link = curr_raid.create_table()
+            path = curr_raid.table_path()
             curr_raid.save_raid()
-            await ctx.send(file=discord.File(link))
+            await ctx.send(file=discord.File(path))
             await ctx.message.add_reaction('✔')
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
         else:
@@ -376,7 +375,7 @@ class ManageRaid(commands.Cog):
                 for tasks in curr_raid.task_list:
                     tasks.cancel()
                 await curr_raid.table_msg.delete()
-                curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.create_table()))
+                curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table.table_path()))
                 curr_raid.time_to_display[index] = ('', '')
             await ctx.send(f"Рейд на {curr_raid.server} с капитаном {curr_raid.captain_name} уже уплыли на ежедневки")
             await self.remove_raid(ctx, captain_name, time_leaving)

@@ -22,14 +22,14 @@ class Raid:
         self.time_reservation_open = time_reservation_open
         self.reservation_count = max(int(reservation_count), 1)
         self.members_count = self.reservation_count
-        self.image_link = None
         self.collection_msg = None
         self.table_msg = None
+        self.table = None
         self.time_to_display = []
         self.is_delete_raid = False
         self.task_list = []
         current_time = datetime.now()
-        self._time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
+        self.time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
 
     @property
     def places_left(self):
@@ -63,6 +63,14 @@ class Raid:
 
     def __gt__(self, other):
         return self.members_count > other.members_count
+
+    def table_path(self) -> str:
+        if not self.table:
+            self.table = Table(self)
+            self.table.create_table()
+        else:
+            self.table.update_table(self)
+        return self.table.table_path
 
     def time_left_to_display(self) -> (iter, iter):
         hours_end, minutes_end = tuple(map(int, self.time_leaving.split(':')))
@@ -133,72 +141,144 @@ class Raid:
         with open(file_name, 'w', encoding='utf-8') as save_file:
             json.dump(raid_information, save_file)
 
-    def create_table(self):
-        # Create a black image
-        max_high = 420
-        max_widht = 200
-        columns = 21
-        line_width = 1
-        color_title = (random.randrange(30, 230), random.randrange(30, 230), random.randrange(30, 230))
-        # Create white image
-        img = np.zeros((max_high, max_widht, 3), np.uint8)
-        img[::, ::] = 255
-        # Draw reservation red space
-        cv2.rectangle(img, (0, max_high), (max_widht, max_high - max_high // columns * self.reservation_count),
-                      (0, 0, 255), -1)
-        # Draw lines of table
-        for i in range(21):
-            # Set bottom left and top right coordinate of 21 rectangles
-            point_one = 0, (max_high // columns) * (i + 1)
-            point_two = max_widht - line_width // 2, (max_high // columns) * i
-            # Set coordinate of numerations
-            point_number = 2, (max_high // columns) * (i + 1) - 4
-            # Draw 21 rectangles
-            cv2.rectangle(img, point_one, point_two, (0, 0, 0), line_width)
-            if i > 0:  # Draw numeration of 20 columns
-                cv2.putText(img, str(i), point_number, cv2.FONT_HERSHEY_DUPLEX, 0.5, (10, 10, 10), 1, cv2.LINE_AA)
-        # Draw vertical line... Yes its rectangle, not line but line
-        cv2.rectangle(img, (0, max_high - line_width // 2), (30, 0), (0, 0, 0), line_width)
-        # Create random color block in top title
-        cv2.rectangle(img, (0, max_high // columns), (max_widht, 0), color_title, -1)
-        # Draw text
-        fontpath = "settings/font_table.ttf"  # Choose font in window local storage
-        font = ImageFont.truetype(fontpath, 18, encoding="UTF-8")  # Set size and encoding
-        img_pil = Image.fromarray(img)  # Change type to work with Pillow
-        draw = ImageDraw.Draw(img_pil)
-        i = 0
-        for name in self.member_dict:
-            point_name = 35, (max_high // columns * (i + 1))  # Set coordinate of text message
-            draw.text(point_name, name, font=font, fill=(0, 0, 0, 0))
-            i += 1
-        # Draw name of captain in title
-        title = f"{self.captain_name} {self.server} {self.time_leaving}"
-        draw.text((5, 0), title, font=font, fill=(0, 0, 0, 0))
-        img = np.array(img_pil)  # Changing type back into NumPy array
 
+class Table:
+    # Text settings
+
+    # Size
+    HEIGHT = 420
+
+    # For text
+    TEXT_FONT_SIZE = 18  # pt
+    # Font path
+    FONT_PATH = os.path.join("settings", "font_table.ttf")
+    # Set font size and encoding
+    FONT = ImageFont.truetype(FONT_PATH, TEXT_FONT_SIZE, encoding="UTF-8")
+
+    # For numbers of columns
+    NUMBER_FONT_SCALE = 0.5  # Font scale factor that is multiplied by the font-specific base size.
+    NUMBER_FONT_FACE = cv2.FONT_HERSHEY_DUPLEX
+    NUMBER_COLOR = (25, 25, 25)  # rgb
+    NUMBER_THICKNESS = 1
+    NUMBER_BASE_LINE = cv2.LINE_AA
+    # '0000' - space that takes for number of member
+    NUMBER_SIZE = cv2.getTextSize('0000', NUMBER_FONT_FACE, NUMBER_FONT_SCALE, NUMBER_THICKNESS)
+    NUMBER_SIZE_WIDTH = NUMBER_SIZE[0][0]  # px
+
+    # Table frame
+    COLUMNS = 21
+    LINE_WIDTH = 1
+
+    def __init__(self, raid: Raid):
+        self.raid = raid
+        self.old_member_dict = self.raid.member_dict.copy()
+        self.title = f"{self.raid.captain_name} {self.raid.server} {self.raid.time_leaving}"
+        self.table_path = None
+
+    def get_width(self):
+        # 10 - 10px - offset the indent
+        title_width = Table.FONT.getsize(self.title)[0] + 10
+        if self.raid.member_dict:
+            max_name = max(self.raid.member_dict)
+            max_name_row_width = Table.NUMBER_SIZE_WIDTH + Table.FONT.getsize(max_name)[0]
+            print(max_name_row_width)
+            print(title_width)
+            return max(title_width - 10, max_name_row_width)
+        return title_width
+
+    def create_table(self):
+        width = self.get_width()
+        # Build frame of table
+        # Create white image
+        img = np.zeros((Table.HEIGHT, width, 3), np.uint8)
+        img[::, ::] = 255
+
+        # Draw reservation red space
+        start_point = (0, Table.HEIGHT)
+        end_point = (width, Table.HEIGHT - Table.HEIGHT // Table.COLUMNS * self.raid.reservation_count)
+        color = (0, 0, 255)
+        rect_thickness = -1  # Thickness of -1 px will fill the rectangle shape by the specified color
+        cv2.rectangle(img, start_point, end_point, color, rect_thickness)
+
+        # Draw lines of table
+        for number in range(21):
+            # Set bottom left and top right coordinate of 21 rectangles
+            start_point = 0, (Table.HEIGHT // Table.COLUMNS) * (number + 1)
+            end_point = width - Table.LINE_WIDTH // 2, (Table.HEIGHT // Table.COLUMNS) * number
+            # Set coordinate of numerations
+            point_number = 2, (Table.HEIGHT // Table.COLUMNS) * (number + 1) - 4
+            # Draw 21 rectangles
+            cv2.rectangle(img, start_point, end_point, (0, 0, 0), Table.LINE_WIDTH)
+            if number > 0:  # Draw numeration of 20 columns
+                cv2.putText(
+                    img=img,
+                    text=str(number),
+                    org=point_number,
+                    fontFace=Table.NUMBER_FONT_FACE,
+                    fontScale=Table.NUMBER_FONT_SCALE,
+                    color=Table.NUMBER_COLOR,
+                    thickness=Table.NUMBER_THICKNESS,
+                    lineType=Table.NUMBER_BASE_LINE,
+                )
+
+        # Draw vertical line... Yes its rectangle, not line but line
+        start_point = (0, Table.HEIGHT)
+        end_point = (30, 0)
+        color = (0, 0, 0)
+        rect_thickness = 1
+        cv2.rectangle(img, start_point, end_point, color, rect_thickness)
+
+        # Create random color block in top title
+        start_point = (0, Table.HEIGHT // Table.COLUMNS)
+        end_point = (width, 0)
+        # RGB(..., ..., ...). ... - [0: 255]. For readability exclude absolute white and black colors
+        color_title = (random.randrange(30, 230), random.randrange(30, 230), random.randrange(30, 230))
+        rect_thickness = -1
+        cv2.rectangle(img, start_point, end_point, color_title, rect_thickness)
+
+        # Writing text on table
+        # Change type to work with Pillow
+        img_pil = Image.fromarray(img)
+        draw = ImageDraw.Draw(img_pil)
+        # Fill table by members list
+        name_number = 0
+        for name in self.raid.member_dict:
+            # Set coordinate of text message
+            point_name = 35, (Table.HEIGHT // Table.COLUMNS * (name_number + 1))
+            draw.text(point_name, name, font=Table.FONT, fill=(0, 0, 0, 0))
+            name_number += 1
+
+        # Draw name of captain in title
+        draw.text((5, 0), self.title, font=Table.FONT, fill=(0, 0, 0, 0))
+
+        # Changing type back into NumPy array
+        img = np.array(img_pil)
+
+        self._save(img)
+        return self.table_path
+
+    def update_table(self, raid: Raid):
+        if not self.old_member_dict == raid.member_dict:
+            self.__init__(raid)
+            self.old_member_dict = raid.member_dict.copy()
+            self.create_table()
+        else:
+            return
+
+    def _save(self, img):
         # Save image on local storage
         # Find dir 'images'. If not - create
-        for file in os.listdir(path='.'):
+        for file in os.listdir():
             if file == 'images':
                 break
         else:
             os.mkdir('images')
-        image_link = "images/raid_" + str(self._time_of_creation) + ".png"
-        cv2.imwrite(image_link, img)
-        self.image_link = image_link
-        return self.image_link
+
+        self.table_path = os.path.join('images', 'raid_') + str(self.raid.time_of_creation) + ".png"
+        cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):
-        title = f">>> {self.captain_name} {self.server} {self.time_leaving}\n"
-        for name in self.member_dict:
-            title += f"{name}\n"
-        return title
-
-
-if __name__ == "__main__":
-    my_raid = Raid("Хомя", "К-1", "0:50", "22:30")
-    print(my_raid.time_left_to_display())
-
-
-
-
+        table = self.title
+        for name in self.raid.member_dict:
+            table += f"{name}\n"
+        return table
