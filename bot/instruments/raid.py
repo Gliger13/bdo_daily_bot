@@ -14,17 +14,23 @@ class Raid:
     Create Raid Object that contain members amount of members and etc
 
     """
-    def __init__(self, captain_name, server, time_leaving, time_reservation_open, reservation_count=2):
+    def __init__(self, ctx, captain_name, server, time_leaving, time_reservation_open, reservation_count=2):
+        # Info about BDO raid
         self.captain_name = captain_name
         self.member_dict = {}
         self.server = server
         self.time_leaving = time_leaving
         self.time_reservation_open = time_reservation_open
         self.reservation_count = max(int(reservation_count), 1)
+
         self.members_count = self.reservation_count
+        self.table = None
+
+        self.guild_id = ctx.guild.id
+        self.channel_id = ctx.channel.id
         self.collection_msg = None
         self.table_msg = None
-        self.table = None
+
         self.time_to_display = []
         self.is_delete_raid = False
         self.task_list = []
@@ -176,13 +182,11 @@ class Table:
         self.table_path = None
 
     def get_width(self):
-        # 10 - 10px - offset the indent
-        title_width = Table.FONT.getsize(self.title)[0] + 10
+        # 15 - 15px - offset the indent
+        title_width = Table.FONT.getsize(self.title)[0] + 15
         if self.raid.member_dict:
             max_name = max(self.raid.member_dict)
             max_name_row_width = Table.NUMBER_SIZE_WIDTH + Table.FONT.getsize(max_name)[0]
-            print(max_name_row_width)
-            print(title_width)
             return max(title_width - 10, max_name_row_width)
         return title_width
 
@@ -274,7 +278,7 @@ class Table:
         else:
             os.mkdir('images')
 
-        self.table_path = os.path.join('images', 'raid_') + str(self.raid.time_of_creation) + ".png"
+        self.table_path = os.path.join('images', 'raid_') + str(self.raid.time_leaving) + ".png"
         cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):

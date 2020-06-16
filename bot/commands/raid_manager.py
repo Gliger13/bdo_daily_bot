@@ -36,18 +36,24 @@ class ManageRaid(commands.Cog):
         new_text_msg = old_text[:start_index] + edited_text + old_text[end_index:]
         await curr_raid.collection_msg.edit(content=new_text_msg)
 
-    def find_raid(self, captain_name: str, time_leaving: str) -> raid.Raid:
-        if not captain_name:
+    def find_raid(
+            self, guild_id: int, channel_id: int, captain_name: str, time_leaving: str, ignore_channels=False
+                  ) -> raid.Raid or None:
+        raids_found = []
+
+        for some_raid in self.raid_list:
+            if ignore_channels or some_raid.guild_id == guild_id and some_raid.channel_id == channel_id:
+                if captain_name and time_leaving:
+                    if some_raid.captain_name == captain_name and some_raid.time_leaving == time_leaving:
+                        raids_found.append(some_raid)
+                        break
+                else:
+                    if some_raid.captain_name == captain_name:
+                        raids_found.append(some_raid)
+
+        if not len(raids_found) == 1:
             return
-        captain_list = [some_raid.captain_name for some_raid in self.raid_list]
-        is_unique_captains = True if len(captain_list) == len(set(captain_list)) else False
-        if self.raid_list and is_unique_captains or self.raid_list and time_leaving:
-            for finding_raid in self.raid_list:
-                if (finding_raid.captain_name == captain_name and finding_raid.time_leaving == time_leaving
-                        or finding_raid.captain_name == captain_name):
-                    return finding_raid
-        else:
-            return
+        return raids_found.pop()
 
     @commands.command(name='pvp')
     @commands.has_role('Капитан')
@@ -135,7 +141,7 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='загрузи_рейд', help=messages.help_msg_load_raid)
     @commands.has_role('Капитан')
-    async def load_raid(self, ctx, captain_name, time_leaving):
+    async def load_raid(self, ctx: commands.context.Context, captain_name, time_leaving):
         # Checking correct input
         await check_input.validation(**locals())
 
@@ -163,7 +169,7 @@ class ManageRaid(commands.Cog):
         await ctx.message.add_reaction('✔')
 
     @commands.command(name='рег', help=messages.help_msg_reg)
-    async def reg(self, ctx, name: str):
+    async def reg(self, ctx: commands.context.Context, name: str):
         # Checking correct input
         await check_input.validation(**locals())
 
@@ -181,7 +187,7 @@ class ManageRaid(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @commands.command(name='перерег', help=messages.help_msg_rereg)
-    async def rereg(self, ctx, name: str):
+    async def rereg(self, ctx: commands.context.Context, name: str):
         # Checking correct input
         await check_input.validation(**locals())
         # Try to find user in BD
@@ -195,7 +201,7 @@ class ManageRaid(commands.Cog):
             await self.reg(ctx, name)
 
     @commands.command(name='сохрани_рейды', help='сохраняет все рейды')
-    async def save_raids(self, ctx):
+    async def save_raids(self, ctx: commands.context.Context):
         if self.raid_list:
             for some_raid in self.raid_list:
                 some_raid.save_raid()
@@ -206,11 +212,11 @@ class ManageRaid(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @commands.command(name='сохрани_рейд', help='сохраняет рейд')
-    async def save_raid(self, ctx, captain_name: str, time_leaving=''):
+    async def save_raid(self, ctx: commands.context.Context, captain_name: str, time_leaving=''):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(captain_name, time_leaving)
+        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         # if not find raid to save
         if not curr_raid:
             await check_input.not_correct(ctx, 'Не нашёл рейд для сохранение.')
@@ -222,11 +228,11 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='бронь', help=messages.help_msg_reserve)
     @commands.has_role('Капитан')
-    async def reserve(self, ctx, name: str, captain_name='', time_leaving=''):
+    async def reserve(self, ctx: commands.context.Context, name: str, captain_name='', time_leaving=''):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(captain_name, time_leaving)
+        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid and not curr_raid.places_left == 0:
             if curr_raid.member_dict.get(name):
                 module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Есть в рейде')
@@ -253,7 +259,7 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='удали_бронь', help=messages.help_msg_remove_res)
     @commands.has_role('Капитан')
-    async def remove_res(self, ctx, name: str):
+    async def remove_res(self, ctx: commands.context.Context, name: str):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
@@ -269,7 +275,7 @@ class ManageRaid(commands.Cog):
             await ctx.message.add_reaction('❌')
 
     @commands.command(name='покажи_рейды', help=messages.help_msg_show_raids)
-    async def show_raids(self, ctx):
+    async def show_raids(self, ctx: commands.context.Context):
         module_logger.info(f'{ctx.author} использовал команду {ctx.message.content}')
         if self.raid_list:
             msg_of_raid = "В данный момент собирают рейды:\n"
@@ -283,11 +289,11 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='покажи_состав', help=messages.help_msg_load_raid)
     @commands.has_role('Капитан')
-    async def show_text_raids(self, ctx, captain_name, time_leaving=''):
+    async def show_text_raids(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(captain_name, time_leaving)
+        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             await ctx.send(curr_raid.table.create_text_table())
             await ctx.message.add_reaction('✔')
@@ -298,11 +304,10 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='покажи', help=messages.help_msg_show)
     @commands.has_role('Капитан')
-    async def show(self, ctx, captain_name, time_leaving=''):
+    async def show(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
-
-        curr_raid = self.find_raid(captain_name, time_leaving)
+        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             path = curr_raid.table_path()
             curr_raid.save_raid()
@@ -315,11 +320,11 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='удали_рейд', help=messages.help_msg_remove_raid)
     @commands.has_role('Капитан')
-    async def remove_raid(self, ctx, captain_name, time_leaving=''):
+    async def remove_raid(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(captain_name, time_leaving)
+        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid:
             curr_raid.is_delete_raid = True
             for task in curr_raid.task_list:
@@ -333,11 +338,11 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='сбор', help=messages.help_msg_collection)
     @commands.has_role('Капитан')
-    async def collection(self, ctx, captain_name, time_leaving=''):
+    async def collection(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(captain_name, time_leaving)
+        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             collection_msg = (f"Капитан **{curr_raid.captain_name}** выплывает на морские ежедневки с Око Окиллы в "
                               f"**{curr_raid.time_leaving}** на канале **{curr_raid.server}**.\n"
@@ -375,7 +380,7 @@ class ManageRaid(commands.Cog):
                 for tasks in curr_raid.task_list:
                     tasks.cancel()
                 await curr_raid.table_msg.delete()
-                curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table.table_path()))
+                curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table_path()))
                 curr_raid.time_to_display[index] = ('', '')
             await ctx.send(f"Рейд на {curr_raid.server} с капитаном {curr_raid.captain_name} уже уплыли на ежедневки")
             await self.remove_raid(ctx, captain_name, time_leaving)
@@ -384,7 +389,7 @@ class ManageRaid(commands.Cog):
 
     @commands.command(name='капитан', help=messages.help_msg_captain)
     @commands.has_role('Капитан')
-    async def captain(self, ctx, captain_name: str, server: str, time_leaving: str, time_reservation_open='',
+    async def captain(self, ctx: commands.context.Context, captain_name: str, server: str, time_leaving: str, time_reservation_open='',
                       reservation_count=0):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
@@ -397,7 +402,7 @@ class ManageRaid(commands.Cog):
                 current_minute -= 59
                 current_hour += 1 if current_hour < 24 else -23
             time_reservation_open = ':'.join((str(current_hour), str(current_minute)))
-        new_raid = raid.Raid(captain_name, server, time_leaving, time_reservation_open, reservation_count)
+        new_raid = raid.Raid(ctx, captain_name, server, time_leaving, time_reservation_open, reservation_count)
         self.raid_list.append(new_raid)
         new_raid.guild = ctx.guild
 
@@ -415,4 +420,3 @@ class ManageRaid(commands.Cog):
 def setup(bot):
     bot.add_cog(ManageRaid(bot))
     module_logger.debug(f'Успешный запуск bot.raid_manager')
-

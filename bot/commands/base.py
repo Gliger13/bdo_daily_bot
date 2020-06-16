@@ -18,8 +18,9 @@ class Base(commands.Cog):
         self.not_del_msgs = tools.load_not_dell_msgs()
 
     @commands.command(name='test', help='Команда для разработчика. Смысла не несёт')
-    async def test(self, ctx):
+    async def test(self, ctx: commands.context.Context):
         await check_input.validation(**locals())
+        print(type(ctx))
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         await ctx.message.add_reaction('❌')
         await ctx.message.add_reaction('✔')
