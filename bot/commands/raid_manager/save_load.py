@@ -11,8 +11,6 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidSaveLoad(commands.Cog):
-    database = common.Database().database('discord')
-    collection_users = database['user_nicknames']
     raid_list = common.Raids.active_raids
 
     def __init__(self, bot):
