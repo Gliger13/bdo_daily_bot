@@ -1,7 +1,7 @@
 import logging
+
 from settings import settings
 
-# Initialization logger
 logger = logging.getLogger('my_bot')
 console_handler = logging.StreamHandler()
 

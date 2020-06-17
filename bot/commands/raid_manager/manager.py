@@ -1,31 +1,24 @@
 import asyncio
-import json
 import logging
-import os
 import time
 
 import discord
 from discord.ext import commands
-from pymongo import MongoClient
 
+from commands.raid_manager import common
 from instruments import tools as instr, raid, messages, check_input
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
 
 
-class ManageRaid(commands.Cog):
+class RaidManager(commands.Cog):
+    database = common.Database().database('discord')
+    collection_users = database['user_nicknames']
+    raid_list = common.Raids.active_raids
+
     def __init__(self, bot):
         self.bot = bot
-        self.raid_list = list()  # contains current raids
-        self.msg_pvp_id = None
-
-    # Initialization MongoDB
-    module_logger.debug('Запуск базы данных')
-    cluster = MongoClient(settings.BD_STRING)
-    db = cluster['discord']
-    coll_mem_surname = db["user_nicknames"]
-    module_logger.debug('База данных успешно загружена')
 
     @staticmethod
     async def update_info(curr_raid):
@@ -36,52 +29,13 @@ class ManageRaid(commands.Cog):
         new_text_msg = old_text[:start_index] + edited_text + old_text[end_index:]
         await curr_raid.collection_msg.edit(content=new_text_msg)
 
-    def find_raid(
-            self, guild_id: int, channel_id: int, captain_name: str, time_leaving: str, ignore_channels=False
-                  ) -> raid.Raid or None:
-        raids_found = []
-
-        for some_raid in self.raid_list:
-            if ignore_channels or some_raid.guild_id == guild_id and some_raid.channel_id == channel_id:
-                if captain_name and time_leaving:
-                    if some_raid.captain_name == captain_name and some_raid.time_leaving == time_leaving:
-                        raids_found.append(some_raid)
-                        break
-                else:
-                    if some_raid.captain_name == captain_name:
-                        raids_found.append(some_raid)
-
-        if not len(raids_found) == 1:
-            return
-        return raids_found.pop()
-
-    @commands.command(name='pvp')
-    @commands.has_role('Капитан')
-    async def pvp(self, ctx):
-        msg_pvp = await ctx.send('Если хочешь для себя открыть PVP контент, то нажми на ⚔️️')
-        await msg_pvp.add_reaction('⚔️')
-        self.msg_pvp_id = msg_pvp.id
-
-    async def set_pvp_role(self, reaction, user):
-        if reaction.message.id == self.msg_pvp_id:
-            role = discord.utils.get(user.guild.roles, name="PVP")
-            await user.add_roles(role)
-
-    async def remove_pvp_role(self, reaction, user):
-        if reaction.message.id == self.msg_pvp_id:
-            role = discord.utils.get(user.guild.roles, name="PVP")
-            await user.remove_roles(role)
-
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def raid_reaction_add(self, reaction, user):
         collection_msg = reaction.message
-        if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
-            await self.set_pvp_role(reaction, user)
         if reaction.emoji == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
                         curr_raid.guild == collection_msg.guild):
-                    post = ManageRaid.coll_mem_surname.find_one({"discord_user": str(user)})
+                    post = RaidManager.collection_users.find_one({"discord_user": str(user)})
                     if post:  # if find user in data base
                         nickname = post["nickname"]
                         if curr_raid.member_dict.get(nickname):
@@ -97,13 +51,13 @@ class ManageRaid(commands.Cog):
                                     f"до отплытия. Если информации нету, то пиши на"
                                     f" фамилию капитана **{curr_raid.captain_name}**.")
                                 curr_raid += str(nickname)
-                                ManageRaid.coll_mem_surname.find_one_and_update(
+                                RaidManager.collection_users.find_one_and_update(
                                     {'discord_user': str(user)},
                                     {'$inc': {'entries': 1}}
                                 )
                                 module_logger.info(f'{user} попал в рейд к кэпу {curr_raid.captain_name}')
                                 await user.send(msg_success)
-                                await ManageRaid.update_info(curr_raid)
+                                await RaidManager.update_info(curr_raid)
                                 break
                             else:
                                 msg_no_space = "Ты не попал в рейд. Мест не осталось :crying_cat_face:"
@@ -115,116 +69,26 @@ class ManageRaid(commands.Cog):
                         await user.send(messages.msg_fail2)
                         break
 
-    @commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
+    async def raid_reaction_remove(self, reaction, user):
         collection_msg = reaction.message
-        if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
-            await self.remove_pvp_role(reaction, user)
         if reaction.emoji == '❤':
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
                         and curr_raid.guild == collection_msg.guild):
-                    finding_post = ManageRaid.coll_mem_surname.find_one({"discord_user": str(user)})
+                    finding_post = RaidManager.collection_users.find_one({"discord_user": str(user)})
                     if finding_post:
                         nickname = finding_post["nickname"]
                         if curr_raid.member_dict.get(nickname):
                             msg_remove = f"Я тебя удалил из списка на ежедневки с капитаном **{curr_raid.captain_name}**"
                             curr_raid -= str(nickname)
-                            ManageRaid.coll_mem_surname.find_one_and_update(
+                            RaidManager.collection_users.find_one_and_update(
                                 {'discord_user': str(user)},
                                 {'$inc': {'entries': -1}}
                             )
                             module_logger.info(f'{user} убрал себя из рейда кэпа {curr_raid.captain_name}')
                             await user.send(msg_remove)
-                            await ManageRaid.update_info(curr_raid)
+                            await RaidManager.update_info(curr_raid)
                             break
-
-    @commands.command(name='загрузи_рейд', help=messages.help_msg_load_raid)
-    @commands.has_role('Капитан')
-    async def load_raid(self, ctx: commands.context.Context, captain_name, time_leaving):
-        # Checking correct input
-        await check_input.validation(**locals())
-
-        # Checking save file exists
-        file_name = f"saves/{captain_name}_{'-'.join(time_leaving.split(':'))}.json"
-        if not os.path.exists(file_name):
-            await check_input.not_correct(ctx, 'Файл сохранения не найден')
-            return
-
-        # Open file and load information in new Raid
-        with open(file_name, 'r', encoding='utf-8') as save_file:
-            raid_information = json.load(save_file)
-        old_raid = raid.Raid(
-            raid_information['captain_name'],
-            raid_information['server'],
-            raid_information['time_leaving'],
-            raid_information['time_reservation_open'],
-            int(raid_information['reservation_count'])
-        )
-        old_raid.time_to_display = raid_information['time_to_display']
-        old_raid.member_dict.update(raid_information['members_dict'])
-        old_raid.members_count = raid_information['members_count']
-        self.raid_list.append(old_raid)
-        module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-        await ctx.message.add_reaction('✔')
-
-    @commands.command(name='рег', help=messages.help_msg_reg)
-    async def reg(self, ctx: commands.context.Context, name: str):
-        # Checking correct input
-        await check_input.validation(**locals())
-
-        # Try to find user in BD
-        old_post = ManageRaid.coll_mem_surname.find_one({"discord_user": str(ctx.author)})
-        if not old_post:  # If not find...
-            post = {'discord_user': str(ctx.author), 'nickname': str(name), 'entries': 0}
-            ManageRaid.coll_mem_surname.insert_one(post)
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('✔')
-        else:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Уже есть в БД')
-            await ctx.author.send("Ты уже зарегистрировался, хватит использовать эту команду."
-                                  " Сейчас тапком в тебя кину! :sandal:. Иди и нажми на милое сердечко :heart:!")
-            await ctx.message.add_reaction('❌')
-
-    @commands.command(name='перерег', help=messages.help_msg_rereg)
-    async def rereg(self, ctx: commands.context.Context, name: str):
-        # Checking correct input
-        await check_input.validation(**locals())
-        # Try to find user in BD
-        old_post = ManageRaid.coll_mem_surname.find_one({"discord_user": str(ctx.author)})
-        if old_post:  # If not find...
-            post = {'discord_user': str(ctx.author), 'nickname': str(name), 'entries': int(old_post['entries'])}
-            ManageRaid.coll_mem_surname.update(old_post, post)
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('✔')
-        else:
-            await self.reg(ctx, name)
-
-    @commands.command(name='сохрани_рейды', help='сохраняет все рейды')
-    async def save_raids(self, ctx: commands.context.Context):
-        if self.raid_list:
-            for some_raid in self.raid_list:
-                some_raid.save_raid()
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('✔')
-        else:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Не рейдов')
-            await ctx.message.add_reaction('❌')
-
-    @commands.command(name='сохрани_рейд', help='сохраняет рейд')
-    async def save_raid(self, ctx: commands.context.Context, captain_name: str, time_leaving=''):
-        # Checking correct input
-        await check_input.validation(**locals())
-
-        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
-        # if not find raid to save
-        if not curr_raid:
-            await check_input.not_correct(ctx, 'Не нашёл рейд для сохранение.')
-            return
-
-        curr_raid.save_raid()
-        module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-        await ctx.message.add_reaction('✔')
 
     @commands.command(name='бронь', help=messages.help_msg_reserve)
     @commands.has_role('Капитан')
@@ -232,7 +96,7 @@ class ManageRaid(commands.Cog):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid and not curr_raid.places_left == 0:
             if curr_raid.member_dict.get(name):
                 module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Есть в рейде')
@@ -240,7 +104,7 @@ class ManageRaid(commands.Cog):
                 return
             curr_raid += name
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ManageRaid.update_info(curr_raid)
+            await RaidManager.update_info(curr_raid)
             await ctx.message.add_reaction('✔')
         else:
             guild_raid_list = []
@@ -267,7 +131,7 @@ class ManageRaid(commands.Cog):
             finding_raid -= name
             if finding_raid:
                 module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-                await ManageRaid.update_info(finding_raid)
+                await RaidManager.update_info(finding_raid)
                 await ctx.message.add_reaction('✔')
                 break
         else:
@@ -293,7 +157,7 @@ class ManageRaid(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             await ctx.send(curr_raid.table.create_text_table())
             await ctx.message.add_reaction('✔')
@@ -307,7 +171,7 @@ class ManageRaid(commands.Cog):
     async def show(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
-        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             path = curr_raid.table_path()
             curr_raid.save_raid()
@@ -324,7 +188,7 @@ class ManageRaid(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid:
             curr_raid.is_delete_raid = True
             for task in curr_raid.task_list:
@@ -342,7 +206,7 @@ class ManageRaid(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             collection_msg = (f"Капитан **{curr_raid.captain_name}** выплывает на морские ежедневки с Око Окиллы в "
                               f"**{curr_raid.time_leaving}** на канале **{curr_raid.server}**.\n"
@@ -418,5 +282,5 @@ class ManageRaid(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(ManageRaid(bot))
-    module_logger.debug(f'Успешный запуск bot.raid_manager')
+    bot.add_cog(RaidManager(bot))
+    module_logger.debug(f'Успешный запуск bot.raid_manager.manager')
