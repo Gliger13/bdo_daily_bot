@@ -1,16 +1,20 @@
 import logging
+
 import discord
-from instruments import messages
-from discord import InvalidArgument
 from discord.ext import commands
+
+from instruments import messages
+from settings import settings
 
 module_logger = logging.getLogger('my_bot')
 
 
 class Events(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
         self.is_bot_ready = False
+        self.msg_pvp_id = None
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -48,6 +52,37 @@ class Events(commands.Cog):
             log = base_log + "????"
             log += f'\n{error}'
         module_logger.info(log)
+
+    @commands.command(name='pvp')
+    @commands.has_role('Капитан')
+    async def pvp(self, ctx):
+        msg_pvp = await ctx.send('Если хочешь для себя открыть PVP контент, то нажми на ⚔️️')
+        await msg_pvp.add_reaction('⚔️')
+        self.msg_pvp_id = msg_pvp.id
+
+    async def set_pvp_role(self, reaction, user):
+        if reaction.message.id == self.msg_pvp_id:
+            role = discord.utils.get(user.guild.roles, name="PVP")
+            await user.add_roles(role)
+
+    async def remove_pvp_role(self, reaction, user):
+        if reaction.message.id == self.msg_pvp_id:
+            role = discord.utils.get(user.guild.roles, name="PVP")
+            await user.remove_roles(role)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        raid_manager = self.bot.get_cog('RaidManager')
+        if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
+            await self.set_pvp_role(reaction, user)
+        await raid_manager.raid_reaction_add(reaction, user)
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        raid_manager = self.bot.get_cog('RaidManager')
+        if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
+            await self.remove_pvp_role(reaction, user)
+        await raid_manager.raid_reaction_remove(reaction, user)
 
 
 def setup(bot):

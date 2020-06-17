@@ -1,5 +1,8 @@
 import logging
+import os
+import traceback
 
+import discord
 from discord.ext import commands
 
 from settings import settings
@@ -14,10 +17,22 @@ module_logger = logging.getLogger('my_bot')
 bot = commands.Bot(command_prefix=settings.PREFIX)
 
 # Load all commands for bot and run bot
+# if __name__ == '__main__':
+#     for extension in [f.replace('.py', '') for f in os.listdir('commands') if os.path.isfile(os.path.join('commands', f))]:
+#         if not extension == '__init__':
+#             print(extension)
+#             try:
+#                 bot.load_extension('commands' + "." + extension)
+#             except (discord.ClientException, ModuleNotFoundError):
+#                 print(f'Failed to load extension {extension}.')
+#                 traceback.print_exc()
+
 bot.load_extension(f"commands.events")
 bot.load_extension(f"commands.base")
-bot.load_extension(f"commands.raid_manager")
 bot.load_extension(f"commands.fun")
+bot.load_extension(f"commands.raid_manager.manager")
+bot.load_extension(f"commands.raid_manager.registration")
+bot.load_extension(f"commands.raid_manager.save_load")
 
 # Start bot
 bot.run(settings.TOKEN)
