@@ -1,9 +1,6 @@
 import logging
 
-from pymongo import MongoClient
-
 from instruments import raid
-from settings import settings
 
 module_logger = logging.getLogger('my_bot')
 
@@ -18,32 +15,6 @@ class MetaSingleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
-
-
-class Database(metaclass=MetaSingleton):
-    """
-    Connect with Mongo Database
-
-    """
-    _connection = None
-    _cluster = None
-    _databases = {}
-
-    def _connect(self):
-        if not self._connection:
-            module_logger.debug('Запуск базы данных')
-            self._cluster = MongoClient(settings.BD_STRING)
-            module_logger.debug('База данных успешно загружена')
-        return self._cluster
-
-    def database(self, db_name):
-        cluster = self._connect()
-        if db_name in self._databases:
-            return self._databases[db_name]
-        else:
-            db = cluster[db_name]
-            self._databases[db_name] = db
-        return db
 
 
 class Raids(metaclass=MetaSingleton):

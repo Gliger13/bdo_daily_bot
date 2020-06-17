@@ -3,14 +3,13 @@ import logging
 from discord.ext import commands
 
 from commands.raid_manager import common
-from instruments import messages, check_input
+from instruments import messages, check_input, database_process
 
 module_logger = logging.getLogger('my_bot')
 
 
 class RaidRegistration(commands.Cog):
-    database = common.Database().database('discord')
-    collection_users = database['user_nicknames']
+    database = database_process.Database()
     raid_list = common.Raids.active_raids
 
     def __init__(self, bot):
@@ -21,14 +20,11 @@ class RaidRegistration(commands.Cog):
         # Checking correct input
         await check_input.validation(**locals())
 
-        # Try to find user in BD
-        old_post = RaidRegistration.collection_users.find_one({"discord_user": str(ctx.author)})
-        if not old_post:  # If not find...
-            post = {'discord_user': str(ctx.author), 'nickname': str(name), 'entries': 0}
-            RaidRegistration.collection_users.insert_one(post)
+        try:
+            self.database.reg_user(str(ctx.author), name)
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('✔')
-        else:
+        except database_process.UserExists:
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Уже есть в БД')
             await ctx.author.send("Ты уже зарегистрировался, хватит использовать эту команду."
                                   " Сейчас тапком в тебя кину! :sandal:. Иди и нажми на милое сердечко :heart:!")
@@ -38,15 +34,11 @@ class RaidRegistration(commands.Cog):
     async def rereg(self, ctx: commands.context.Context, name: str):
         # Checking correct input
         await check_input.validation(**locals())
-        # Try to find user in BD
-        old_post = RaidRegistration.collection_users.find_one({"discord_user": str(ctx.author)})
-        if old_post:  # If not find...
-            post = {'discord_user': str(ctx.author), 'nickname': str(name), 'entries': int(old_post['entries'])}
-            RaidRegistration.collection_users.update(old_post, post)
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('✔')
-        else:
-            await self.reg(ctx, name)
+
+        self.database.rereg_user(str(ctx.author), name)
+
+        module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+        await ctx.message.add_reaction('✔')
 
 
 def setup(bot):
