@@ -1,7 +1,10 @@
+import datetime
 import logging
 
 from pymongo import MongoClient
 
+from instruments import tools
+from instruments.raid import Raid
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
@@ -64,6 +67,10 @@ class Database(metaclass=MetaSingleton):
     def user_collection(self):
         return self.database(settings.USER_COLLECTION)
 
+    @property
+    def captain_collection(self):
+        return self.database(settings.CAPTAIN_COLLECTION)
+
     def reg_user(self, discord_user: str, nickname: str):
         user_post = self.find_user_post(discord_user)
         if not user_post:
@@ -121,3 +128,65 @@ class Database(metaclass=MetaSingleton):
                 }
             }
         )
+
+    def find_captain_post(self, user: str):
+        return self.captain_collection.find_one({
+                'discord_user': user
+        })
+
+    def create_captain(self, user: str):
+        captain_name = self.find_user(user)
+        post = {
+            "discord_user": user,
+            "captain_name": captain_name,
+            "raids_created": 0,
+            "drove_people": 0,
+            "last_created": datetime.datetime.now().__str__(),
+            "last_raids": []
+        }
+        self.captain_collection.insert_one(post)
+        return post
+
+    def update_captain(self, user: str, raid: Raid):
+        captain_post = self.find_captain_post(user)
+        if not captain_post:
+            self.create_captain(user)
+
+        # update last raids
+        last_raids = captain_post['last_raids']
+        if len(last_raids) == 3:
+            last_raids.pop()
+
+        difference = tools.get_time_difference(raid.time_reservation_open, raid.time_leaving)
+        if difference < 300:
+            time_reservation_open = ''
+        else:
+            time_reservation_open = raid.time_reservation_open
+
+        last_raids.append(
+            {
+                'server': raid.server,
+                'time_leaving': raid.time_leaving,
+                'time_reservation_open': time_reservation_open,
+                'reservation_count': raid.reservation_count,
+            }
+        )
+        self.captain_collection.find_one_and_update(
+            {
+                'discord_user': user
+            },
+            {
+                '$inc': {
+                    'raids_created': 1,
+                    'drove_people': len(raid.member_dict)
+                },
+                '$set': {
+                    'last_created': datetime.datetime.now().__str__(),
+                    'last_raids': last_raids
+                },
+            }
+        )
+
+    def get_last_raids(self, user: str):
+        captain_post = self.find_captain_post(user)
+        return captain_post.get('last_raids')

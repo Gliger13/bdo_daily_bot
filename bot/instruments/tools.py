@@ -12,6 +12,12 @@ def get_sec_left(time_end: str) -> int:
     return delta_left.seconds
 
 
+def get_time_difference(time_start, time_end) -> int:
+    delta_start = datetime.strptime(time_start, '%H:%M')
+    delta_end = datetime.strptime(time_end, '%H:%M')
+    return (delta_end - delta_start).seconds
+
+
 def raid_table_in_time(time_leaving: str) -> iter:
     """Return list time for table display"""
     sec_left = get_sec_left(time_leaving)
@@ -50,3 +56,5 @@ def load_not_dell_msgs():
     if not not_dell_msgs:
         not_dell_msgs = {}
     return not_dell_msgs
+
+

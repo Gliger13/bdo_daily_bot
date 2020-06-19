@@ -10,7 +10,6 @@ module_logger = logging.getLogger('my_bot')
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.ignore_users_for_exit = set()
         self.exit_status = 0
 
     @commands.command(name='осуди_его', help='Бот начинает осуждать человека.')
