@@ -181,7 +181,7 @@ class Database(metaclass=MetaSingleton):
                     'drove_people': len(raid.member_dict)
                 },
                 '$set': {
-                    'last_created': datetime.datetime.now().__str__(),
+                    'last_created': datetime.datetime.now().date().__str__() + raid.time_leaving,
                     'last_raids': last_raids
                 },
             }
