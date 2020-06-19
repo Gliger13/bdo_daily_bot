@@ -8,7 +8,7 @@ from instruments import database_process
 module_logger = logging.getLogger('my_bot')
 
 
-class RaidSaveLoad(commands.Cog):
+class Statistics(commands.Cog):
     database = database_process.Database()
 
     def __init__(self, bot):
@@ -19,8 +19,7 @@ class RaidSaveLoad(commands.Cog):
         user = ctx.author
         user_info = self.database.find_user_post(str(user))
         captain_info = self.database.find_captain_post(str(user))
-        if not user_info and not captain_info:
-            text_message = f"Нету данных"
+        text_message = f"Нету данных"
         if user_info:
             if captain_info and captain_info.get('raids_created'):
                 text_message = (
@@ -79,5 +78,5 @@ class RaidSaveLoad(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(RaidSaveLoad(bot))
+    bot.add_cog(Statistics(bot))
     module_logger.debug(f'Успешный запуск bot.statistics')

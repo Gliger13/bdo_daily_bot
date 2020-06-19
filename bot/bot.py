@@ -31,9 +31,11 @@ bot.load_extension(f"commands.events")
 bot.load_extension(f"commands.base")
 bot.load_extension(f"commands.fun")
 bot.load_extension(f"commands.statistics")
-bot.load_extension(f"commands.raid_manager.manager")
-bot.load_extension(f"commands.raid_manager.registration")
+bot.load_extension(f"commands.raid_manager.creation")
 bot.load_extension(f"commands.raid_manager.save_load")
+bot.load_extension(f"commands.raid_manager.registration")
+bot.load_extension(f"commands.raid_manager.joining")
+bot.load_extension(f"commands.raid_manager.overview")
 
 
 # Start bot

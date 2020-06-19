@@ -72,17 +72,17 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        raid_manager = self.bot.get_cog('RaidManager')
+        joining = self.bot.get_cog('RaidJoining')
         if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
             await self.set_pvp_role(reaction, user)
-        await raid_manager.raid_reaction_add(reaction, user)
+        await joining.raid_reaction_add(reaction, user)
 
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
-        raid_manager = self.bot.get_cog('RaidManager')
+        joining = self.bot.get_cog('RaidJoining')
         if reaction.emoji == '⚔️' and not user.id == settings.BOT_ID:
             await self.remove_pvp_role(reaction, user)
-        await raid_manager.raid_reaction_remove(reaction, user)
+        await joining.raid_reaction_remove(reaction, user)
 
 
 def setup(bot):
