@@ -30,9 +30,11 @@ bot = commands.Bot(command_prefix=settings.PREFIX)
 bot.load_extension(f"commands.events")
 bot.load_extension(f"commands.base")
 bot.load_extension(f"commands.fun")
+bot.load_extension(f"commands.statistics")
 bot.load_extension(f"commands.raid_manager.manager")
 bot.load_extension(f"commands.raid_manager.registration")
 bot.load_extension(f"commands.raid_manager.save_load")
+
 
 # Start bot
 bot.run(settings.TOKEN)
