@@ -20,7 +20,6 @@ class Base(commands.Cog):
     @commands.command(name='test', help='Команда для разработчика. Смысла не несёт')
     async def test(self, ctx: commands.context.Context):
         await check_input.validation(**locals())
-        print(type(ctx))
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         await ctx.message.add_reaction('❌')
         await ctx.message.add_reaction('✔')

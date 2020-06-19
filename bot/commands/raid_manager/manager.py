@@ -199,7 +199,7 @@ class RaidManager(commands.Cog):
         await check_input.validation(**locals())
 
         curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
-        if curr_raid:
+        if curr_raid and not curr_raid.is_delete_raid:
             collection_msg = (f"Капитан **{curr_raid.captain_name}** выплывает на морские ежедневки с Око Окиллы в "
                               f"**{curr_raid.time_leaving}** на канале **{curr_raid.server}**.\n"
                               f"Желающие присоединиться к кэпу должны нажать на :heart:.\n"
@@ -294,6 +294,7 @@ class RaidManager(commands.Cog):
             await ctx.author.send(
                 f"Привет, я тебя ещё не знаю! Рэйдов ты не создавал ещё. Воспользуйся командой `!!капитан`"
             )
+            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого капитана')
             return
         last_raids = captain_post.get('last_raids')
         raids_msg = f"Какой из рейдов мне создать, капитан **{captain_post['captain_name']}**?\n"
@@ -323,10 +324,13 @@ class RaidManager(commands.Cog):
         try:
             reaction, user = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
         except asyncio.TimeoutError:
+            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Время на ответ вышло')
             await ctx.message.add_reaction('❌')
         else:
             user_choice = NUMBER_REACTIONS[str(reaction.emoji)]
             user_raid = last_raids[user_choice - 1]
+
+            module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
             await self.captain(
                 ctx,
                 captain_post.get('captain_name'),

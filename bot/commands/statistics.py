@@ -3,7 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from instruments import messages, database_process
+from instruments import database_process
 
 module_logger = logging.getLogger('my_bot')
 
@@ -75,6 +75,7 @@ class RaidSaveLoad(commands.Cog):
             icon_url=user.avatar_url,
         )
         await user.send(embed=embed)
+        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
 
 
 def setup(bot):
