@@ -84,10 +84,8 @@ class Base(commands.Cog):
     async def del_there(self, ctx: commands.context.Context):
         guild = ctx.guild
         channel = ctx.channel
-        can_remove_in = {
-            str(channel): channel.id
-        }
-        self.database.settings.update_settings(guild.id, str(guild), can_remove_in)
+        print(1)
+        self.database.settings.update_settings(guild.id, str(guild), channel.id, str(channel))
         await ctx.message.add_reaction('✔')
         await asyncio.sleep(10)
         await ctx.message.delete()
@@ -107,6 +105,14 @@ class Base(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
             module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}. Плохой канал')
+
+    @commands.command(name='не_удалять')
+    @commands.has_permissions(administrator=True, manage_messages=True)
+    async def not_del_there(self, ctx: commands.context.Context):
+        guild = ctx.guild
+        channel = ctx.channel
+        self.database.settings.not_delete_there(guild.id, channel.id)
+        await ctx.message.add_reaction('✔')
 
     @commands.command(name='заверши_работу')
     async def start_exit(self, ctx):
