@@ -19,7 +19,15 @@ class RaidCreation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def notify_about_leaving(self, current_raid: Raid, ctx: commands.context.Context):
+    async def notify_about_leaving(self, current_raid: Raid):
+        secs_sleep = current_raid.raid_time.secs_to_notify()
+        if not secs_sleep:
+            return
+
+        sleep_task = asyncio.create_task(asyncio.sleep(secs_sleep))
+        current_raid.raid_time.notification_task = sleep_task
+        await sleep_task
+
         member_msg = (
             f"До отплытия капитана осталось **7 минут**!\n"
             f"У тебя есть ещё время подготовиться, если ещё не готов."
@@ -47,6 +55,10 @@ class RaidCreation(commands.Cog):
         curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid:
             curr_raid.is_delete_raid = True
+            if curr_raid.raid_time.notification_task:
+                curr_raid.raid_time.notification_task.cancel()
+            if curr_raid.collection_task:
+                curr_raid.collection_task.cancel()
             for task in curr_raid.task_list:
                 task.cancel()
             self.raid_list.remove(curr_raid)
@@ -66,7 +78,7 @@ class RaidCreation(commands.Cog):
         if curr_raid and not curr_raid.is_delete_raid:
             # Send msg about collection and save data
             collection_msg = (f"Капитан **{curr_raid.captain_name}** выплывает на морские ежедневки с Око Окиллы в "
-                              f"**{curr_raid.time_leaving}** на канале **{curr_raid.server}**.\n"
+                              f"**{curr_raid.raid_time.time_leaving}** на канале **{curr_raid.server}**.\n"
                               f"Желающие присоединиться к кэпу должны нажать на :heart:.\n"
                               f"И обязательно, посмотрите сообщение,"
                               f"которое я вам выслал в личные сообщения, может быть вы не попали в рейд.\n"
@@ -78,16 +90,12 @@ class RaidCreation(commands.Cog):
 
             # Show raid_table in time
             curr_raid.table_msg = await ctx.send('Тут будет таблица')
-            if not curr_raid.time_to_display:
-                curr_raid.time_left_to_display()
-            else:
-                curr_raid.make_valid_time()
-                for tasks in curr_raid.task_list:
-                    tasks.cancel()
+            curr_raid.raid_time.validate_time()
+            for tasks in curr_raid.task_list:
+                tasks.cancel()
 
-            for index, (sec_left, time_display) in enumerate(curr_raid.time_to_display):
-                if not sec_left and not time_display:
-                    continue
+            raid_time = zip(curr_raid.raid_time.time_to_display, curr_raid.raid_time.secs_to_display)
+            for index, (time_display, sec_left) in enumerate(raid_time):
                 # Update text msg of start collection Raid
                 edited_text = f'Обновлённая таблица появится в {time_display}.'
                 old_text = curr_raid.collection_msg.content
@@ -98,10 +106,8 @@ class RaidCreation(commands.Cog):
                 curr_raid.save_raid()
                 module_logger.info(f'Сохранение рейда {curr_raid.captain_name}')
 
-                # If last time interval left notify user and show table
-                if index == len(curr_raid.time_to_display) - 1:
-                    await self.notify_about_leaving(curr_raid, ctx)
-
+                # Notify user if possible
+                await self.notify_about_leaving(curr_raid)
                 sleep_task = asyncio.create_task(asyncio.sleep(sec_left))
                 curr_raid.task_list.append(sleep_task)
                 await sleep_task
@@ -109,7 +115,7 @@ class RaidCreation(commands.Cog):
                     tasks.cancel()
                 await curr_raid.table_msg.delete()
                 curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table_path()))
-                curr_raid.time_to_display[index] = ('', '')
+                curr_raid.raid_time.remove_previous_time()
 
             self.database.update_captain(str(ctx.author), curr_raid)
 
@@ -124,7 +130,7 @@ class RaidCreation(commands.Cog):
                       time_leaving: str, time_reservation_open='', reservation_count=0):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
-
+        # Check captain exists
         captain_post = self.database.find_captain_post(str(ctx.author))
         if not captain_post:
             self.database.create_captain(str(ctx.author))
@@ -137,7 +143,15 @@ class RaidCreation(commands.Cog):
                 current_minute -= 59
                 current_hour += 1 if current_hour < 24 else -23
             time_reservation_open = ':'.join((str(current_hour), str(current_minute)))
-        new_raid = raid.Raid(ctx, captain_name, server, time_leaving, time_reservation_open, reservation_count)
+        new_raid = raid.Raid(
+            captain_name,
+            server,
+            time_leaving,
+            time_reservation_open,
+            ctx.guild.id,
+            ctx.channel.id,
+            reservation_count
+        )
         self.raid_list.append(new_raid)
         new_raid.guild = ctx.guild
 
@@ -148,7 +162,11 @@ class RaidCreation(commands.Cog):
                        f"Бронирование мест начнется в **{time_open}**")
         await ctx.message.add_reaction('✔')
         module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
-        await asyncio.sleep(time_left_sec)
+
+        # Create sleep task for collection command
+        sleep_task = asyncio.create_task(asyncio.sleep(time_left_sec))
+        new_raid.collection_task = sleep_task
+        await sleep_task
         await self.collection(ctx, captain_name, time_leaving)
 
     @commands.command(name='кэп', help=messages.help_msg_captain)

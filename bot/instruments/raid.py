@@ -14,25 +14,26 @@ class Raid:
     Create Raid Object that contain members amount of members and etc
 
     """
-    def __init__(self, ctx, captain_name, server, time_leaving, time_reservation_open, reservation_count=2):
+    def __init__(self,
+                 captain_name, server, time_leaving, time_reservation_open, guild_id, channel_id, reservation_count=2
+                 ):
         # Info about BDO raid
         self.captain_name = captain_name
         self.member_dict = {}
         self.server = server
-        self.time_leaving = time_leaving
-        self.time_reservation_open = time_reservation_open
+        self.raid_time = RaidTime(time_leaving, time_reservation_open)
         self.reservation_count = max(int(reservation_count), 1)
 
         self.members_count = self.reservation_count
         self.table = None
 
-        self.guild_id = ctx.guild.id
-        self.channel_id = ctx.channel.id
+        self.guild_id = guild_id
+        self.channel_id = channel_id
         self.collection_msg = None
         self.table_msg = None
 
-        self.time_to_display = []
         self.is_delete_raid = False
+        self.collection_task = None
         self.task_list = []
         current_time = datetime.now()
         self.time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
@@ -78,67 +79,19 @@ class Raid:
             self.table.update_table(self)
         return self.table.table_path
 
-    def time_left_to_display(self) -> (iter, iter):
-        hours_end, minutes_end = tuple(map(int, self.time_leaving.split(':')))
-        time_start = datetime.now()
-        delta_one_day = timedelta(days=1)
-        delta_start = timedelta(hours=time_start.hour, minutes=time_start.minute, seconds=time_start.second)
-        delta_end = timedelta(hours=hours_end, minutes=minutes_end)
-        # Calculation seconds interval
-        seconds_left = (delta_end - delta_start if delta_end > delta_start
-                        else (delta_end + delta_one_day) - delta_start).total_seconds()
-        # To notify that 7 minutes left
-        seconds_left -= 7 * 60 if seconds_left > 7 * 60 else 0
-
-        half_inter = seconds_left // 2
-        sec_to_display = [half_inter // 4 for i in range(4)]
-        sec_to_display.append(half_inter // 2)
-        sec_to_display.append(half_inter // 2)
-        sec_to_display.append(7 * 60)
-        sec_to_display = list(map(int, sec_to_display))
-        # Calculation hh:mm interval and set value to return
-        sec_show = delta_start.total_seconds()
-
-        for sec in sec_to_display:
-            sec_show += sec
-            hh = int(sec_show // 3600 if sec_show // 3600 < 24 else sec_show // 3600 - 24)
-            mm = int((sec_show / 3600 - hh) * 60 if sec_show / 3600 < 24 else (sec_show / 3600 - hh - 24) * 60)
-            hh_mm = f'{hh}:{mm}' if len(str(mm)) == 2 else f'{hh}:0{mm}'
-            self.time_to_display.append((sec, hh_mm))
-        return self.time_to_display
-
-    def make_valid_time(self):
-        # not good solution for problem but valid solution
-        # Get time_reservation_open in sec:
-        hours_open, minutes_open = tuple(map(int, self.time_reservation_open.split(':')))
-        res_open = timedelta(hours=hours_open, minutes=minutes_open)
-        sec_open = res_open.total_seconds()
-
-        time_now = datetime.now()
-        sec_now = timedelta(hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second).total_seconds()
-
-        if sec_now < sec_open:
-            sec_now += 24 * 60 * 60
-        new_time_to_display = []
-        all_sec_left = 0
-        for sec_left, time_display in self.time_to_display:
-            if not sec_left and not time_display:
-                continue
-            all_sec_left += sec_left
-            if not sec_now > sec_open + all_sec_left:
-                new_time_to_display.append((sec_left, time_display))
-        return new_time_to_display
-
     def save_raid(self):
         raid_information = {
             "captain_name": self.captain_name,
             "server": self.server,
-            "time_leaving": self.time_leaving,
-            "time_reservation_open": self.time_reservation_open,
+            "time_leaving": self.raid_time.time_leaving,
+            "time_reservation_open": self.raid_time.time_reservation_open,
+            "guild_id": self.guild_id,
+            "channel_id": self.channel_id,
             "reservation_count": self.reservation_count,
-            "time_to_display": self.time_to_display,
+            "time_to_display": self.raid_time.time_to_display,
+            "secs_to_display": self.raid_time.secs_to_display,
             "members_dict": self.member_dict,
-            "members_count": self.members_count
+            "members_count": self.members_count,
         }
         # Find dir 'saves'. If not - create
         for file in os.listdir(path='.'):
@@ -147,9 +100,156 @@ class Raid:
         else:
             os.mkdir('saves')
         # Save raid in txt file
-        file_name = f"saves/{self.captain_name}_{'-'.join(self.time_leaving.split(':'))}.json"
+        file_name = f"saves/{self.captain_name}_{'-'.join(self.raid_time.time_leaving.split(':'))}.json"
         with open(file_name, 'w', encoding='utf-8') as save_file:
             json.dump(raid_information, save_file)
+
+
+class RaidTime:
+    DISPLAY_FREQUENCY = 4  # times
+    NOTIFY_BEFORE_LEAVING = timedelta(minutes=7)
+    # Display n minutes before leaving
+    DISPLAY_BEFORE_LEAVING = [
+        timedelta(minutes=15),
+        timedelta(minutes=5),
+    ]
+    MIN_TIME_DISPLAY = timedelta(seconds=60)
+
+    def __init__(self, time_leaving, time_reservation_open):
+        self.creation_time = datetime.now()
+        self.time_to_display = []
+        self.secs_to_display = []
+        self.time_leaving = time_leaving
+        self.time_reservation_open = time_reservation_open
+
+        self.notification_task = None
+        self.is_notified = False  # Have users received an notification?
+
+        self._time_leaving = datetime.strptime(time_leaving, '%H:%M')
+        self._time_reservation_open = datetime.strptime(time_reservation_open, '%H:%M')
+
+        self._set_intervals()
+
+    @property
+    def _additional_time(self):
+        if self.DISPLAY_BEFORE_LEAVING:
+            time_list = list(reversed(sorted(self.DISPLAY_BEFORE_LEAVING)))
+            last_time = time_list.pop(0)
+            time_before_next = []
+            for current_time in time_list:
+                time_before_next.append(last_time - current_time)
+                last_time = current_time
+            time_before_next.append(last_time)
+            return time_before_next
+        else:
+            return []
+
+    def remove_previous_time(self):
+        self.time_to_display.pop(0)
+        self.secs_to_display.pop(0)
+
+    @staticmethod
+    def _clear_additional_time(time_list, interval_part):
+        """
+        Remove time from time_list that greater than interval_part
+        """
+        return [time for time in time_list if time < interval_part]
+
+    def validate_time(self):
+        # Convert in timedelta
+        current_datetime = datetime.now()
+        current_time = timedelta(hours=current_datetime.hour, minutes=current_datetime.minute)
+
+        if current_time < timedelta(hours=self._time_reservation_open.hour, minutes=self._time_reservation_open.minute):
+            current_time += timedelta(days=1)
+
+        # Convert in timedelta
+        last_time = datetime.strptime(self.time_to_display[0], '%H:%M')
+        last_time = timedelta(hours=last_time.hour, minutes=last_time.minute)
+
+        for time_index, time in enumerate(self.time_to_display[1:]):
+            # Convert in timedelta
+            time = datetime.strptime(time, '%H:%M')
+            time = timedelta(hours=time.hour, minutes=time.minute)
+
+            if last_time > time:
+                time += timedelta(days=1)
+            last_time = time
+            if not current_time > time:
+                self.time_to_display = self.time_to_display[time_index + 1:]
+                self.secs_to_display = self.secs_to_display[time_index + 1:]
+                break
+
+    def _set_intervals(self):
+        display_frequency = self.DISPLAY_FREQUENCY
+
+        # Correct the time if the time leaving is the next day
+        if self._time_reservation_open > self._time_leaving:
+            interval = self._time_leaving + timedelta(days=1) - self._time_reservation_open
+        else:
+            interval = self._time_leaving - self._time_reservation_open
+
+        # Reduce the frequency of display if the interval is not enough
+        if interval < self.MIN_TIME_DISPLAY * display_frequency:
+            display_frequency = interval // self.MIN_TIME_DISPLAY // 2
+
+        interval_part = interval / display_frequency if display_frequency else interval
+        # Take time for a specific display
+        additional_list = self._clear_additional_time(self._additional_time, interval_part)
+
+        # Calculate min_interval
+        # 1 minute for compensate the time spent on computing
+        min_interval = self.MIN_TIME_DISPLAY * display_frequency + timedelta(minutes=1)
+
+        for display_time in additional_list:
+            min_interval += display_time
+
+        # do not display if the interval is small
+        if interval > min_interval and additional_list and interval_part > max(additional_list):
+            can_additionally_display = True
+            interval -= max(additional_list)
+        else:
+            can_additionally_display = False
+
+        interval_part = interval / display_frequency if display_frequency else interval
+
+        # Structure of all time interval like this
+        # [__.__, __.__, __.__, __.__, *additional_time, _time_leaving]
+        # where . is time to display
+
+        self.secs_to_display.append((interval_part // 2).total_seconds())
+        for part in range(display_frequency - 1):
+            self.secs_to_display.append(interval_part.total_seconds())
+        self.secs_to_display.append((interval_part // 2).total_seconds())
+
+        time_to_display = self._time_reservation_open
+        for interval_part_secs in self.secs_to_display:
+            time_to_display += timedelta(seconds=interval_part_secs)
+            str_time = time_to_display.strftime('%H:%M')
+            self.time_to_display.append(str_time)
+
+        # Add additional time to display
+        if can_additionally_display:
+            for additional_time in additional_list:
+                time_to_display = self._time_leaving - additional_time
+                str_time = time_to_display.strftime('%H:%M')
+                self.time_to_display.append(str_time)
+                self.secs_to_display.append(additional_time.total_seconds())
+
+        # Add display at time leaving
+        self.time_to_display.append(self._time_leaving.strftime('%H:%M'))
+        # Remove duplicate items from list
+        self.time_to_display = list(dict.fromkeys(self.time_to_display))
+
+    def _is_time_to_notify(self):
+        if sum(self.secs_to_display[1:]) < self.NOTIFY_BEFORE_LEAVING.total_seconds() and not self.is_notified:
+            return True
+        else:
+            return False
+
+    def secs_to_notify(self) -> float or None:
+        if self._is_time_to_notify():
+            return sum(self.secs_to_display) - self.NOTIFY_BEFORE_LEAVING.total_seconds()
 
 
 class Table:
@@ -182,7 +282,7 @@ class Table:
     def __init__(self, raid: Raid):
         self.raid = raid
         self.old_member_dict = self.raid.member_dict.copy()
-        self.title = f"{self.raid.captain_name} {self.raid.server} {self.raid.time_leaving}"
+        self.title = f"{self.raid.captain_name} {self.raid.server} {self.raid.raid_time.time_leaving}"
         self.table_path = None
 
     def get_width(self):
@@ -282,7 +382,7 @@ class Table:
         else:
             os.mkdir('images')
 
-        self.table_path = os.path.join('images', 'raid_') + str(self.raid.time_leaving) + ".png"
+        self.table_path = os.path.join('images', 'raid_') + str(self.raid.raid_time.time_leaving) + ".png"
         cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):

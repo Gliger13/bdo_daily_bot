@@ -32,13 +32,16 @@ class RaidSaveLoad(commands.Cog):
         with open(file_name, 'r', encoding='utf-8') as save_file:
             raid_information = json.load(save_file)
         old_raid = raid.Raid(
-            raid_information['captain_name'],
-            raid_information['server'],
-            raid_information['time_leaving'],
-            raid_information['time_reservation_open'],
-            int(raid_information['reservation_count'])
+            captain_name=raid_information['captain_name'],
+            server=raid_information['server'],
+            time_leaving=raid_information['time_leaving'],
+            time_reservation_open=raid_information['time_reservation_open'],
+            guild_id=raid_information['guild_id'],
+            channel_id=raid_information['channel_id'],
+            reservation_count=int(raid_information['reservation_count']),
         )
-        old_raid.time_to_display = raid_information['time_to_display']
+        old_raid.raid_time.time_to_display = raid_information['time_to_display']
+        old_raid.raid_time.secs_to_display = raid_information['secs_to_display']
         old_raid.member_dict.update(raid_information['members_dict'])
         old_raid.members_count = raid_information['members_count']
         self.raid_list.append(old_raid)

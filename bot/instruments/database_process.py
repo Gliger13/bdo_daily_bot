@@ -164,16 +164,16 @@ class Database(metaclass=MetaSingleton):
         if len(last_raids) == 3:
             last_raids.pop()
 
-        difference = tools.get_time_difference(raid.time_reservation_open, raid.time_leaving)
+        difference = tools.get_time_difference(raid.raid_time.time_reservation_open, raid.raid_time.time_leaving)
         if difference < 300:
             time_reservation_open = ''
         else:
-            time_reservation_open = raid.time_reservation_open
+            time_reservation_open = raid.raid_time.time_reservation_open
 
         last_raids.append(
             {
                 'server': raid.server,
-                'time_leaving': raid.time_leaving,
+                'time_leaving': raid.raid_time.time_leaving,
                 'time_reservation_open': time_reservation_open,
                 'reservation_count': raid.reservation_count,
             }
@@ -188,7 +188,7 @@ class Database(metaclass=MetaSingleton):
                     'drove_people': len(raid.member_dict)
                 },
                 '$set': {
-                    'last_created': datetime.datetime.now().date().__str__() + raid.time_leaving,
+                    'last_created': datetime.datetime.now().date().__str__() + raid.raid_time.time_leaving,
                     'last_raids': last_raids
                 },
             }
@@ -204,8 +204,7 @@ class Database(metaclass=MetaSingleton):
                 'nickname': {
                     '$in': user_list
                 }
-            }
-            ,
+            },
             {
                 'discord_id': 1,
                 '_id': 0,
