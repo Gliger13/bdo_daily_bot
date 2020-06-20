@@ -87,13 +87,18 @@ class Raid:
         # Calculation seconds interval
         seconds_left = (delta_end - delta_start if delta_end > delta_start
                         else (delta_end + delta_one_day) - delta_start).total_seconds()
+        # To notify that 7 minutes left
+        seconds_left -= 7 * 60 if seconds_left > 7 * 60 else 0
+
         half_inter = seconds_left // 2
         sec_to_display = [half_inter // 4 for i in range(4)]
         sec_to_display.append(half_inter // 2)
         sec_to_display.append(half_inter // 2)
+        sec_to_display.append(7 * 60)
         sec_to_display = list(map(int, sec_to_display))
         # Calculation hh:mm interval and set value to return
         sec_show = delta_start.total_seconds()
+
         for sec in sec_to_display:
             sec_show += sec
             hh = int(sec_show // 3600 if sec_show // 3600 < 24 else sec_show // 3600 - 24)
@@ -104,7 +109,6 @@ class Raid:
 
     def make_valid_time(self):
         # not good solution for problem but valid solution
-        # remake in Raid.method
         # Get time_reservation_open in sec:
         hours_open, minutes_open = tuple(map(int, self.time_reservation_open.split(':')))
         res_open = timedelta(hours=hours_open, minutes=minutes_open)

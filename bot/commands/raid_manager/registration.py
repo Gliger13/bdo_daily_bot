@@ -21,7 +21,7 @@ class RaidRegistration(commands.Cog):
         await check_input.validation(**locals())
 
         try:
-            self.database.reg_user(str(ctx.author), name)
+            self.database.reg_user(ctx.author.id, str(ctx.author), name)
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('✔')
         except database_process.UserExists:
@@ -35,7 +35,7 @@ class RaidRegistration(commands.Cog):
         # Checking correct input
         await check_input.validation(**locals())
 
-        self.database.rereg_user(str(ctx.author), name)
+        self.database.rereg_user(ctx.author.id, str(ctx.author), name)
 
         module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
         await ctx.message.add_reaction('✔')

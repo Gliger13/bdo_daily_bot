@@ -18,16 +18,6 @@ def get_time_difference(time_start, time_end) -> int:
     return (delta_end - delta_start).seconds
 
 
-def raid_table_in_time(time_leaving: str) -> iter:
-    """Return list time for table display"""
-    sec_left = get_sec_left(time_leaving)
-    half_sec_inter = sec_left // 2
-    show_time_list = [half_sec_inter//4 for i in range(4)]
-    show_time_list.append(half_sec_inter // 2)
-    show_time_list.append(half_sec_inter // 2)
-    return show_time_list
-
-
 def save_channels(channels: dict):
     with open('settings/correct_channels.json', 'w') as save_file:
         json.dump(channels, save_file)
@@ -56,5 +46,3 @@ def load_not_dell_msgs():
     if not not_dell_msgs:
         not_dell_msgs = {}
     return not_dell_msgs
-
-

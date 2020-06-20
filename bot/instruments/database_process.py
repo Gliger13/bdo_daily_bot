@@ -71,11 +71,12 @@ class Database(metaclass=MetaSingleton):
     def captain_collection(self):
         return self.database(settings.CAPTAIN_COLLECTION)
 
-    def reg_user(self, discord_user: str, nickname: str):
+    def reg_user(self, discord_id: int, discord_user: str, nickname: str):
         user_post = self.find_user_post(discord_user)
         if not user_post:
             post = {
                 'discord_user': str(discord_user),
+                'discord_id': discord_id,
                 'nickname': str(nickname),
                 'entries': 0,
             }
@@ -83,17 +84,18 @@ class Database(metaclass=MetaSingleton):
         else:
             raise UserExists('A user with these credentials already exists')
 
-    def rereg_user(self, discord_user: str, nickname: str):
+    def rereg_user(self, discord_id: int, discord_user: str, nickname: str):
         user_post = self.find_user_post(discord_user)
         if user_post:
             post = {
                 'discord_user': str(discord_user),
+                'discord_id': discord_id,
                 'nickname': str(nickname),
                 'entries': int(user_post['entries'])
             }
             self.user_collection.update(user_post, post)
         else:
-            self.reg_user(discord_user, nickname)
+            self.reg_user(discord_id, discord_user, nickname)
 
     def find_user_post(self, user: str) -> str or None:
         post = self.user_collection.find_one({
@@ -132,6 +134,11 @@ class Database(metaclass=MetaSingleton):
     def find_captain_post(self, user: str):
         return self.captain_collection.find_one({
                 'discord_user': user
+        })
+
+    def user_post_by_name(self, name: str):
+        return self.user_collection.find_one({
+            'nickname': name
         })
 
     def create_captain(self, user: str):
@@ -190,3 +197,18 @@ class Database(metaclass=MetaSingleton):
     def get_last_raids(self, user: str):
         captain_post = self.find_captain_post(user)
         return captain_post.get('last_raids')
+
+    def get_users_id(self, user_list):
+        post = self.user_collection.find(
+            {
+                'nickname': {
+                    '$in': user_list
+                }
+            }
+            ,
+            {
+                'discord_id': 1,
+                '_id': 0,
+            }
+        )
+        return list(post)
