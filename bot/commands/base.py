@@ -6,19 +6,16 @@ from discord.ext import commands
 
 from instruments import check_input, database_process
 from instruments import messages
-from instruments import tools
 
 module_logger = logging.getLogger('my_bot')
 
 
 class Base(commands.Cog):
-    database = database_process.Database()
+    database = database_process.DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
         self.bot.remove_command('help')  # To make custom help
-        self.correct_channels = tools.load_channels()
-        self.not_del_msgs = tools.load_not_dell_msgs()
 
     @commands.command(name='test', help='Команда для разработчика. Смысла не несёт')
     async def test(self, ctx: commands.context.Context):
@@ -90,7 +87,7 @@ class Base(commands.Cog):
         can_remove_in = {
             str(channel): channel.id
         }
-        self.database.update_settings(guild.id, str(guild), can_remove_in)
+        self.database.settings.update_settings(guild.id, str(guild), can_remove_in)
         await ctx.message.add_reaction('✔')
         await asyncio.sleep(10)
         await ctx.message.delete()
@@ -100,7 +97,7 @@ class Base(commands.Cog):
     async def rem_msgs(self, ctx: commands.context.Context, amount=100):
         guild = ctx.guild
         channel = ctx.channel
-        if self.database.can_delete_there(guild.id, channel.id):
+        if self.database.settings.can_delete_there(guild.id, channel.id):
             messages = []
             async for msg in channel.history(limit=int(amount)):
                 if not msg.pinned:
