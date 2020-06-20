@@ -76,6 +76,31 @@ class Statistics(commands.Cog):
         await ctx.send(embed=embed)
         module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
 
+    @commands.command(name='сервер_стат')
+    @commands.has_permissions(administrator=True, manage_messages=True)
+    async def get_guild_statistics(self, ctx: commands.context.Context):
+        guild = ctx.guild
+        user = ctx.author
+        guild_info = self.database.settings.find_settings_post(guild.id)
+        text_message = f"Нету данных"
+        if guild_info and guild_info.get('can_remove_in_channels'):
+            text_message = "Я могу чистить много сообщений разом на канале(ах):\n"
+            for channel_id, channel in guild_info.get('can_remove_in_channels').items():
+                text_message += f" - **{channel}**\n"
+
+        embed = discord.Embed(
+            title='Статистика сервера',
+            colour=discord.Colour.blue(),
+            description=text_message
+        )
+
+        embed.set_author(
+            name=str(guild),
+            icon_url=user.guild.icon_url,
+        )
+        await ctx.send(embed=embed)
+        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+
 
 def setup(bot):
     bot.add_cog(Statistics(bot))

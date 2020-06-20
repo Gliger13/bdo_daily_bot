@@ -165,7 +165,7 @@ class CaptainCollection(Database):
         return self._collection
 
     def create_captain(self, user: str):
-        captain_name = self.user.find_user(user)
+        captain_name = DatabaseManager().user.find_user(user)
         post = {
             "discord_user": user,
             "captain_name": captain_name,
@@ -255,28 +255,51 @@ class SettingsCollection(Database):
         self.collection.insert_one(new_post)
         return new_post
 
-    def update_settings(self, guild_id: int, guild: str, can_remove_in: dict):
-        post = self.collection(guild_id)
+    def update_settings(self, guild_id: int, guild: str, channel_id: int, channel: str):
+        post = self.find_settings_post(guild_id)
         if not post:
             post = self.new_settings(guild_id, guild)
-            allowed_channels = can_remove_in
+            allowed_channels = {
+                str(channel_id): channel
+            }
         else:
             allowed_channels = post.get('can_remove_in_channels')
-            allowed_channels.update(can_remove_in)
+            if allowed_channels:
+                allowed_channels.update({
+                    str(channel_id): channel
+                })
+            else:
+                allowed_channels = {
+                    str(channel_id): channel
+                }
 
         update_post = {
             '$set': {
                 'can_remove_in_channels': allowed_channels
             }
         }
-        self.collection.find_one_and_update(post, update_post)
+        self.collection.update_one(post, update_post)
 
     def can_delete_there(self, guild_id: int, channel_id: int):
         post = self.find_settings_post(guild_id)
         if not post:
             return False
-        if channel_id in post.get('can_remove_in_channels').values():
+        if str(channel_id) in post.get('can_remove_in_channels'):
             return True
+
+    def not_delete_there(self, guild_id: int, channel_id: int):
+        old_post = self.find_settings_post(guild_id)
+        if old_post:
+            allowed_channel = old_post.get('can_remove_in_channels').get(str(channel_id))
+            if allowed_channel:
+                new_allowed_channels = old_post['can_remove_in_channels'].copy()
+                new_allowed_channels.pop(str(channel_id))
+                new_post = {
+                    '$set': {
+                        'can_remove_in_channels': new_allowed_channels
+                    }
+                }
+                self.collection.update_one(old_post, new_post)
 
 
 class DatabaseManager:

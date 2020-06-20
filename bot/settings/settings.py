@@ -59,7 +59,7 @@ SETTINGS_COLLECTION = 'settings'
 #     "guild_id": ...,
 #     "guild": "...",
 #     "can_remove_in_channels": {
-#         "channel": channel_id,  # str: int
+#         "channel_id": "channel_name",  # str: str
 #     }
 # }
 
