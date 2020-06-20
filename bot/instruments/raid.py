@@ -14,9 +14,8 @@ class Raid:
     Create Raid Object that contain members amount of members and etc
 
     """
-    def __init__(self,
-                 captain_name, server, time_leaving, time_reservation_open, guild_id, channel_id, reservation_count=2
-                 ):
+    def __init__(self, captain_name, server, time_leaving, time_reservation_open,
+                 guild_id, channel_id, reservation_count=2):
         # Info about BDO raid
         self.captain_name = captain_name
         self.member_dict = {}
@@ -78,6 +77,16 @@ class Raid:
         else:
             self.table.update_table(self)
         return self.table.table_path
+
+    def end_work(self):
+        self.is_delete_raid = True
+        self.save_raid()
+        if self.collection_task:
+            self.collection_task.cancel()
+        if self.raid_time.notification_task:
+            self.raid_time.notification_task.cancel()
+        for task in self.task_list:
+            task.cancel()
 
     def save_raid(self):
         raid_information = {
