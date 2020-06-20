@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from commands.raid_manager import common
 from instruments import check_input, raid, messages, database_process, tools
+from instruments.raid import Raid
 
 module_logger = logging.getLogger('my_bot')
 
@@ -17,6 +18,25 @@ class RaidCreation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+    async def notify_about_leaving(self, current_raid: Raid, ctx: commands.context.Context):
+        member_msg = (
+            f"До отплытия капитана осталось **7 минут**!\n"
+            f"У тебя есть ещё время подготовиться, если ещё не готов."
+        )
+        users_list = self.database.get_users_id(list(current_raid.member_dict.keys()))
+        for member in users_list:
+            if member:
+                user = self.bot.get_user(member.get('discord_id'))
+                await user.send(member_msg)
+
+        captain_msg = (
+            f"Капитан, у вас отплытие через **7 минут**!\n"
+        )
+
+        captain_id = self.database.user_post_by_name(current_raid.captain_name).get('discord_id')
+        captain = self.bot.get_user(captain_id)
+        await captain.send(captain_msg)
 
     @commands.command(name='удали_рейд', help=messages.help_msg_remove_raid)
     @commands.has_role('Капитан')
@@ -44,6 +64,7 @@ class RaidCreation(commands.Cog):
 
         curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid and not curr_raid.is_delete_raid:
+            # Send msg about collection and save data
             collection_msg = (f"Капитан **{curr_raid.captain_name}** выплывает на морские ежедневки с Око Окиллы в "
                               f"**{curr_raid.time_leaving}** на канале **{curr_raid.server}**.\n"
                               f"Желающие присоединиться к кэпу должны нажать на :heart:.\n"
@@ -54,6 +75,7 @@ class RaidCreation(commands.Cog):
             curr_raid.guild = ctx.message.guild
             curr_raid.collection_msg = await ctx.send(collection_msg)
             await curr_raid.collection_msg.add_reaction('❤')
+
             # Show raid_table in time
             curr_raid.table_msg = await ctx.send('Тут будет таблица')
             if not curr_raid.time_to_display:
@@ -62,6 +84,7 @@ class RaidCreation(commands.Cog):
                 curr_raid.make_valid_time()
                 for tasks in curr_raid.task_list:
                     tasks.cancel()
+
             for index, (sec_left, time_display) in enumerate(curr_raid.time_to_display):
                 if not sec_left and not time_display:
                     continue
@@ -74,6 +97,11 @@ class RaidCreation(commands.Cog):
 
                 curr_raid.save_raid()
                 module_logger.info(f'Сохранение рейда {curr_raid.captain_name}')
+
+                # If last time interval left notify user and show table
+                if index == len(curr_raid.time_to_display) - 1:
+                    await self.notify_about_leaving(curr_raid, ctx)
+
                 sleep_task = asyncio.create_task(asyncio.sleep(sec_left))
                 curr_raid.task_list.append(sleep_task)
                 await sleep_task
