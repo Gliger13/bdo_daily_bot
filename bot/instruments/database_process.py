@@ -71,6 +71,10 @@ class Database(metaclass=MetaSingleton):
     def captain_collection(self):
         return self.database(settings.CAPTAIN_COLLECTION)
 
+    @property
+    def settings_collection(self):
+        return self.database(settings.SETTINGS_COLLECTION)
+
     def reg_user(self, discord_id: int, discord_user: str, nickname: str):
         user_post = self.find_user_post(discord_user)
         if not user_post:
@@ -211,3 +215,42 @@ class Database(metaclass=MetaSingleton):
             }
         )
         return list(post)
+
+    def find_settings_post(self, guild_id: int):
+        return self.settings_collection.find_one(
+            {
+                'guild_id': guild_id,
+            }
+        )
+
+    def new_settings(self, guild_id: int, guild: str):
+        new_post = {
+            'guild_id': guild_id,
+            'guild': guild
+        }
+        self.settings_collection.insert_one(new_post)
+        return new_post
+
+    def update_settings(self, guild_id: int, guild: str, can_remove_in: dict):
+        post = self.find_settings_post(guild_id)
+        if not post:
+            post = self.new_settings(guild_id, guild)
+            allowed_channels = can_remove_in
+        else:
+            allowed_channels = post.get('can_remove_in_channels')
+            allowed_channels.update(can_remove_in)
+
+        update_post = {
+            '$set': {
+                'can_remove_in_channels': allowed_channels
+            }
+        }
+        self.settings_collection.find_one_and_update(post, update_post)
+
+    def can_delete_there(self, guild_id: int, channel_id: int):
+        post = self.find_settings_post(guild_id)
+        if not post:
+            return False
+        if channel_id in post.get('can_remove_in_channels').values():
+            return True
+

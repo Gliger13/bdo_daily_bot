@@ -1,9 +1,10 @@
+import asyncio
 import logging
 
 import discord
 from discord.ext import commands
 
-from instruments import check_input
+from instruments import check_input, database_process
 from instruments import messages
 from instruments import tools
 
@@ -11,6 +12,8 @@ module_logger = logging.getLogger('my_bot')
 
 
 class Base(commands.Cog):
+    database = database_process.Database()
+
     def __init__(self, bot):
         self.bot = bot
         self.bot.remove_command('help')  # To make custom help
@@ -80,44 +83,27 @@ class Base(commands.Cog):
                 await ctx.message.add_reaction('❌')
 
     @commands.command(name='удалять_тут')
-    async def del_there(self, ctx):
-        if not ctx.author.id == 324528465682366468:
-            return
-        server_id = str(ctx.guild.id)
-        channel_id = ctx.channel.id
-        if server_id not in self.correct_channels:
-            self.correct_channels[server_id] = [channel_id]
-        elif channel_id not in self.correct_channels[server_id]:
-            self.correct_channels[server_id].append(channel_id)
-        else:
-            await ctx.message.delete()
-            return
-        tools.save_channels(self.correct_channels)
+    @commands.has_permissions(administrator=True, manage_messages=True)
+    async def del_there(self, ctx: commands.context.Context):
+        guild = ctx.guild
+        channel = ctx.channel
+        can_remove_in = {
+            str(channel): channel.id
+        }
+        self.database.update_settings(guild.id, str(guild), can_remove_in)
+        await ctx.message.add_reaction('✔')
+        await asyncio.sleep(10)
         await ctx.message.delete()
-
-    @commands.command(name='не_удаляй')
-    async def not_dell_msg(self, ctx, msg_id):
-        if not ctx.author.id == 324528465682366468:
-            return
-        msg_id = int(msg_id)
-        server_id = str(ctx.guild.id)
-        if server_id not in self.not_del_msgs:
-            self.not_del_msgs[server_id] = [msg_id]
-        elif msg_id not in self.not_del_msgs[server_id]:
-            self.not_del_msgs[server_id].append(msg_id)
-        else:
-            return
-        tools.save_not_dell_msgs(self.not_del_msgs)
 
     @commands.command(name='очисти_чат', help=messages.help_msg_rem_msgs)
     @commands.has_role('Капитан')
-    async def rem_msgs(self, ctx, amount=100):
-        server = str(ctx.guild.id)
-        channel = ctx.message.channel
-        if self.correct_channels.get(server) and channel.id in self.correct_channels[server]:
+    async def rem_msgs(self, ctx: commands.context.Context, amount=100):
+        guild = ctx.guild
+        channel = ctx.channel
+        if self.database.can_delete_there(guild.id, channel.id):
             messages = []
             async for msg in channel.history(limit=int(amount)):
-                if not self.not_del_msgs.get(server) or msg.id not in self.not_del_msgs[server]:
+                if not msg.pinned:
                     messages.append(msg)
             await channel.delete_messages(messages)
             module_logger.info(f'{ctx.author} успешно ввёл команду {ctx.message.content}')

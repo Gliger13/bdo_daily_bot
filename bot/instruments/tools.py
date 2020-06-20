@@ -16,33 +16,3 @@ def get_time_difference(time_start, time_end) -> int:
     delta_start = datetime.strptime(time_start, '%H:%M')
     delta_end = datetime.strptime(time_end, '%H:%M')
     return (delta_end - delta_start).seconds
-
-
-def save_channels(channels: dict):
-    with open('settings/correct_channels.json', 'w') as save_file:
-        json.dump(channels, save_file)
-
-
-def save_not_dell_msgs(msgs: dict):
-    with open('settings/not_dell_msgs.json', 'w') as save_file:
-        json.dump(msgs, save_file)
-
-
-def load_channels():
-    if not os.path.exists('settings/correct_channels.json'):
-        return {}
-    with open('settings/correct_channels.json', 'r') as load_file:
-        channels = json.load(load_file)
-    if not channels:
-        return {}
-    return channels
-
-
-def load_not_dell_msgs():
-    if not os.path.exists('settings/not_dell_msgs.json'):
-        return {}
-    with open('settings/not_dell_msgs.json', 'r') as load_file:
-        not_dell_msgs = json.load(load_file)
-    if not not_dell_msgs:
-        not_dell_msgs = {}
-    return not_dell_msgs

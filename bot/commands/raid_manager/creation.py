@@ -54,13 +54,7 @@ class RaidCreation(commands.Cog):
 
         curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid:
-            curr_raid.is_delete_raid = True
-            if curr_raid.raid_time.notification_task:
-                curr_raid.raid_time.notification_task.cancel()
-            if curr_raid.collection_task:
-                curr_raid.collection_task.cancel()
-            for task in curr_raid.task_list:
-                task.cancel()
+            curr_raid.end_work()
             self.raid_list.remove(curr_raid)
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('✔')

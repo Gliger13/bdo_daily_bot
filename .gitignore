@@ -15,8 +15,6 @@ __pycache__/
 bot/saves/
 bot/images/
 bot/settings/logs.log
-bot/settings/not_dell_msgs.json
-bot/settings/correct_channels.json
 
 # Secrets
 bot/settings/secrets.py
