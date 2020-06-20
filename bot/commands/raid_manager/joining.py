@@ -42,8 +42,9 @@ class RaidJoining(commands.Cog):
                                 msg_success = (
                                     f"**Привет!**\n"
                                     f"Ты попал на морские ежедневки к капитану **{curr_raid.captain_name}**"
-                                    f" на сервере **{curr_raid.server}**.\nОтплытие с Ока Окиллы"
-                                    f" в **{curr_raid.time_leaving}**.\nОб сборе рейда обычно пишут за 5 - 10 минут "
+                                    f" на сервере **{curr_raid.server}**.\n"
+                                    f"Отплытие с Ока Окиллы в **{curr_raid.raid_time.time_leaving}**.\n"
+                                    f"Об сборе рейда обычно пишут за 5 - 10 минут "
                                     f"до отплытия. Если информации нету, то пиши на"
                                     f" фамилию капитана **{curr_raid.captain_name}**.")
                                 curr_raid += str(nickname)

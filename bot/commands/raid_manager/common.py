@@ -32,7 +32,7 @@ def find_raid(
     for some_raid in raids:
         if ignore_channels or some_raid.guild_id == guild_id and some_raid.channel_id == channel_id:
             if captain_name and time_leaving:
-                if some_raid.captain_name == captain_name and some_raid.time_leaving == time_leaving:
+                if some_raid.captain_name == captain_name and some_raid.raid_time.time_leaving == time_leaving:
                     raids_found.append(some_raid)
                     break
             else:
