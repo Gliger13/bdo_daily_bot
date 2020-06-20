@@ -9,7 +9,7 @@ module_logger = logging.getLogger('my_bot')
 
 
 class Statistics(commands.Cog):
-    database = database_process.Database()
+    database = database_process.DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
@@ -17,8 +17,8 @@ class Statistics(commands.Cog):
     @commands.command(name='стат')
     async def get_user_statistics(self, ctx: commands.context.Context):
         user = ctx.author
-        user_info = self.database.find_user_post(str(user))
-        captain_info = self.database.find_captain_post(str(user))
+        user_info = self.database.user.find_user_post(str(user))
+        captain_info = self.database.captain.find_captain_post(str(user))
         text_message = f"Нету данных"
         if user_info:
             if captain_info and captain_info.get('raids_created'):
@@ -73,7 +73,7 @@ class Statistics(commands.Cog):
             name=str(user),
             icon_url=user.avatar_url,
         )
-        await user.send(embed=embed)
+        await ctx.send(embed=embed)
         module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
 
 

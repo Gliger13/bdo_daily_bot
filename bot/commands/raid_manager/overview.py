@@ -10,7 +10,7 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidOverview(commands.Cog):
-    database = database_process.Database()
+    database = database_process.DatabaseManager()
     raid_list = common.Raids.active_raids
 
     def __init__(self, bot):

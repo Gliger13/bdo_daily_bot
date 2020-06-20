@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-import json
-import os
 
 
 def get_sec_left(time_end: str) -> int:

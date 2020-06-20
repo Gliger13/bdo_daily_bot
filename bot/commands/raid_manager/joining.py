@@ -10,7 +10,7 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidJoining(commands.Cog):
-    database = database_process.Database()
+    database = database_process.DatabaseManager()
     raid_list = common.Raids.active_raids
 
     def __init__(self, bot):
@@ -31,7 +31,7 @@ class RaidJoining(commands.Cog):
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
                         curr_raid.guild == collection_msg.guild):
-                    nickname = self.database.find_user(str(user))
+                    nickname = self.database.user.find_user(str(user))
                     if nickname:  # if find user in data base
                         if curr_raid.member_dict.get(nickname):
                             await user.send(messages.msg_fail1)
@@ -48,7 +48,7 @@ class RaidJoining(commands.Cog):
                                     f"до отплытия. Если информации нету, то пиши на"
                                     f" фамилию капитана **{curr_raid.captain_name}**.")
                                 curr_raid += str(nickname)
-                                self.database.user_joined_raid(str(user))
+                                self.database.user.user_joined_raid(str(user))
                                 module_logger.info(f'{user} попал в рейд к кэпу {curr_raid.captain_name}')
                                 await user.send(msg_success)
                                 await RaidJoining.update_info(curr_raid)
@@ -69,14 +69,14 @@ class RaidJoining(commands.Cog):
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
                         and curr_raid.guild == collection_msg.guild):
-                    nickname = self.database.find_user(str(user))
+                    nickname = self.database.user.find_user(str(user))
                     if nickname:
                         if curr_raid.member_dict.get(nickname):
                             msg_remove = (
                                 f"Я тебя удалил из списка на ежедневки с капитаном **{curr_raid.captain_name}**"
                             )
                             curr_raid -= str(nickname)
-                            self.database.user_leave_raid(str(user))
+                            self.database.user.user_leave_raid(str(user))
                             module_logger.info(f'{user} убрал себя из рейда кэпа {curr_raid.captain_name}')
                             await user.send(msg_remove)
                             await RaidJoining.update_info(curr_raid)

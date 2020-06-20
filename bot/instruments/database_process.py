@@ -45,7 +45,6 @@ class Database(metaclass=MetaSingleton):
     """
     _connection = None
     _cluster = None
-    _databases = {}
 
     def _connect(self):
         if not self._connection:
@@ -54,26 +53,23 @@ class Database(metaclass=MetaSingleton):
             module_logger.debug('База данных успешно загружена')
         return self._cluster
 
-    def database(self, db_name):
-        cluster = self._connect()
-        if db_name in self._databases:
-            return self._databases[db_name]
-        else:
-            db = cluster[db_name]
-            self._databases[db_name] = db
-        return db
+    @property
+    def database(self):
+        return self._connect()
+
+
+class UserCollection(Database):
+    _collection = None
+    _connection = None
+
+    def __new__(cls, *args, **kwargs):
+        return super(Database, cls).__new__(cls, *args, **kwargs)
 
     @property
-    def user_collection(self):
-        return self.database(settings.USER_COLLECTION)
-
-    @property
-    def captain_collection(self):
-        return self.database(settings.CAPTAIN_COLLECTION)
-
-    @property
-    def settings_collection(self):
-        return self.database(settings.SETTINGS_COLLECTION)
+    def collection(self):
+        if not self._connection:
+            self._collection = self.database[settings.USER_COLLECTION]
+        return self._collection
 
     def reg_user(self, discord_id: int, discord_user: str, nickname: str):
         user_post = self.find_user_post(discord_user)
@@ -84,7 +80,7 @@ class Database(metaclass=MetaSingleton):
                 'nickname': str(nickname),
                 'entries': 0,
             }
-            self.user_collection.insert_one(post)
+            self.collection.insert_one(post)
         else:
             raise UserExists('A user with these credentials already exists')
 
@@ -97,12 +93,12 @@ class Database(metaclass=MetaSingleton):
                 'nickname': str(nickname),
                 'entries': int(user_post['entries'])
             }
-            self.user_collection.update(user_post, post)
+            self.collection.update(user_post, post)
         else:
             self.reg_user(discord_id, discord_user, nickname)
 
     def find_user_post(self, user: str) -> str or None:
-        post = self.user_collection.find_one({
+        post = self.collection.find_one({
             "discord_user": str(user)
         })
         return post
@@ -112,7 +108,7 @@ class Database(metaclass=MetaSingleton):
         return post['nickname'] if post else None
 
     def user_joined_raid(self, user: str):
-        self.user_collection.find_one_and_update(
+        self.collection.find_one_and_update(
             {
                 'discord_user': str(user)
             },
@@ -124,7 +120,7 @@ class Database(metaclass=MetaSingleton):
         )
 
     def user_leave_raid(self, user: str):
-        self.user_collection.find_one_and_update(
+        self.collection.find_one_and_update(
             {
                 'discord_user': str(user)
             },
@@ -135,18 +131,41 @@ class Database(metaclass=MetaSingleton):
             }
         )
 
-    def find_captain_post(self, user: str):
-        return self.captain_collection.find_one({
-                'discord_user': user
-        })
-
     def user_post_by_name(self, name: str):
-        return self.user_collection.find_one({
+        return self.collection.find_one({
             'nickname': name
         })
 
+    def get_users_id(self, user_list):
+        post = self.collection.find(
+            {
+                'nickname': {
+                    '$in': user_list
+                }
+            },
+            {
+                'discord_id': 1,
+                '_id': 0,
+            }
+        )
+        return list(post)
+
+
+class CaptainCollection(Database):
+    _collection = None
+    _connection = None
+
+    def __new__(cls, *args, **kwargs):
+        return super(Database, cls).__new__(cls, *args, **kwargs)
+
+    @property
+    def collection(self):
+        if not self._connection:
+            self._collection = self.database[settings.CAPTAIN_COLLECTION]
+        return self._collection
+
     def create_captain(self, user: str):
-        captain_name = self.find_user(user)
+        captain_name = self.user.find_user(user)
         post = {
             "discord_user": user,
             "captain_name": captain_name,
@@ -155,7 +174,7 @@ class Database(metaclass=MetaSingleton):
             "last_created": datetime.datetime.now().__str__(),
             "last_raids": []
         }
-        self.captain_collection.insert_one(post)
+        self.collection.insert_one(post)
         return post
 
     def update_captain(self, user: str, raid: Raid):
@@ -182,7 +201,7 @@ class Database(metaclass=MetaSingleton):
                 'reservation_count': raid.reservation_count,
             }
         )
-        self.captain_collection.find_one_and_update(
+        self.collection.find_one_and_update(
             {
                 'discord_user': user
             },
@@ -198,26 +217,31 @@ class Database(metaclass=MetaSingleton):
             }
         )
 
+    def find_captain_post(self, user: str):
+        return self.collection.find_one({
+                'discord_user': user
+        })
+
     def get_last_raids(self, user: str):
         captain_post = self.find_captain_post(user)
         return captain_post.get('last_raids')
 
-    def get_users_id(self, user_list):
-        post = self.user_collection.find(
-            {
-                'nickname': {
-                    '$in': user_list
-                }
-            },
-            {
-                'discord_id': 1,
-                '_id': 0,
-            }
-        )
-        return list(post)
+
+class SettingsCollection(Database):
+    _collection = None
+    _connection = None
+
+    def __new__(cls, *args, **kwargs):
+        return super(Database, cls).__new__(cls, *args, **kwargs)
+
+    @property
+    def collection(self):
+        if not self._connection:
+            self._collection = self.database[settings.SETTINGS_COLLECTION]
+        return self._collection
 
     def find_settings_post(self, guild_id: int):
-        return self.settings_collection.find_one(
+        return self.collection.find_one(
             {
                 'guild_id': guild_id,
             }
@@ -228,11 +252,11 @@ class Database(metaclass=MetaSingleton):
             'guild_id': guild_id,
             'guild': guild
         }
-        self.settings_collection.insert_one(new_post)
+        self.collection.insert_one(new_post)
         return new_post
 
     def update_settings(self, guild_id: int, guild: str, can_remove_in: dict):
-        post = self.find_settings_post(guild_id)
+        post = self.collection(guild_id)
         if not post:
             post = self.new_settings(guild_id, guild)
             allowed_channels = can_remove_in
@@ -245,7 +269,7 @@ class Database(metaclass=MetaSingleton):
                 'can_remove_in_channels': allowed_channels
             }
         }
-        self.settings_collection.find_one_and_update(post, update_post)
+        self.collection.find_one_and_update(post, update_post)
 
     def can_delete_there(self, guild_id: int, channel_id: int):
         post = self.find_settings_post(guild_id)
@@ -254,3 +278,9 @@ class Database(metaclass=MetaSingleton):
         if channel_id in post.get('can_remove_in_channels').values():
             return True
 
+
+class DatabaseManager:
+    def __init__(self):
+        self.user = UserCollection()
+        self.captain = CaptainCollection()
+        self.settings = SettingsCollection()

@@ -13,7 +13,7 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidCreation(commands.Cog):
-    database = database_process.Database()
+    database = database_process.DatabaseManager()
     raid_list = common.Raids.active_raids
 
     def __init__(self, bot):
@@ -32,7 +32,7 @@ class RaidCreation(commands.Cog):
             f"До отплытия капитана осталось **7 минут**!\n"
             f"У тебя есть ещё время подготовиться, если ещё не готов."
         )
-        users_list = self.database.get_users_id(list(current_raid.member_dict.keys()))
+        users_list = self.database.user.get_users_id(list(current_raid.member_dict.keys()))
         for member in users_list:
             if member:
                 user = self.bot.get_user(member.get('discord_id'))
@@ -42,7 +42,7 @@ class RaidCreation(commands.Cog):
             f"Капитан, у вас отплытие через **7 минут**!\n"
         )
 
-        captain_id = self.database.user_post_by_name(current_raid.captain_name).get('discord_id')
+        captain_id = self.database.user.user_post_by_name(current_raid.captain_name).get('discord_id')
         captain = self.bot.get_user(captain_id)
         await captain.send(captain_msg)
 
@@ -111,7 +111,7 @@ class RaidCreation(commands.Cog):
                 curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table_path()))
                 curr_raid.raid_time.remove_previous_time()
 
-            self.database.update_captain(str(ctx.author), curr_raid)
+            self.database.captain.update_captain(str(ctx.author), curr_raid)
 
             await ctx.send(f"Рейд на {curr_raid.server} с капитаном {curr_raid.captain_name} уже уплыли на ежедневки")
             await self.remove_raid(ctx, captain_name, time_leaving)
@@ -125,9 +125,9 @@ class RaidCreation(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
         # Check captain exists
-        captain_post = self.database.find_captain_post(str(ctx.author))
+        captain_post = self.database.captain.find_captain_post(str(ctx.author))
         if not captain_post:
-            self.database.create_captain(str(ctx.author))
+            self.database.captain.create_captain(str(ctx.author))
 
         if not time_reservation_open:
             current_hour, current_minute = map(int, time.ctime()[11:16].split(':'))
@@ -172,7 +172,7 @@ class RaidCreation(commands.Cog):
         }
 
         user = str(ctx.author)
-        captain_post = self.database.find_captain_post(user)
+        captain_post = self.database.captain.find_captain_post(user)
         if not captain_post:
             await ctx.message.add_reaction('❌')
             await ctx.author.send(
