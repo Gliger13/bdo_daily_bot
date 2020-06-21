@@ -17,17 +17,32 @@ class RaidOverview(commands.Cog):
         self.bot = bot
 
     @commands.command(name='покажи_рейды', help=help_messages.show_raids)
-    async def show_raids(self, ctx: commands.context.Context):
+    async def show_raids(self, ctx: commands.context.Context, show_all=''):
         module_logger.info(f'{ctx.author} использовал команду {ctx.message.content}')
-        if self.raid_list:
-            msg_of_raid = "В данный момент собирают рейды:\n"
-            for curr_raid in self.raid_list:
-                msg_of_raid += (f" - Капитан **{curr_raid.captain_name}** на канале **{curr_raid.server}**"
-                                f" выплывает в **{curr_raid.time_leaving}**.\n")
-            await ctx.send(msg_of_raid)
-        else:
-            msg_no_raids = "В данный момент никто не собирает рейд, или собирают, но не через меня :cry:"
-            await ctx.send(msg_no_raids)
+        if not show_all:
+            if self.raid_list:
+                msg_of_raid = "В данный момент собирают рейды:\n"
+                for curr_raid in self.raid_list:
+                    msg_of_raid += (
+                        f"{str(ctx.channel)} - капитан **{curr_raid.captain_name}** на канале **{curr_raid.server}**"
+                        f" выплывает в **{curr_raid.time_leaving}**.\n"
+                    )
+                await ctx.send(msg_of_raid)
+            else:
+                msg_no_raids = "В данный момент никто здесь не собирает рейды, или собирают, но не через меня :cry:"
+                await ctx.send(msg_no_raids)
+        elif show_all:
+            if self.raid_list:
+                msg_of_raid = "В данный момент собирают рейды:\n"
+                for curr_raid in self.raid_list:
+                    msg_of_raid += (
+                        f" {str(ctx.guild)}/{str(ctx.channel)} - капитан **{curr_raid.captain_name}**"
+                        f" выплывает в **{curr_raid.time_leaving}**.\n"
+                    )
+                await ctx.send(msg_of_raid)
+            else:
+                msg_no_raids = "В данный момент никто не собирает рейд, или собирают, но не через меня :cry:"
+                await ctx.send(msg_no_raids)
 
     @commands.command(name='покажи_состав', help=help_messages.show_text_raids)
     @commands.has_role('Капитан')
