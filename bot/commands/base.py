@@ -24,6 +24,45 @@ class Base(commands.Cog):
         await ctx.message.add_reaction('❌')
         await ctx.message.add_reaction('✔')
 
+    @commands.command(name='pvp')
+    @commands.has_role('Капитан')
+    async def pvp(self, ctx):
+        msg_pvp = await ctx.send('Если хочешь для себя открыть PVP контент, то нажми на ⚔️️')
+        role = discord.utils.get(ctx.guild.roles, name="PVP")
+        await msg_pvp.add_reaction('⚔️')
+
+        def check(reaction, user):
+            return str(reaction.emoji) == '⚔️'
+
+        def create_task_reaction_add():
+            add_reaction_task = asyncio.create_task(
+                self.bot.wait_for('reaction_add', check=check)
+            )
+            add_reaction_task.set_name('reaction_add')
+            return add_reaction_task
+
+        def create_task_reaction_remove():
+            remove_reaction_task = asyncio.create_task(
+                self.bot.wait_for('reaction_remove', check=check)
+            )
+            remove_reaction_task.set_name('reaction_remove')
+            return remove_reaction_task
+
+        while True:
+            pending_tasks = [
+                create_task_reaction_add(),
+                create_task_reaction_remove(),
+            ]
+            done_tasks, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+            for task in done_tasks:
+                reaction, user = task.result()
+                if task.get_name() == 'reaction_add':
+                    await user.add_roles(role)
+                elif task.get_name() == 'reaction_remove':
+                    await user.remove_roles(role)
+            for task in pending_tasks:
+                task.cancel()
+
     async def help_command(self, ctx, command):
         command = self.bot.get_command(command)
         if command:
