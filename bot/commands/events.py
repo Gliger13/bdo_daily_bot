@@ -1,13 +1,15 @@
 import logging
-import discord
-from instruments import messages
 
+import discord
 from discord.ext import commands
+
+from instruments import messages
 
 module_logger = logging.getLogger('my_bot')
 
 
 class Events(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
         self.is_bot_ready = False
@@ -20,26 +22,46 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         if not self.is_bot_ready:
-            module_logger.info('Бот успешно запущен!')
+            module_logger.info('Бот начал свою работу')
             self.is_bot_ready = True
         else:
             critical_msg = (f"Бот был только что перезапущен. Смайлики в сообщении о сборе скорее всего не работают\n"
                             f"Так что нужно перезапустить все сообщения о сборе через !!сбор")
             module_logger.critical(critical_msg)
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game('www.pornhub.com'))
+        custom_status = 'Покоряем мир и людишек'
+        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}"
-        module_logger.info(log)
-        if isinstance(error, commands.errors.CheckFailure):
-            await ctx.message.add_reaction('⛔')  # &!!!!!!!!!!
+        base_log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. "
+        if isinstance(error, commands.errors.BadArgument):
+            log = base_log + str(error)
+            await ctx.message.add_reaction('❔')
+        elif isinstance(error, commands.errors.CheckFailure):
+            log = base_log + "Нет прав"
+            await ctx.message.add_reaction('⛔')
         elif isinstance(error, commands.errors.MissingRequiredArgument):
+            log = base_log + "Неправильные аргументы"
             await ctx.message.add_reaction('❔')
         elif isinstance(error, commands.errors.CommandNotFound):
+            log = base_log + "Команда не найдена"
             await ctx.message.add_reaction('❓')
         else:
-            print(error)
+            log = base_log + "????"
+            log += f'\n{error}'
+        module_logger.info(log)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        joining = self.bot.get_cog('RaidJoining')
+
+        await joining.raid_reaction_add(reaction, user)
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        joining = self.bot.get_cog('RaidJoining')
+
+        await joining.raid_reaction_remove(reaction, user)
 
 
 def setup(bot):
