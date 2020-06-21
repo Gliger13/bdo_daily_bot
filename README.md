@@ -27,7 +27,7 @@ Maximum number of members in the raid = 20 - _reserrvation count_.
 When a members successfully enters the raid, the number of remaining seats in the collection message is updated.
 Between the _reservation open_ and _time leaving_ the bot will at some interval send images of the raid composition table similar to this.
 
-![alt text](https://github.com/Gliger13/bdo_daily_bot/blob/update_2.0.0/readme_images/raid_example.png?raw=true)
+![alt text](https://github.com/Gliger13/bdo_daily_bot/blob/master/readme_images/raid_example.png?raw=true)
 
 - ```!!кэп``` - allows the user to create a raid from the past 3 raid by clicking on emoji.
 
