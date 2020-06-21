@@ -29,6 +29,7 @@ bot = commands.Bot(command_prefix=settings.PREFIX)
 
 bot.load_extension(f"commands.events")
 bot.load_extension(f"commands.base")
+bot.load_extension(f"commands.admin")
 bot.load_extension(f"commands.fun")
 bot.load_extension(f"commands.statistics")
 bot.load_extension(f"commands.raid_manager.creation")

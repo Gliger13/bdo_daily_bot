@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from commands.raid_manager import common
-from instruments import check_input, messages, database_process
+from instruments import check_input, help_messages, database_process
 
 module_logger = logging.getLogger('my_bot')
 
@@ -16,7 +16,7 @@ class RaidOverview(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='покажи_рейды', help=messages.help_msg_show_raids)
+    @commands.command(name='покажи_рейды', help=help_messages.show_raids)
     async def show_raids(self, ctx: commands.context.Context):
         module_logger.info(f'{ctx.author} использовал команду {ctx.message.content}')
         if self.raid_list:
@@ -29,7 +29,7 @@ class RaidOverview(commands.Cog):
             msg_no_raids = "В данный момент никто не собирает рейд, или собирают, но не через меня :cry:"
             await ctx.send(msg_no_raids)
 
-    @commands.command(name='покажи_состав', help=messages.help_msg_load_raid)
+    @commands.command(name='покажи_состав', help=help_messages.show_text_raids)
     @commands.has_role('Капитан')
     async def show_text_raids(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
@@ -37,6 +37,13 @@ class RaidOverview(commands.Cog):
 
         curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
+            text = curr_raid.table.create_text_table()
+            title = text.split('\n')[0]
+            embed = discord.Embed(
+                title=title,
+                colour=discord.Colour.blue(),
+                description=text[len(title) + 1:]
+            )
             await ctx.send(curr_raid.table.create_text_table())
             await ctx.message.add_reaction('✔')
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
@@ -44,7 +51,7 @@ class RaidOverview(commands.Cog):
             await ctx.message.add_reaction('❌')
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
 
-    @commands.command(name='покажи', help=messages.help_msg_show)
+    @commands.command(name='покажи', help=help_messages.show)
     @commands.has_role('Капитан')
     async def show(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments

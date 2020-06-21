@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 from commands.raid_manager import common
-from instruments import check_input, raid, messages, database_process, tools
+from instruments import check_input, raid, help_messages, database_process, tools
 from instruments.raid import Raid
 
 module_logger = logging.getLogger('my_bot')
@@ -46,7 +46,7 @@ class RaidCreation(commands.Cog):
         captain = self.bot.get_user(captain_id)
         await captain.send(captain_msg)
 
-    @commands.command(name='удали_рейд', help=messages.help_msg_remove_raid)
+    @commands.command(name='удали_рейд', help=help_messages.remove_raid)
     @commands.has_role('Капитан')
     async def remove_raid(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
@@ -62,7 +62,7 @@ class RaidCreation(commands.Cog):
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('❌')
 
-    @commands.command(name='сбор', help=messages.help_msg_collection)
+    @commands.command(name='сбор', help=help_messages.collection)
     @commands.has_role('Капитан')
     async def collection(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
@@ -118,7 +118,7 @@ class RaidCreation(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
-    @commands.command(name='капитан', help=messages.help_msg_captain)
+    @commands.command(name='капитан', help=help_messages.captain)
     @commands.has_role('Капитан')
     async def captain(self, ctx: commands.context.Context, captain_name: str, server: str,
                       time_leaving: str, time_reservation_open='', reservation_count=0):
@@ -163,7 +163,7 @@ class RaidCreation(commands.Cog):
         await sleep_task
         await self.collection(ctx, captain_name, time_leaving)
 
-    @commands.command(name='кэп', help=messages.help_msg_captain)
+    @commands.command(name='кэп', help=help_messages.cap)
     @commands.has_role('Капитан')
     async def cap(self, ctx: commands.context.Context):
         NUMBER_REACTIONS = {

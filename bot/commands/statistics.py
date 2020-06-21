@@ -3,7 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from instruments import database_process
+from instruments import database_process, help_messages
 
 module_logger = logging.getLogger('my_bot')
 
@@ -14,8 +14,8 @@ class Statistics(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='стат')
-    async def get_user_statistics(self, ctx: commands.context.Context):
+    @commands.command(name='стат', help=help_messages.user_statistics)
+    async def user_statistics(self, ctx: commands.context.Context):
         user = ctx.author
         user_info = self.database.user.find_user_post(str(user))
         captain_info = self.database.captain.find_captain_post(str(user))
@@ -76,9 +76,9 @@ class Statistics(commands.Cog):
         await ctx.send(embed=embed)
         module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
 
-    @commands.command(name='сервер_стат')
+    @commands.command(name='сервер_стат', help=help_messages.guild_statistics)
     @commands.has_permissions(administrator=True, manage_messages=True)
-    async def get_guild_statistics(self, ctx: commands.context.Context):
+    async def guild_statistics(self, ctx: commands.context.Context):
         guild = ctx.guild
         user = ctx.author
         guild_info = self.database.settings.find_settings_post(guild.id)

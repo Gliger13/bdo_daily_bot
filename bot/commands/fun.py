@@ -4,6 +4,8 @@ import random
 
 from discord.ext import commands
 
+from instruments import help_messages
+
 module_logger = logging.getLogger('my_bot')
 
 
@@ -12,21 +14,21 @@ class Fun(commands.Cog):
         self.bot = bot
         self.exit_status = 0
 
-    @commands.command(name='осуди_его', help='Бот начинает осуждать человека.')
+    @commands.command(name='осуди_его', help=help_messages.judge_him)
     @commands.has_role('Капитан')
-    async def msg_lol(self, ctx):
+    async def judge_him(self, ctx, username=''):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
-        bot_msg = await ctx.send("Я осуждаю его!")
+        bot_msg = await ctx.send(f"Я осуждаю {username}!")
         await asyncio.sleep(10)
         await bot_msg.edit(content='Фу таким быть')
         await asyncio.sleep(10)
-        await bot_msg.edit(content='Я осуждаю его')
+        await bot_msg.edit(content=f"Я осуждаю {username}!")
         await asyncio.sleep(10)
         await bot_msg.edit(content='Я печенька')
         await asyncio.sleep(10)
-        await bot_msg.edit(content='Я осуждаю его')
+        await bot_msg.edit(content=f"Я осуждаю {username}!")
 
-    @commands.command(name='где')
+    @commands.command(name='где', help=help_messages.where)
     @commands.has_role('Капитан')
     async def where(self, ctx, name: str):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
@@ -42,7 +44,7 @@ class Fun(commands.Cog):
         else:
             await ctx.send("В море наверное")
 
-    @commands.command(name='выполни_приказ')
+    @commands.command(name='выполни_приказ', help=help_messages.order)
     async def order(self, ctx, number: int):
         if number == 12:
             msg_under_leave = ("Гильдия моего создателя покинула этот альянс"
@@ -61,8 +63,8 @@ class Fun(commands.Cog):
                             await server.leave()
                             await ctx.send(f'Я покинул сервер {server.name}')
 
-    @commands.command(name='скажи')
-    async def order(self, ctx, server_id, channel_id, *text):
+    @commands.command(name='скажи', help=help_messages.say)
+    async def say(self, ctx, server_id, channel_id, *text):
         if not ctx.author.id == 324528465682366468:
             return
         server_id = int(server_id)

@@ -395,7 +395,7 @@ class Table:
         cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):
-        table = self.title
+        table = f"{self.title}\n"
         for name in self.raid.member_dict:
-            table += f"{name}\n"
+            table += f"**{name}**\n"
         return table

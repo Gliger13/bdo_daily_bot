@@ -3,7 +3,7 @@ import logging
 from discord.ext import commands
 
 from commands.raid_manager import common
-from instruments import messages, check_input, database_process
+from instruments import messages, help_messages, check_input, database_process
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
@@ -82,7 +82,7 @@ class RaidJoining(commands.Cog):
                             await RaidJoining.update_info(curr_raid)
                             break
 
-    @commands.command(name='бронь', help=messages.help_msg_reserve)
+    @commands.command(name='бронь', help=help_messages.reserve)
     @commands.has_role('Капитан')
     async def reserve(self, ctx: commands.context.Context, name: str, captain_name='', time_leaving=''):
         # Checking correct input
@@ -113,7 +113,7 @@ class RaidJoining(commands.Cog):
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('✔')
 
-    @commands.command(name='удали_бронь', help=messages.help_msg_remove_res)
+    @commands.command(name='удали_бронь', help=help_messages.remove_res)
     @commands.has_role('Капитан')
     async def remove_res(self, ctx: commands.context.Context, name: str):
         # Checking correct inputs arguments
