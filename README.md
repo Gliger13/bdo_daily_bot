@@ -17,7 +17,7 @@ Arguments with * are required
 
 **Create raid**
  - ```!!капитан *[captain_name] *[bdo_server] *[time_leaving] [reservation_open] [reservation_count]``` - Users with role 'Капитан' can create raid.
-     - *_captain name_ - this is the game surname of the person who will carry the raid.
+    - *_captain name_ - this is the game surname of the person who will carry the raid.
     -  *_bdo server_ - a raid will be organized on this server.
     - *_time leaving_ - the raid will be leaving at this time.
     - _reservation open_ - at this time users will be able to get into the raid.
@@ -28,6 +28,8 @@ When a members successfully enters the raid, the number of remaining seats in th
 Between the _reservation open_ and _time leaving_ the bot will at some interval send images of the raid composition table similar to this.
 
 ![alt text](https://github.com/Gliger13/bdo_daily_bot/blob/update_2.0.0/readme_images/raid_example.png?raw=true)
+
+- ```!!кэп``` - allows the user to create a raid from the past 3 raid by clicking on emoji.
 
 **Start collecting**
  - ```!!сбор *[captain_name] [time_leaving]``` - send a message of collection immediately.
@@ -53,25 +55,38 @@ To get into the raid using the reaction member need to register. Must entered on
 **Table**
  - ```!!покажи *[captain_name] [time_leaving]``` - The bot send the image of the raid structure table.
  - ```!!покажи_состав *[captain_name] [time_leaving]``` - Also the bot can send raid structure table in text format.
- - ```!!покажи_рейды``` - Show main information about all raids.
+ - ```!!покажи_рейды [all_guild='']``` - Show main information about all raids. Can show of all guilds.
 
 **Save/Load**
 The bot does auto-save the raid when it changes.
-- ```!!сохрани_рейд *[captain_name] [time_leaving]``` - Also the bot can save raid by command.
-- ```!!сохрани_рейды``` - Save all raids.
-- ```!!загрузи_рейд *[captain_name] *[time_leaving]``` - Load raid.
+ - ```!!сохрани_рейд *[captain_name] [time_leaving]``` - Also the bot can save raid by command.
+ - ```!!сохрани_рейды``` - Save all raids.
+ - ```!!загрузи_рейд *[captain_name] *[time_leaving]``` - Load raid.
+
+**Statistics**
+ - ```!!стат``` - Show statistics that the bot knows about user. 
+ - ```!!сервер_стат``` - Show statistics that the bot knows about user.
 
 ## Additional features
 
-- ```!!удалять_тут``` - Bot specify a channel where can remove messages.
-- ```!!очисти_чат``` - Remove last 100 messages in the channel.
+**Custom help**
+ - ```!!help```
+ 
+**Admin**
+ - ```!!удалять_тут``` - Bot specify a channel where can remove messages.
+ - ```!!не_удалять``` - Bot deny users use remove messages command in this channel.
+ - ```!!очисти_чат [n=100]``` - Remove last n messages in the channel.
 
+**Give/Remove role**
+ - ```!!pvp``` - bot send message with emodji. The bot give role 'pvp', if user click on emodji. 
 -----
 # Community
 
 If you want to ask a question or look at the work of the bot, then you can visit discord server
 
-<a href="https://discord.gg/95BgCbt"><img src="https://discordapp.com/api/guilds/669448016591060992/widget.png?style=banner2"></a>
+<a href="https://discord.gg/95BgCbt">
+    <img src="https://discordapp.com/api/guilds/669448016591060992/widget.png?style=banner2">
+</a>
 
 # Author
 
