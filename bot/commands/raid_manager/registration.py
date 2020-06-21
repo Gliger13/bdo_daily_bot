@@ -3,7 +3,7 @@ import logging
 from discord.ext import commands
 
 from commands.raid_manager import common
-from instruments import messages, check_input, database_process
+from instruments import help_messages, check_input, database_process
 
 module_logger = logging.getLogger('my_bot')
 
@@ -15,7 +15,7 @@ class RaidRegistration(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='рег', help=messages.help_msg_reg)
+    @commands.command(name='рег', help=help_messages.reg)
     async def reg(self, ctx: commands.context.Context, name: str):
         # Checking correct input
         await check_input.validation(**locals())
@@ -30,7 +30,7 @@ class RaidRegistration(commands.Cog):
                                   " Сейчас тапком в тебя кину! :sandal:. Иди и нажми на милое сердечко :heart:!")
             await ctx.message.add_reaction('❌')
 
-    @commands.command(name='перерег', help=messages.help_msg_rereg)
+    @commands.command(name='перерег', help=help_messages.rereg)
     async def rereg(self, ctx: commands.context.Context, name: str):
         # Checking correct input
         await check_input.validation(**locals())

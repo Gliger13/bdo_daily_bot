@@ -171,7 +171,7 @@ class CaptainCollection(Database):
             "captain_name": captain_name,
             "raids_created": 0,
             "drove_people": 0,
-            "last_created": datetime.datetime.now().__str__(),
+            "last_created": datetime.datetime.now().strftime('%H:%M %d.%m.%y'),
             "last_raids": []
         }
         self.collection.insert_one(post)
@@ -211,7 +211,7 @@ class CaptainCollection(Database):
                     'drove_people': len(raid.member_dict)
                 },
                 '$set': {
-                    'last_created': datetime.datetime.now().date().__str__() + raid.raid_time.time_leaving,
+                    'last_created': datetime.datetime.now().strftime('%H:%M %d.%m.%y'),
                     'last_raids': last_raids
                 },
             }

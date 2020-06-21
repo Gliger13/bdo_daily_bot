@@ -5,7 +5,7 @@ import os
 from discord.ext import commands
 
 from commands.raid_manager import common
-from instruments import check_input, raid, messages
+from instruments import check_input, raid, help_messages
 
 module_logger = logging.getLogger('my_bot')
 
@@ -16,7 +16,7 @@ class RaidSaveLoad(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='загрузи_рейд', help=messages.help_msg_load_raid)
+    @commands.command(name='загрузи_рейд', help=help_messages.load_raid)
     @commands.has_role('Капитан')
     async def load_raid(self, ctx: commands.context.Context, captain_name, time_leaving):
         # Checking correct input
@@ -48,7 +48,8 @@ class RaidSaveLoad(commands.Cog):
         module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
         await ctx.message.add_reaction('✔')
 
-    @commands.command(name='сохрани_рейды', help='сохраняет все рейды')
+    @commands.command(name='сохрани_рейды', help=help_messages.save_raids)
+    @commands.has_role('Капитан')
     async def save_raids(self, ctx: commands.context.Context):
         if self.raid_list:
             for some_raid in self.raid_list:
@@ -59,7 +60,8 @@ class RaidSaveLoad(commands.Cog):
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Не рейдов')
             await ctx.message.add_reaction('❌')
 
-    @commands.command(name='сохрани_рейд', help='сохраняет рейд')
+    @commands.command(name='сохрани_рейд', help=help_messages.save_raid)
+    @commands.has_role('Капитан')
     async def save_raid(self, ctx: commands.context.Context, captain_name: str, time_leaving=''):
         # Checking correct input
         await check_input.validation(**locals())
