@@ -10,11 +10,7 @@ def get_sec_left(time_end: str) -> int:
     return delta_left.seconds
 
 
-def raid_table_in_time(time_leaving: str) -> iter:
-    """Return list time for table display"""
-    sec_left = get_sec_left(time_leaving)
-    half_sec_inter = sec_left // 2
-    show_time_list = [half_sec_inter//4 for i in range(4)]
-    show_time_list.append(half_sec_inter // 2)
-    show_time_list.append(half_sec_inter // 2)
-    return show_time_list
+def get_time_difference(time_start, time_end) -> int:
+    delta_start = datetime.strptime(time_start, '%H:%M')
+    delta_end = datetime.strptime(time_end, '%H:%M')
+    return (delta_end - delta_start).seconds

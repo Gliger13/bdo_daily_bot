@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='DiscordBotBDO',
-    version='1.0.0',
+    version='2.0.0',
     packages=find_packages(),
     long_description=open(join(dirname(__file__), 'README.txt')).read(),
 )
