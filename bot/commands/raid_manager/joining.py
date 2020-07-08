@@ -25,9 +25,8 @@ class RaidJoining(commands.Cog):
         new_text_msg = old_text[:start_index] + edited_text + old_text[end_index:]
         await curr_raid.collection_msg.edit(content=new_text_msg)
 
-    async def raid_reaction_add(self, reaction, user):
-        collection_msg = reaction.message
-        if reaction.emoji == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
+    async def raid_reaction_add(self, collection_msg, emoji, user):
+        if str(emoji) == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
                         curr_raid.guild == collection_msg.guild):
@@ -63,9 +62,8 @@ class RaidJoining(commands.Cog):
                         await user.send(messages.msg_fail2)
                         break
 
-    async def raid_reaction_remove(self, reaction, user):
-        collection_msg = reaction.message
-        if reaction.emoji == '❤':
+    async def raid_reaction_remove(self, collection_msg, emoji, user):
+        if str(emoji) == '❤':
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
                         and curr_raid.guild == collection_msg.guild):
