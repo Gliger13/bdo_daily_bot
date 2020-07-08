@@ -153,10 +153,6 @@ class RaidTime:
         else:
             return []
 
-    def remove_previous_time(self):
-        self.time_to_display.pop(0)
-        self.secs_to_display.pop(0)
-
     @staticmethod
     def _clear_additional_time(time_list, interval_part):
         """
@@ -164,30 +160,49 @@ class RaidTime:
         """
         return [time for time in time_list if time < interval_part]
 
+    def secs_left_to_display(self):
+        hours_end, minutes_end = tuple(map(int, self.time_to_display.pop(0).split(':')))
+        time_start = datetime.now()
+        delta_start = timedelta(hours=time_start.hour, minutes=time_start.minute, seconds=time_start.second)
+        delta_end = timedelta(hours=hours_end, minutes=minutes_end)
+        delta_left = delta_end - delta_start
+        return delta_left.seconds
+
+    def make_time_list(self):
+        # Convert in timedelta
+        time_list = []
+        last_time = datetime.strptime(self.time_to_display[0], '%H:%M')
+        last_time = timedelta(hours=last_time.hour, minutes=last_time.minute)
+        for time_index, time in enumerate(self.time_to_display[1:]):
+            time = datetime.strptime(time, '%H:%M')
+            time = timedelta(hours=time.hour, minutes=time.minute)
+
+            if time < last_time:
+                for next_day_time in self.time_to_display[time_index + 1:]:
+                    some_time = datetime.strptime(next_day_time, '%H:%M')
+                    some_time = timedelta(hours=some_time.hour, minutes=some_time.minute)
+                    time_list.append(some_time + timedelta(days=1))
+                break
+            else:
+                time_list.append(time)
+
+            last_time = time
+        return time_list
+
     def validate_time(self):
         # Convert in timedelta
+        time_list = self.make_time_list()
+
         current_datetime = datetime.now()
         current_time = timedelta(hours=current_datetime.hour, minutes=current_datetime.minute)
 
         if current_time < timedelta(hours=self._time_reservation_open.hour, minutes=self._time_reservation_open.minute):
             current_time += timedelta(days=1)
 
-        # Convert in timedelta
-        last_time = datetime.strptime(self.time_to_display[0], '%H:%M')
-        last_time = timedelta(hours=last_time.hour, minutes=last_time.minute)
-
-        for time_index, time in enumerate(self.time_to_display[1:]):
-            # Convert in timedelta
-            time = datetime.strptime(time, '%H:%M')
-            time = timedelta(hours=time.hour, minutes=time.minute)
-
-            if last_time > time:
-                time += timedelta(days=1)
-            last_time = time
-            if not current_time > time:
-                self.time_to_display = self.time_to_display[time_index + 1:]
-                self.secs_to_display = self.secs_to_display[time_index + 1:]
-                break
+        for time_index, time in enumerate(time_list):
+            if current_time < time:
+                self.time_to_display = self.time_to_display[time_index:]
+                return
 
     def _set_intervals(self):
         display_frequency = self.DISPLAY_FREQUENCY
@@ -250,15 +265,18 @@ class RaidTime:
         # Remove duplicate items from list
         self.time_to_display = list(dict.fromkeys(self.time_to_display))
 
-    def _is_time_to_notify(self):
-        if sum(self.secs_to_display[1:]) < self.NOTIFY_BEFORE_LEAVING.total_seconds() and not self.is_notified:
-            return True
-        else:
-            return False
-
     def secs_to_notify(self) -> float or None:
-        if self._is_time_to_notify():
-            return sum(self.secs_to_display) - self.NOTIFY_BEFORE_LEAVING.total_seconds()
+        if not self.is_notified:
+            time_leaving = timedelta(hours=self._time_leaving.hour, minutes=self._time_leaving.minute)
+            current_time = datetime.now()
+            current_time = timedelta(hours=current_time.hour, minutes=current_time.minute)
+            if current_time > time_leaving:
+                time_leaving += timedelta(days=1)
+            secs_left_to_notify = (time_leaving - current_time - self.NOTIFY_BEFORE_LEAVING).total_seconds()
+            if secs_left_to_notify < 0:
+                return
+            else:
+                return secs_left_to_notify
 
 
 class Table:
@@ -295,13 +313,14 @@ class Table:
         self.table_path = None
 
     def get_width(self):
-        # 15 - 15px - offset the indent
-        title_width = Table.FONT.getsize(self.title)[0] + 15
+        title_width = Table.FONT.getsize(self.title)[0]
         if self.raid.member_dict:
             max_name = max(self.raid.member_dict)
             max_name_row_width = Table.NUMBER_SIZE_WIDTH + Table.FONT.getsize(max_name)[0]
-            return max(title_width - 10, max_name_row_width)
-        return title_width
+            # 15 - 15px - offset the indent
+            return max(title_width, max_name_row_width) + 15
+        # 15 - 15px - offset the indent
+        return title_width + 15
 
     def create_table(self):
         width = self.get_width()
