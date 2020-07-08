@@ -25,10 +25,17 @@ class Raids(metaclass=MetaSingleton):
 
 
 def find_raid(
-        guild_id: int, channel_id: int, captain_name: str, time_leaving: str, ignore_channels=False
+        guild_id: int, channel_id: int, captain_name='', time_leaving='', ignore_channels=False
 ) -> raid.Raid or None:
     raids_found = []
     raids = Raids().active_raids
+    # if require raids only by captain_name
+    if not captain_name:
+        for some_raid in raids:
+            if some_raid.captain_name == captain_name:
+                raids_found.append(some_raid)
+        return raids_found
+
     for some_raid in raids:
         if ignore_channels or some_raid.guild_id == guild_id and some_raid.channel_id == channel_id:
             if captain_name and time_leaving:
