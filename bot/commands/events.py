@@ -3,7 +3,8 @@ import logging
 import discord
 from discord.ext import commands
 
-from instruments import messages
+from instruments import messages, database_process
+from settings import settings
 
 module_logger = logging.getLogger('my_bot')
 
@@ -16,8 +17,9 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        module_logger.info(f'Новое тело появилось на лодке {member}')
-        await member.send(messages.hello_new_member)
+        if member.guild.id == settings.MAIN_GUILD_ID:
+            module_logger.info(f'Новое тело появилось на лодке {member}')
+            await member.send(messages.hello_new_member)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -51,17 +53,61 @@ class Events(commands.Cog):
             log += f'\n{error}'
         module_logger.info(log)
 
+    async def add_role_from_reaction(self, payload:discord.RawReactionActionEvent):
+        if (
+                payload.guild_id != settings.MAIN_GUILD_ID or
+                payload.message_id != settings.ROLE_MANAGER_MESSAGE_ID or
+                str(payload.emoji) not in settings.ROLE_EMOJI
+        ):
+            return
+        guild = self.bot.get_guild(payload.guild_id)
+        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[str(payload.emoji)])
+        if str(payload.emoji) == '🔑':
+            await payload.member.send(
+                '__**СТРОГО ДЛЯ ТЕХ, КОМУ 18+!**__\n'
+                'Если **тебе меньше 18 лет**, то прошу снова нажать на смайлик :key: в #welcome, чтобы '
+                'убрать не предназначенный вам контент.\n'
+                'Вы получили доступ к **NSFW** разделу. **NSFW** - **N**ot **S**uitable **F**or **W**umpus. '
+                'В данном случае **`клубничка`**\n'
+                '__**Запрещено и будет наказываться:**__\n'
+                ' - контент с несовершеннолетними,\n'
+                ' - лоликон, сётакон.\n'
+            )
+        await payload.member.add_roles(role)
+
+    async def remove_role_from_reaction(self, payload: discord.RawReactionActionEvent):
+        if (
+                payload.guild_id != settings.MAIN_GUILD_ID or
+                payload.message_id != settings.ROLE_MANAGER_MESSAGE_ID or
+                str(payload.emoji) not in settings.ROLE_EMOJI
+        ):
+            return
+        guild = self.bot.get_guild(payload.guild_id)
+        member = guild.get_member(payload.user_id)
+        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[str(payload.emoji)])
+        await member.remove_roles(role)
+
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        # Check if is reaction for get role
+        await self.add_role_from_reaction(payload)
+        # Check if is reaction for get in raid
         joining = self.bot.get_cog('RaidJoining')
-
-        await joining.raid_reaction_add(reaction, user)
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = self.bot.get_user(payload.user_id)
+        await joining.raid_reaction_add(message, payload.emoji, user)
 
     @commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        # Check if is reaction for get role
+        await self.remove_role_from_reaction(payload)
+        # Check if is reaction for get in raid
         joining = self.bot.get_cog('RaidJoining')
-
-        await joining.raid_reaction_remove(reaction, user)
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = self.bot.get_user(payload.user_id)
+        await joining.raid_reaction_remove(message, payload.emoji, user)
 
 
 def setup(bot):
