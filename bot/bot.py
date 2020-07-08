@@ -8,7 +8,8 @@ from discord.ext import commands
 from settings import settings
 
 # Uncomment this to use pyinstaller
-from commands import events, base, raid_manager, fun
+# from commands import events, base, admin, fun, statistics
+# from commands.raid_manager import creation, save_load, registration, joining, overview
 
 # Initialization logger
 from settings import logger
