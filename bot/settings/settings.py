@@ -3,7 +3,7 @@ from settings import secrets
 
 
 # Chose run mode. If False run production mode
-DEBUG = True
+DEBUG = False
 
 
 # ====================================================================================================
@@ -62,6 +62,18 @@ SETTINGS_COLLECTION = 'settings'
 #         "channel_id": "channel_name",  # str: str
 #     }
 # }
+
+# ====================================================================================================
+# Give role by clicking reaction
+
+MAIN_GUILD_ID = 726859545082855483
+ROLE_MANAGER_MESSAGE_ID = 727294713547325493
+ROLE_EMOJI = {
+    "PVP": '⚔️',
+    '⚔️': "PVP",
+    '🔑': "NSFW",
+    'NSFW': '🔑',
+}
 
 # ====================================================================================================
 

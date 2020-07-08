@@ -48,6 +48,18 @@ class Events(commands.Cog):
         elif isinstance(error, commands.errors.CommandNotFound):
             log = base_log + "Команда не найдена"
             await ctx.message.add_reaction('❓')
+        elif isinstance(error, commands.errors.PrivateMessageOnly):
+            log = base_log + "Команда только приватная"
+            await ctx.message.author.send('Введённая команда должна быть написана только в личные сообщения боту')
+            await ctx.message.add_reaction('❓')
+        elif isinstance(error, commands.errors.NoPrivateMessage):
+            log = base_log + "Команда должна быть не приватной"
+            await ctx.message.author.send('Введённая команда не должна быть написана в личные сообщения боту')
+            await ctx.message.add_reaction('❓')
+        elif isinstance(error, commands.errors.BotMissingPermissions):
+            log = base_log + "Бот не может выполнить команду. Нету прав."
+            await ctx.message.author.send(f'У бота нету необходимых прав, ему нужны {error.missing_perms}')
+            await ctx.message.add_reaction('❓')
         else:
             log = base_log + "????"
             log += f'\n{error}'
