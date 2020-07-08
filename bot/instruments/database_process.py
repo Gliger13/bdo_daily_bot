@@ -185,10 +185,10 @@ class CaptainCollection(Database):
         # update last raids
         last_raids = captain_post['last_raids']
         if len(last_raids) == 3:
-            last_raids.pop()
+            last_raids.pop(0)
 
         difference = tools.get_time_difference(raid.raid_time.time_reservation_open, raid.raid_time.time_leaving)
-        if difference < 300:
+        if difference < 70:
             time_reservation_open = ''
         else:
             time_reservation_open = raid.raid_time.time_reservation_open
@@ -278,7 +278,12 @@ class SettingsCollection(Database):
                 'can_remove_in_channels': allowed_channels
             }
         }
-        self.collection.update_one(post, update_post)
+        self.collection.find_one_and_update(
+            {
+                'guild_id': guild_id
+            },
+            update_post
+        )
 
     def can_delete_there(self, guild_id: int, channel_id: int):
         post = self.find_settings_post(guild_id)
