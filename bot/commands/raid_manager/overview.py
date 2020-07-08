@@ -23,11 +23,14 @@ class RaidOverview(commands.Cog):
             if self.raid_list:
                 msg_of_raid = "В данный момент собирают рейды:\n"
                 for curr_raid in self.raid_list:
-                    msg_of_raid += (
-                        f"{str(ctx.channel)} - капитан **{curr_raid.captain_name}** на канале **{curr_raid.server}**"
-                        f" выплывает в **{curr_raid.time_leaving}**.\n"
-                    )
-                await ctx.send(msg_of_raid)
+                    if ctx.guild.id == curr_raid.guild_id:
+                        channel_name = str(self.bot.get_channel(curr_raid.channel_id))
+                        msg_of_raid += (
+                            f"В текстовом канале **{channel_name}** - капитан **{curr_raid.captain_name}**"
+                            f" на канале **{curr_raid.server}**"
+                            f" выплывает в **{curr_raid.raid_time.time_leaving}**.\n"
+                        )
+                    await ctx.send(msg_of_raid)
             else:
                 msg_no_raids = "В данный момент никто здесь не собирает рейды, или собирают, но не через меня :cry:"
                 await ctx.send(msg_no_raids)
@@ -35,9 +38,11 @@ class RaidOverview(commands.Cog):
             if self.raid_list:
                 msg_of_raid = "В данный момент собирают рейды:\n"
                 for curr_raid in self.raid_list:
+                    guild_name = str(self.bot.get_guild(curr_raid.guild_id))
+                    channel_name = str(self.bot.get_channel(curr_raid.channel_id))
                     msg_of_raid += (
-                        f" {str(ctx.guild)}/{str(ctx.channel)} - капитан **{curr_raid.captain_name}**"
-                        f" выплывает в **{curr_raid.time_leaving}**.\n"
+                        f" **{guild_name}/{channel_name}** - капитан **{curr_raid.captain_name}**"
+                        f" выплывает в **{curr_raid.raid_time.time_leaving}**.\n"
                     )
                 await ctx.send(msg_of_raid)
             else:
