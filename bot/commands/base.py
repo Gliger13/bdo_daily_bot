@@ -206,7 +206,7 @@ class Base(commands.Cog):
             f"Бот был сделан **Gliger#7748** (Андрей).\n"
             f"Версия бота: **2.0.0**.\n"
             f"Сделан на Python, исходный код можно увидеть на https://github.com/Gliger13/bdo_daily_bot.\n"
-            f"Приглашение в Отряд Бартерят - https://discord.gg/msMnCaV"
+            f"Приглашение в Отряд Бартерят - https://discord.gg/VaEsRTc"
         )
         embed = discord.Embed(
             title='Автор',
