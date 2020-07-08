@@ -14,3 +14,25 @@ def get_time_difference(time_start, time_end) -> int:
     delta_start = datetime.strptime(time_start, '%H:%M')
     delta_end = datetime.strptime(time_end, '%H:%M')
     return (delta_end - delta_start).seconds
+
+
+def validate_time(time_to_display):
+    # Convert in timedelta
+    time_list = []
+    last_time = datetime.strptime(time_to_display[0], '%H:%M')
+    last_time = timedelta(hours=last_time.hour, minutes=last_time.minute)
+    for time_index, time in enumerate(time_to_display[1:]):
+        time = datetime.strptime(time, '%H:%M')
+        time = timedelta(hours=time.hour, minutes=time.minute)
+
+        if time < last_time:
+            for next_day_time in time_to_display[time_index + 1:]:
+                some_time = datetime.strptime(next_day_time, '%H:%M')
+                some_time = timedelta(hours=some_time.hour, minutes=some_time.minute)
+                time_list.append(some_time + timedelta(days=1))
+            break
+        else:
+            time_list.append(time)
+
+        last_time = time
+    return time_list
