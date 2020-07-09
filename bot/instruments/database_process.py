@@ -184,23 +184,39 @@ class CaptainCollection(Database):
 
         # update last raids
         last_raids = captain_post['last_raids']
-        if len(last_raids) == 3:
-            last_raids.pop(0)
 
+        # Get time normal time reservation open
         difference = tools.get_time_difference(raid.raid_time.time_reservation_open, raid.raid_time.time_leaving)
         if difference < 70:
             time_reservation_open = ''
         else:
             time_reservation_open = raid.raid_time.time_reservation_open
 
-        last_raids.append(
-            {
-                'server': raid.server,
-                'time_leaving': raid.raid_time.time_leaving,
-                'time_reservation_open': time_reservation_open,
-                'reservation_count': raid.reservation_count,
-            }
-        )
+        # is last raid with that credentials exists?
+        is_raid_exists = False
+        for last_raid in last_raids:
+            is_raid_exists = (
+                    last_raid['server'] == raid.server and
+                    last_raid['time_leaving'] == raid.raid_time.time_leaving and
+                    last_raid['time_reservation_open'] == time_reservation_open and
+                    last_raid['reservation_count'] == raid.reservation_count
+            )
+            if is_raid_exists:
+                break
+
+        if not is_raid_exists:
+            if len(last_raids) >= 3:
+                last_raids.pop(0)
+
+            last_raids.append(
+                {
+                    'server': raid.server,
+                    'time_leaving': raid.raid_time.time_leaving,
+                    'time_reservation_open': time_reservation_open,
+                    'reservation_count': raid.reservation_count,
+                }
+            )
+
         self.collection.find_one_and_update(
             {
                 'discord_user': user
