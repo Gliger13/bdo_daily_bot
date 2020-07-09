@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime, timedelta
 
 from discord.ext import commands
 
@@ -31,13 +32,25 @@ class Admin(commands.Cog):
         channel = ctx.channel
         if self.database.settings.can_delete_there(guild.id, channel.id):
             messages = []
+            msg_count = 0
             async for msg in channel.history(limit=int(amount)):
+                is_time_has_passed = datetime.now() - msg.created_at < timedelta(days=14)
+                if is_time_has_passed:
+                    await ctx.author.send(
+                        f'Я не могу очищать сообщения дальше, им больше 14 дней. Очищено {msg_count}/{amount}'
+                    )
+                    break
                 if not msg.pinned:
                     messages.append(msg)
+                    msg_count += 1
             await channel.delete_messages(messages)
             module_logger.info(f'{ctx.author} успешно ввёл команду {ctx.message.content}')
         else:
             await ctx.message.add_reaction('❌')
+            await ctx.author.send(
+                f'Я не могу удалять здесь сообщения. Воспользуйтесь командой `!!удалять_тут`, чтобы иметь возможность '
+                f'удалять сообщения в этом канале командой `!!очисти_тут`.'
+            )
             module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}. Плохой канал')
 
     @commands.command(name='не_удалять', help=help_messages.not_remove_there)
