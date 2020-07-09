@@ -85,7 +85,7 @@ The bot does auto-save the raid when it changes.
 If you want to ask a question or look at the work of the bot, then you can visit discord server
 
 <a href="https://discord.gg/VaEsRTc">
-    <img src="https://discordapp.com/api/guilds/669448016591060992/widget.png?style=banner2">
+    <img src="https://discordapp.com/api/guilds/726859545082855483/widget.png?style=banner2">
 </a>
 
 # Author
