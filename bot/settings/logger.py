@@ -1,4 +1,5 @@
 import logging
+import os
 
 from settings import settings
 
@@ -9,7 +10,7 @@ console_handler.setLevel(logging.INFO)
 console_format = logging.Formatter('%(asctime)s   %(message)s', "%H:%M:%S")
 console_handler.setFormatter(console_format)
 
-file_handler = logging.FileHandler('settings/logs.log')
+file_handler = logging.FileHandler(os.path.join('settings', 'logs.log'))
 file_format = logging.Formatter('[%(levelname)-8s] %(asctime)s   %(message)s')
 file_handler.setFormatter(file_format)
 
