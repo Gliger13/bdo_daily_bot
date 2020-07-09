@@ -60,6 +60,9 @@ class Events(commands.Cog):
             log = base_log + "Бот не может выполнить команду. Нету прав."
             await ctx.message.author.send(f'У бота нету необходимых прав, ему нужны {error.missing_perms}')
             await ctx.message.add_reaction('❓')
+        elif isinstance(error, commands.errors.UserInputError):
+            log = base_log + f"Неправильные аргументы. {error}"
+            await ctx.message.add_reaction('❓')
         else:
             log = base_log + "????"
             log += f'\n{error}'

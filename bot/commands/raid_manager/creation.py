@@ -151,12 +151,7 @@ class RaidCreation(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
 
-    @commands.command(name='капитан', help=help_messages.captain)
-    @commands.has_role('Капитан')
-    async def captain(self, ctx: commands.context.Context, captain_name: str, server: str,
-                      time_leaving: str, time_reservation_open='', reservation_count=0):
-        # Checking correct inputs arguments
-        await check_input.validation(**locals())
+    async def check_raid_exists(self, ctx, captain_name, time_leaving=''):
         # Check captain exists
         captain_post = self.database.captain.find_captain_post(str(ctx.author))
         if not captain_post:
@@ -172,9 +167,7 @@ class RaidCreation(commands.Cog):
                         "Используйте его или удалите его."
                     )
                     await ctx.message.add_reaction('❌')
-                    module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}.\n'
-                                       f'Такой рейд существует.')
-                    return
+                    raise commands.errors.UserInputError('Такой рейд уже существует.')
 
             active_raids = self.captain_raids_str(captain_name)
             message = await ctx.author.send(
@@ -190,12 +183,18 @@ class RaidCreation(commands.Cog):
             try:
                 reaction, user = await self.bot.wait_for('reaction_add', timeout=300.0, check=check)
             except asyncio.TimeoutError:
-                return
+                raise commands.errors.UserInputError('Капитан не ответил на вопрос о создании рейда')
             else:
                 if str(reaction.emoji) == '❌':
-                    module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}.\n'
-                                       f'Отказался создавать ещё один рейд.')
-                    return
+                    raise commands.errors.UserInputError('Капитан отказался создавать новый рейд')
+
+    @commands.command(name='капитан', help=help_messages.captain)
+    @commands.has_role('Капитан')
+    async def captain(self, ctx: commands.context.Context, captain_name: str, server: str,
+                      time_leaving: str, time_reservation_open='', reservation_count=0):
+        # Checking correct inputs arguments
+        await check_input.validation(**locals())
+        await self.check_raid_exists(ctx, captain_name, time_leaving)
 
         if not time_reservation_open:
             current_hour, current_minute = map(int, time.ctime()[11:16].split(':'))
@@ -241,6 +240,7 @@ class RaidCreation(commands.Cog):
 
         user = str(ctx.author)
         captain_post = self.database.captain.find_captain_post(user)
+
         if not captain_post:
             await ctx.message.add_reaction('❌')
             await ctx.author.send(
@@ -281,7 +281,7 @@ class RaidCreation(commands.Cog):
         else:
             user_choice = NUMBER_REACTIONS[str(reaction.emoji)]
             user_raid = last_raids[user_choice - 1]
-
+            await self.check_raid_exists(ctx, captain_post.get('captain_name'), user_raid.get('time_leaving'))
             module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
             await self.captain(
                 ctx,
