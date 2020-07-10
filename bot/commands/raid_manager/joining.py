@@ -29,7 +29,7 @@ class RaidJoining(commands.Cog):
         if str(emoji) == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
-                        curr_raid.guild == collection_msg.guild):
+                        curr_raid.guild_id == collection_msg.guild.id):
                     nickname = self.database.user.find_user(str(user))
                     if nickname:  # if find user in data base
                         if curr_raid.member_dict.get(nickname):
@@ -66,7 +66,7 @@ class RaidJoining(commands.Cog):
         if str(emoji) == '❤':
             for curr_raid in self.raid_list:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
-                        and curr_raid.guild == collection_msg.guild):
+                        and curr_raid.guild_id == collection_msg.guild.id):
                     nickname = self.database.user.find_user(str(user))
                     if nickname:
                         if curr_raid.member_dict.get(nickname):
