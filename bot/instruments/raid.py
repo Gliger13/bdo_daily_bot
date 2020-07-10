@@ -28,12 +28,16 @@ class Raid:
 
         self.guild_id = guild_id
         self.channel_id = channel_id
+
         self.collection_msg = None
         self.table_msg = None
 
-        self.is_delete_raid = False
+        self.is_deleted_raid = False
+
+        self.waiting_collection_task = None
         self.collection_task = None
-        self.task_list = []
+        self.coll_sleep_task = None
+
         current_time = datetime.now()
         self.time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
 
@@ -79,14 +83,16 @@ class Raid:
         return self.table.table_path
 
     def end_work(self):
-        self.is_delete_raid = True
+        self.is_deleted_raid = True
         self.save_raid()
+        if self.waiting_collection_task:
+            self.waiting_collection_task.cancel()
         if self.collection_task:
             self.collection_task.cancel()
+        if self.coll_sleep_task:
+            self.coll_sleep_task.cancel()
         if self.raid_time.notification_task:
             self.raid_time.notification_task.cancel()
-        for task in self.task_list:
-            task.cancel()
 
     def save_raid(self):
         raid_information = {
@@ -161,7 +167,7 @@ class RaidTime:
         return [time for time in time_list if time < interval_part]
 
     def secs_left_to_display(self):
-        hours_end, minutes_end = tuple(map(int, self.time_to_display.pop(0).split(':')))
+        hours_end, minutes_end = tuple(map(int, self.time_to_display[0].split(':')))
         time_start = datetime.now()
         delta_start = timedelta(hours=time_start.hour, minutes=time_start.minute, seconds=time_start.second)
         delta_end = timedelta(hours=hours_end, minutes=minutes_end)

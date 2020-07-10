@@ -10,6 +10,12 @@ def get_sec_left(time_end: str) -> int:
     return delta_left.seconds
 
 
+def now_time_plus_minute() -> str:
+    now_plus_1 = datetime.now() + timedelta(minutes=1)
+    now_time_plus_1 = timedelta(hours=now_plus_1.hour, minutes=now_plus_1.minute)
+    return ':'.join(str(now_time_plus_1).split(':')[:-1])
+
+
 def get_time_difference(time_start, time_end) -> int:
     delta_start = datetime.strptime(time_start, '%H:%M')
     delta_end = datetime.strptime(time_end, '%H:%M')
