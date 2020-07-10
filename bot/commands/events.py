@@ -1,9 +1,11 @@
 import logging
+import sys
 
 import discord
 from discord.ext import commands
 
-from instruments import messages, database_process
+import traceback
+from instruments import messages
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
@@ -65,7 +67,8 @@ class Events(commands.Cog):
             await ctx.message.add_reaction('❓')
         else:
             log = base_log + "????"
-            log += f'\n{error}'
+            log += f'\n{error}\n'
+            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
         module_logger.info(log)
 
     async def add_role_from_reaction(self, payload:discord.RawReactionActionEvent):
