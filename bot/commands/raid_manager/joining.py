@@ -11,7 +11,7 @@ module_logger = logging.getLogger('my_bot')
 
 class RaidJoining(commands.Cog):
     database = database_process.DatabaseManager()
-    raid_list = common.Raids.active_raids
+    raid_list = common.Raids()
 
     def __init__(self, bot):
         self.bot = bot
@@ -64,7 +64,7 @@ class RaidJoining(commands.Cog):
 
     async def raid_reaction_remove(self, collection_msg, emoji, user):
         if str(emoji) == '❤':
-            for curr_raid in self.raid_list:
+            for curr_raid in self.raid_list.active_raids:
                 if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
                         and curr_raid.guild_id == collection_msg.guild.id):
                     nickname = self.database.user.find_user(str(user))
@@ -86,7 +86,7 @@ class RaidJoining(commands.Cog):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid and not curr_raid.places_left == 0:
             if curr_raid.member_dict.get(name):
                 module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Есть в рейде')

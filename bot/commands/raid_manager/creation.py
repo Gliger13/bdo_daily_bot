@@ -14,7 +14,7 @@ module_logger = logging.getLogger('my_bot')
 
 class RaidCreation(commands.Cog):
     database = database_process.DatabaseManager()
-    raid_list = common.Raids.active_raids
+    raid_list = common.Raids()
 
     def __init__(self, bot):
         self.bot = bot
@@ -83,7 +83,7 @@ class RaidCreation(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid:
             curr_raid.end_work()
             self.raid_list.remove(curr_raid)
@@ -106,7 +106,7 @@ class RaidCreation(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
 
         if not curr_raid:
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого рейда.')

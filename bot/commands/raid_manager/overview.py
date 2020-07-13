@@ -11,7 +11,7 @@ module_logger = logging.getLogger('my_bot')
 
 class RaidOverview(commands.Cog):
     database = database_process.DatabaseManager()
-    raid_list = common.Raids.active_raids
+    raid_list = common.Raids()
 
     def __init__(self, bot):
         self.bot = bot
@@ -55,7 +55,7 @@ class RaidOverview(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             text = curr_raid.table.create_text_table()
             title = text.split('\n')[0]
@@ -76,7 +76,7 @@ class RaidOverview(commands.Cog):
     async def show(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         if curr_raid:
             path = curr_raid.table_path()
             curr_raid.save_raid()
