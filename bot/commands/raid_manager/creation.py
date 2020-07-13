@@ -148,6 +148,7 @@ class RaidCreation(commands.Cog):
             secs_left = curr_raid.raid_time.secs_left_to_display()
             curr_raid.coll_sleep_task = asyncio.create_task(asyncio.sleep(secs_left))
             await curr_raid.coll_sleep_task
+            curr_raid.raid_time.time_passed()
 
             # Send new message with raid table
             if curr_raid.table_msg:
