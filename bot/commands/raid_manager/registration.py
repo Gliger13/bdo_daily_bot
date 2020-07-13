@@ -2,7 +2,6 @@ import logging
 
 from discord.ext import commands
 
-from commands.raid_manager import common
 from instruments import help_messages, check_input, database_process
 
 module_logger = logging.getLogger('my_bot')
@@ -10,7 +9,6 @@ module_logger = logging.getLogger('my_bot')
 
 class RaidRegistration(commands.Cog):
     database = database_process.DatabaseManager()
-    raid_list = common.Raids.active_raids
 
     def __init__(self, bot):
         self.bot = bot

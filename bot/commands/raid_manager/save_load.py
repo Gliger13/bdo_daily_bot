@@ -11,7 +11,7 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidSaveLoad(commands.Cog):
-    raid_list = common.Raids.active_raids
+    raid_list = common.Raids()
 
     def __init__(self, bot):
         self.bot = bot
@@ -66,7 +66,7 @@ class RaidSaveLoad(commands.Cog):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
         # if not find raid to save
         if not curr_raid:
             await check_input.not_correct(ctx, 'Не нашёл рейд для сохранение.')
