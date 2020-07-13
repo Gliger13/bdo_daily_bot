@@ -174,6 +174,9 @@ class RaidTime:
         delta_left = delta_end - delta_start
         return delta_left.seconds
 
+    def time_passed(self):
+        self.time_to_display.pop(0)
+
     def make_time_list(self):
         # Convert in timedelta
         time_list = []
