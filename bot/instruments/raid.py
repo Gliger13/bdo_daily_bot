@@ -41,10 +41,6 @@ class Raid:
         current_time = datetime.now()
         self.time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
 
-    @property
-    def places_left(self):
-        return 20 - self.members_count
-
     def __iadd__(self, name_new_member):
         if self.places_left == 0:
             return False
@@ -73,6 +69,20 @@ class Raid:
 
     def __gt__(self, other):
         return self.members_count > other.members_count
+
+    def __contains__(self, member_name: str):
+        return member_name in self.member_dict.keys()
+
+    @property
+    def places_left(self) -> int:
+        return 20 - self.members_count
+
+    @property
+    def is_full(self) -> bool:
+        if self.places_left <= 0:
+            return True
+        else:
+            return False
 
     def table_path(self) -> str:
         if not self.table:

@@ -28,52 +28,57 @@ class RaidJoining(commands.Cog):
         await curr_raid.collection_msg.edit(content=new_text_msg)
 
     async def raid_reaction_add(self, collection_msg, emoji, user):
-        if str(emoji) == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
-            for curr_raid in self.raid_list:
-                if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
-                        curr_raid.guild_id == collection_msg.guild.id):
-                    nickname = self.database.user.find_user(str(user))
-                    if nickname:  # if find user in data base
-                        if curr_raid.member_dict.get(nickname):
-                            await user.send(messages.no_registration)
-                            module_logger.info(f'{user} не смог попасть в рейд к кэпу. Уже есть в рейде')
-                            break
-                        else:
-                            if curr_raid.places_left != 0:
-                                msg_success = messages.raid_joined.format(
-                                    captain_name=curr_raid.captain_name, server=curr_raid.server,
-                                    time_leaving=curr_raid.raid_time.time_leaving,
-                                )
-                                curr_raid += str(nickname)
-                                self.database.user.user_joined_raid(str(user))
-                                module_logger.info(f'{user} попал в рейд к кэпу {curr_raid.captain_name}')
-                                await user.send(msg_success)
-                                await RaidJoining.update_info(curr_raid)
-                                break
-                            else:
-                                msg_no_space = messages.raid_not_joined
-                                module_logger.info(f'{user} не попал в рейд к кэпу {curr_raid.captain_name}. Нет мест')
-                                await user.send(msg_no_space)
-                                break
-                    else:
-                        module_logger.info(f'{user} не попал в рейд. Нет регистрации')
-                        await user.send(messages.already_in_raid)
-                        break
+        if str(emoji) != '❤' or user.id == settings.BOT_ID:
+            return
+
+        # Check registration
+        nickname = self.database.user.find_user(str(user))
+        if not nickname:
+            module_logger.info(f'{user} не попал в рейд. Нет регистрации')
+            await user.send(messages.no_registration)
+            return
+
+        current_raid = self.raid_list.find_raid_by_coll_id(collection_msg.id)
+
+        # Check user exists in raid
+        if nickname in current_raid:
+            await user.send(messages.already_in_raid)
+            module_logger.info(f'{user} не смог попасть в рейд к кэпу. Уже есть в рейде')
+            return
+
+        if current_raid.is_full:
+            module_logger.info(f'{user} не попал в рейд к кэпу {current_raid.captain_name}. Нет мест')
+            await user.send(messages.raid_not_joined)
+            return
+
+        msg_success = messages.raid_joined.format(
+            captain_name=current_raid.captain_name, server=current_raid.server,
+            time_leaving=current_raid.raid_time.time_leaving,
+        )
+
+        current_raid += nickname
+
+        self.database.user.user_joined_raid(str(user))
+
+        module_logger.info(f'{user} попал в рейд к кэпу {current_raid.captain_name}')
+        await user.send(msg_success)
+        await self.update_info(current_raid)
 
     async def raid_reaction_remove(self, collection_msg, emoji, user):
-        if str(emoji) == '❤':
-            for curr_raid in self.raid_list.active_raids:
-                if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
-                        and curr_raid.guild_id == collection_msg.guild.id):
-                    nickname = self.database.user.find_user(str(user))
-                    if nickname:
-                        if curr_raid.member_dict.get(nickname):
-                            curr_raid -= str(nickname)
-                            self.database.user.user_leave_raid(str(user))
-                            module_logger.info(f'{user} убрал себя из рейда кэпа {curr_raid.captain_name}')
-                            await user.send(messages.raid_leave.format(captain_name=curr_raid.captain_name))
-                            await RaidJoining.update_info(curr_raid)
-                            break
+        if str(emoji) != '❤' or user.id == settings.BOT_ID:
+            return
+
+        current_raid = self.raid_list.find_raid_by_coll_id(collection_msg.id)
+
+        nickname = self.database.user.find_user(str(user))
+        if not nickname or nickname not in current_raid:
+            return
+
+        current_raid -= nickname
+        self.database.user.user_leave_raid(str(user))
+        module_logger.info(f'{user} убрал себя из рейда кэпа {current_raid.captain_name}')
+        await user.send(messages.raid_leave.format(captain_name=current_raid.captain_name))
+        await RaidJoining.update_info(current_raid)
 
     @commands.command(name=command_names.function_command.reserve, help=help_text.reserve)
     @commands.has_role('Капитан')
