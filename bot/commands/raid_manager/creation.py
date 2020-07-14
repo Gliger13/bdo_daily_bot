@@ -80,13 +80,6 @@ class RaidCreation(commands.Cog):
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('❌')
 
-    async def upd_time_in_coll_msg(self, current_raid: Raid, time_display):
-        edited_text = messages.update_time.format(time_display=time_display)
-        old_text = current_raid.collection_msg.content
-        start_index = old_text.find('Обновлённая')  # Find another way to edit
-        new_text = old_text[:start_index] + edited_text
-        await current_raid.collection_msg.edit(content=new_text)
-
     @commands.command(name=command_names.function_command.collection, help=help_text.collection)
     @commands.has_role('Капитан')
     async def collection(self, ctx: commands.context.Context, captain_name, time_leaving=''):
@@ -107,12 +100,8 @@ class RaidCreation(commands.Cog):
             curr_raid.waiting_collection_task.cancel()
 
         # Send message about collection
-        collection_msg = messages.collection_start.format(
-            captain_name=curr_raid.captain_name, time_leaving=curr_raid.raid_time.time_leaving,
-            server=curr_raid.server, places_left=curr_raid.places_left
-        )
-        curr_raid.collection_msg = await ctx.send(collection_msg)
-        await curr_raid.collection_msg.add_reaction('❤')
+        collection_msg = await curr_raid.raid_msgs.send_coll_msg(ctx)
+        await collection_msg.add_reaction('❤')
 
         curr_raid.raid_time.validate_time()
 
@@ -121,10 +110,10 @@ class RaidCreation(commands.Cog):
 
         raid_time = curr_raid.raid_time.time_to_display.copy()
         for index, time_display in enumerate(raid_time):
-            # Update text msg of start collection Raid
-            await self.upd_time_in_coll_msg(curr_raid, time_display)
-
             curr_raid.save_raid()
+
+            # Update text msg of start collection Raid
+            await curr_raid.raid_msgs.update_coll_msg(self.bot)
 
             # Wait next time to display raid table
             secs_left = curr_raid.raid_time.secs_left_to_display()
@@ -132,10 +121,8 @@ class RaidCreation(commands.Cog):
             await curr_raid.coll_sleep_task
             curr_raid.raid_time.time_passed()
 
-            # Send new message with raid table
-            if curr_raid.table_msg:
-                await curr_raid.table_msg.delete()
-            curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table_path()))
+            # Resend new message with raid table if not first time else just send table
+            await curr_raid.raid_msgs.update_table_msg(self.bot, ctx)
 
         self.database.captain.update_captain(str(ctx.author), curr_raid)
 

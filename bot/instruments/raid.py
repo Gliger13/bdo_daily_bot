@@ -5,8 +5,11 @@ import random
 from datetime import datetime, timedelta
 
 import cv2
+import discord
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
+
+from messages import messages
 
 
 class Raid:
@@ -24,13 +27,12 @@ class Raid:
         self.reservation_count = max(int(reservation_count), 1)
 
         self.members_count = self.reservation_count
+
         self.table = None
+        self.raid_msgs = RaidMsgs(self)
 
         self.guild_id = guild_id
         self.channel_id = channel_id
-
-        self.collection_msg = None
-        self.table_msg = None
 
         self.is_deleted_raid = False
 
@@ -175,6 +177,10 @@ class RaidTime:
         Remove time from time_list that greater than interval_part
         """
         return [time for time in time_list if time < interval_part]
+
+    @property
+    def next_time_to_display(self):
+        return self.time_to_display[0]
 
     def secs_left_to_display(self):
         hours_end, minutes_end = tuple(map(int, self.time_to_display[0].split(':')))
@@ -437,3 +443,44 @@ class Table:
         for name in self.raid.member_dict:
             table += f"**{name}**\n"
         return table
+
+
+class RaidMsgs:
+    def __init__(self, raid: Raid):
+        self.raid = raid
+        self.collection_msg_id = None
+        self.table_msg_id = None
+
+    @property
+    def collection_text(self):
+        return messages.collection_start.format(
+            captain_name=self.raid.captain_name, time_leaving=self.raid.raid_time.time_leaving,
+            server=self.raid.server, places_left=self.raid.places_left,
+            display_table_time=self.raid.raid_time.next_time_to_display
+        )
+
+    async def _get_msg(self, bot, msg_id: id):
+        channel = bot.get_channel(self.raid.channel_id)
+        message = await channel.fetch_message(msg_id)
+        return message
+
+    async def _send_table_msg(self, ctx):
+        return await ctx.send(file=discord.File(self.raid.table_path()))
+
+    async def send_coll_msg(self, ctx):
+        collection_msg = await ctx.send(self.collection_text)
+        self.collection_msg_id = collection_msg.id
+        return collection_msg
+
+    async def update_coll_msg(self, bot):
+        collection_msg = await self._get_msg(bot, self.collection_msg_id)
+        await collection_msg.edit(content=self.collection_text)
+
+    async def update_table_msg(self, bot, ctx):
+        if not self.table_msg_id:
+            table_msg = await self._send_table_msg(ctx)
+        else:
+            table_msg = await self._get_msg(bot, self.table_msg_id)
+            await table_msg.delete()
+            table_msg = await self._send_table_msg(ctx)
+        self.table_msg_id = table_msg.id
