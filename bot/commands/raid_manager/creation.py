@@ -1,7 +1,6 @@
 import asyncio
 import logging
 
-import discord
 from discord.ext import commands
 
 from commands.raid_manager import raid_list
