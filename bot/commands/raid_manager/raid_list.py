@@ -59,3 +59,8 @@ class RaidList(metaclass=MetaSingleton):
         if not len(raids_found) == 1:
             return
         return raids_found.pop()
+
+    def find_raid_by_coll_id(self, collection_msg_id: int):
+        for some_raid in self.active_raids:
+            if some_raid.collection_msg and some_raid.collection_msg.id == collection_msg_id:
+                return some_raid
