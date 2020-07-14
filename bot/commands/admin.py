@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 
 from discord.ext import commands
 
-from instruments import database_process, help_messages
+from instruments import database_process
+from messages import command_names, help_text, messages
 
 module_logger = logging.getLogger('my_bot')
 
@@ -15,9 +16,9 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='удалять_тут', help=help_messages.remove_there)
+    @commands.command(name=command_names.function_command.remove_there, help=help_text.remove_there)
     @commands.has_permissions(administrator=True, manage_messages=True)
-    async def del_there(self, ctx: commands.context.Context):
+    async def remove_there(self, ctx: commands.context.Context):
         guild = ctx.guild
         channel = ctx.channel
         self.database.settings.update_settings(guild.id, str(guild), channel.id, str(channel))
@@ -25,35 +26,32 @@ class Admin(commands.Cog):
         await asyncio.sleep(10)
         await ctx.message.delete()
 
-    @commands.command(name='очисти_чат', help=help_messages.remove_msgs)
+    @commands.command(name=command_names.function_command.remove_msgs, help=help_text.remove_msgs)
     @commands.has_role('Капитан')
     async def remove_msgs(self, ctx: commands.context.Context, amount=100):
         guild = ctx.guild
         channel = ctx.channel
         if self.database.settings.can_delete_there(guild.id, channel.id):
-            messages = []
+            messages_to_remove = []
             msg_count = 0
             async for msg in channel.history(limit=int(amount)):
                 is_time_has_passed = datetime.now() - msg.created_at < timedelta(days=14)
                 if is_time_has_passed:
                     await ctx.author.send(
-                        f'Я не могу очищать сообщения дальше, им больше 14 дней. Очищено {msg_count}/{amount}'
+                        messages.remove_msgs_fail_14.format(msg_count=msg_count, amount=amount)
                     )
                     break
                 if not msg.pinned:
-                    messages.append(msg)
+                    messages_to_remove.append(msg)
                     msg_count += 1
-            await channel.delete_messages(messages)
+            await channel.delete_messages(messages_to_remove)
             module_logger.info(f'{ctx.author} успешно ввёл команду {ctx.message.content}')
         else:
             await ctx.message.add_reaction('❌')
-            await ctx.author.send(
-                f'Я не могу удалять здесь сообщения. Воспользуйтесь командой `!!удалять_тут`, чтобы иметь возможность '
-                f'удалять сообщения в этом канале командой `!!очисти_тут`.'
-            )
+            await ctx.author.send(messages.wrong_channel)
             module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}. Плохой канал')
 
-    @commands.command(name='не_удалять', help=help_messages.not_remove_there)
+    @commands.command(name=command_names.function_command.not_remove_there, help=help_text.not_remove_there)
     @commands.has_permissions(administrator=True, manage_messages=True)
     async def not_remove_there(self, ctx: commands.context.Context):
         guild = ctx.guild

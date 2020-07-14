@@ -5,6 +5,7 @@ from pymongo import MongoClient
 
 from instruments import tools
 from instruments.raid import Raid
+from instruments.tools import MetaSingleton
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
@@ -24,18 +25,6 @@ class UserExists(Error):
 
     def __init__(self, expression):
         self.expression = expression
-
-
-class MetaSingleton(type):
-    """
-    Realize pattern Singleton
-    """
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
 
 
 class Database(metaclass=MetaSingleton):

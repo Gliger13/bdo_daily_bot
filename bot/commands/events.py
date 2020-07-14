@@ -1,11 +1,11 @@
 import logging
 import sys
+import traceback
 
 import discord
 from discord.ext import commands
 
-import traceback
-from instruments import messages
+from messages import messages
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
@@ -71,7 +71,7 @@ class Events(commands.Cog):
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
         module_logger.info(log)
 
-    async def add_role_from_reaction(self, payload:discord.RawReactionActionEvent):
+    async def add_role_from_reaction(self, payload: discord.RawReactionActionEvent):
         if (
                 payload.guild_id != settings.MAIN_GUILD_ID or
                 payload.message_id != settings.ROLE_MANAGER_MESSAGE_ID or
@@ -81,16 +81,7 @@ class Events(commands.Cog):
         guild = self.bot.get_guild(payload.guild_id)
         role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[str(payload.emoji)])
         if str(payload.emoji) == '🔑':
-            await payload.member.send(
-                '__**СТРОГО ДЛЯ ТЕХ, КОМУ 18+!**__\n'
-                'Если **тебе меньше 18 лет**, то прошу снова нажать на смайлик :key: в #welcome, чтобы '
-                'убрать не предназначенный вам контент.\n'
-                'Вы получили доступ к **NSFW** разделу. **NSFW** - **N**ot **S**uitable **F**or **W**umpus. '
-                'В данном случае **`клубничка`**\n'
-                '__**Запрещено и будет наказываться:**__\n'
-                ' - контент с несовершеннолетними,\n'
-                ' - лоликон, сётакон.\n'
-            )
+            await payload.member.send(messages.NSFW_warning)
         await payload.member.add_roles(role)
 
     async def remove_role_from_reaction(self, payload: discord.RawReactionActionEvent):
