@@ -17,16 +17,6 @@ class RaidJoining(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
-    async def update_info(curr_raid):
-        # Rewrite!!!!!!!!!!!!!!!
-        old_text = curr_raid.collection_msg.content
-        edited_text = f"Мест осталось {curr_raid.places_left}.\n"
-        start_index = old_text.find('Мест осталось')
-        end_index = old_text.find('Обновлённая')
-        new_text_msg = old_text[:start_index] + edited_text + old_text[end_index:]
-        await curr_raid.collection_msg.edit(content=new_text_msg)
-
     async def raid_reaction_add(self, collection_msg, emoji, user):
         if str(emoji) != '❤' or user.id == settings.BOT_ID:
             return
@@ -62,7 +52,7 @@ class RaidJoining(commands.Cog):
 
         module_logger.info(f'{user} попал в рейд к кэпу {current_raid.captain_name}')
         await user.send(msg_success)
-        await self.update_info(current_raid)
+        await current_raid.raid_msgs.update_coll_msg(self.bot)
 
     async def raid_reaction_remove(self, collection_msg, emoji, user):
         if str(emoji) != '❤' or user.id == settings.BOT_ID:
@@ -78,7 +68,7 @@ class RaidJoining(commands.Cog):
         self.database.user.user_leave_raid(str(user))
         module_logger.info(f'{user} убрал себя из рейда кэпа {current_raid.captain_name}')
         await user.send(messages.raid_leave.format(captain_name=current_raid.captain_name))
-        await RaidJoining.update_info(current_raid)
+        await current_raid.raid_msgs.update_coll_msg(self.bot)
 
     @commands.command(name=command_names.function_command.reserve, help=help_text.reserve)
     @commands.has_role('Капитан')
@@ -94,7 +84,7 @@ class RaidJoining(commands.Cog):
                 return
             curr_raid += name
             module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await RaidJoining.update_info(curr_raid)
+            await curr_raid.raid_msgs.update_coll_msg(self.bot)
             await ctx.message.add_reaction('✔')
         else:
             guild_raid_list = []
@@ -121,7 +111,7 @@ class RaidJoining(commands.Cog):
             finding_raid -= name
             if finding_raid:
                 module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-                await RaidJoining.update_info(finding_raid)
+                await finding_raid.raid_msgs.update_coll_msg(self.bot)
                 await ctx.message.add_reaction('✔')
                 break
         else:
