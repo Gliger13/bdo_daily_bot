@@ -4,8 +4,7 @@ import random
 
 from discord.ext import commands
 
-from instruments import help_messages
-from settings import settings
+from messages import command_names, help_text, messages
 
 module_logger = logging.getLogger('my_bot')
 
@@ -17,7 +16,7 @@ class Fun(commands.Cog):
 
         self.order_66_notify = False
 
-    @commands.command(name='осуди_его', help=help_messages.judge_him)
+    @commands.command(name=command_names.function_command.judge_him, help=help_text.judge_him)
     @commands.has_role('Капитан')
     async def judge_him(self, ctx, username=''):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
@@ -31,7 +30,7 @@ class Fun(commands.Cog):
         await asyncio.sleep(10)
         await bot_msg.edit(content=f"Я осуждаю {username}!")
 
-    @commands.command(name='где', help=help_messages.where)
+    @commands.command(name=command_names.function_command.where, help=help_text.where)
     @commands.has_role('Капитан')
     async def where(self, ctx, name: str):
         module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
@@ -47,41 +46,18 @@ class Fun(commands.Cog):
         else:
             await ctx.send("В море наверное")
 
-    @commands.command(name='выполни_приказ', help=help_messages.order)
+    @commands.command(name=command_names.function_command.order, help=help_text.order)
     async def order(self, ctx, number: int):
         guild = ctx.guild
 
         if number == 66 and not self.order_66_notify:
             await ctx.channel.send(f'Хорошая попытка, уже был бунт')
-        #     return
-        #     self.order_66_notify = True
-        #     msg = (
-        #         "Привет! В **Отряде Бартерят** был поднят __**БУНТ**__ против владельца сервера!\n"
-        #         "**Все капитаны** и **моряки** переходят на новый сервер, я тоже туда перехожу.\n"
-        #         "В дальнейшем рейды будут проводиться там.\n"
-        #         "Вот приглашение: https://discord.gg/VaEsRTc\n"
-        #     )
-        #     i = 0
-        #     for member in guild.members:
-        #         if member.id != settings.BOT_ID:
-        #             try:
-        #                 await member.send(msg)
-        #                 print(i)
-        #                 i += 1
-        #             except BaseException:
-        #                 print(str(member))
 
         if number == 12 and ctx.author.id == 324528465682366468:
-            msg_under_leave = (
-                "Мой создатель покинул этот сервер"
-                "и я вместе с ним ухожу отсюда :cry:.\n"
-                "Но вы можете увидеть меня ещё на сервере Отряд Бартерят\n"
-                "https://discord.gg/VaEsRTc"
-            )
-            await ctx.channel.send(f'{msg_under_leave}')
+            await ctx.channel.send(messages.msg_under_leave)
             await guild.leave()
 
-    @commands.command(name='скажи', help=help_messages.say)
+    @commands.command(name=command_names.function_command.say, help=help_text.say)
     async def say(self, ctx, server_id, channel_id, *text):
         if not ctx.author.id == 324528465682366468:
             return

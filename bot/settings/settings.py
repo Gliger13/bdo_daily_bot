@@ -14,6 +14,11 @@ PRODUCTION_PREFIX = '!!'
 
 # ====================================================================================================
 
+# Choose language of commands/messages/help and etc
+# Available: 'ru', 'eu'
+LANGUAGE = 'ru'
+
+# ====================================================================================================
 # Database settings
 # Used Mongo Database
 

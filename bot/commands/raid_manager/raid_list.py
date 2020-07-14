@@ -2,27 +2,25 @@ import logging
 
 from instruments import raid
 from instruments.raid import Raid
+from instruments.tools import MetaSingleton
 
 module_logger = logging.getLogger('my_bot')
 
 
-class MetaSingleton(type):
-    """
-    Realize pattern Singleton
-    """
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class Raids(list, metaclass=MetaSingleton):
+class RaidList(metaclass=MetaSingleton):
     """
     Realise general namespace for active raids for all files
     """
     active_raids = []
+
+    def __iter__(self):
+        return iter(self.active_raids)
+
+    def __getitem__(self, item):
+        return self.active_raids[item]
+
+    def __bool__(self):
+        return bool(len(self.active_raids))
 
     @staticmethod
     def is_raid(item):
