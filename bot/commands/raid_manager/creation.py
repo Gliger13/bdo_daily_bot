@@ -128,6 +128,13 @@ class RaidCreation(commands.Cog):
         await ctx.send(messages.collection_end.format(server=curr_raid.server, captain_name=curr_raid.captain_name))
         await self.remove_raid(ctx, captain_name, time_leaving)
 
+    def check_captain_registration(self, user, captain_name: str):
+        nickname = self.database.user.find_user(str(user))
+        if nickname == captain_name:
+            return
+        else:
+            self.database.user.rereg_user(user.id, str(user), captain_name)
+
     async def check_raid_exists(self, ctx, captain_name, time_leaving=''):
         # Check captain exists
         captain_post = self.database.captain.find_captain_post(str(ctx.author))
@@ -168,6 +175,7 @@ class RaidCreation(commands.Cog):
                       captain_name: str, server: str, time_leaving: str, time_reservation_open='', reservation_count=0):
         await check_input.validation(**locals())
         await self.check_raid_exists(ctx, captain_name, time_leaving)
+        self.check_captain_registration(ctx.author, captain_name)
 
         if not time_reservation_open:
             time_reservation_open = tools.now_time_plus_minute()
