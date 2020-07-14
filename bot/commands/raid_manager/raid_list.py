@@ -36,8 +36,21 @@ class RaidList(metaclass=MetaSingleton):
         if self.is_raid(item):
             self.active_raids.remove(item)
 
-    def find_raid(self, guild_id: int, channel_id: int,
-                  captain_name='', time_leaving='', ignore_channels=False) -> raid.Raid or None:
+    def find_raids_by_guild(self, name, guild_id: int) -> list:
+        available_raids = []
+        entered_raids = self._find_raids_by_nickname(name)
+        for some_raid in self.active_raids:
+            if some_raid.guild_id != guild_id or some_raid.is_full or name in some_raid:
+                continue
+            for entered_raid in entered_raids:
+                if some_raid.raid_time.time_leaving == entered_raid.raid_time.time_leaving:
+                    break
+            else:
+                available_raids.append(some_raid)
+        return available_raids
+
+    def find_raid(self, guild_id: int, channel_id: int, captain_name='', time_leaving='',
+                  ignore_channels=False) -> raid.Raid or None:
         raids_found = []
         # if require raids only by captain_name
         if not captain_name:
@@ -59,6 +72,28 @@ class RaidList(metaclass=MetaSingleton):
         if not len(raids_found) == 1:
             return
         return raids_found.pop()
+
+    def is_correct_join(self, nickname, time_leaving) -> bool:
+        raids_find = self._find_raids_by_nickname(nickname)
+
+        if len(raids_find) == 0:
+            return True
+        for some_raid in raids_find:
+            if some_raid.raid_time.time_leaving == time_leaving:
+                return False
+        return True
+
+    def _find_raids_by_nickname(self, nickname) -> Raid or None:
+        raids_find = []
+        for some_raid in self.active_raids:
+            if nickname in some_raid:
+                raids_find.append(some_raid)
+        return raids_find
+
+    def find_raid_by_nickname(self, nickname) -> Raid or None:
+        raids_find = self._find_raids_by_nickname(nickname)
+        if len(raids_find) == 1:
+            return raids_find.pop()
 
     def find_raid_by_coll_id(self, collection_msg_id: int):
         for some_raid in self.active_raids:

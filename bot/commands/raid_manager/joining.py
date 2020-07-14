@@ -41,6 +41,11 @@ class RaidJoining(commands.Cog):
             await user.send(messages.raid_not_joined)
             return
 
+        if not self.raid_list.is_correct_join(nickname, current_raid.raid_time.time_leaving):
+            module_logger.info(f'{user} не попал в рейд к кэпу {current_raid.captain_name}. Уже есть в похожем')
+            await user.send(messages.already_joined)
+            return
+
         msg_success = messages.raid_joined.format(
             captain_name=current_raid.captain_name, server=current_raid.server,
             time_leaving=current_raid.raid_time.time_leaving,
@@ -76,30 +81,49 @@ class RaidJoining(commands.Cog):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
-        if curr_raid and not curr_raid.places_left == 0:
-            if curr_raid.member_dict.get(name):
-                module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Есть в рейде')
+        if not captain_name and not time_leaving:
+            available_raids = self.raid_list.find_raids_by_guild(name, ctx.guild.id)
+
+            if not available_raids:
+                module_logger.info(
+                    f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого рейда.'
+                )
                 await ctx.message.add_reaction('❌')
                 return
-            curr_raid += name
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await curr_raid.raid_msgs.update_coll_msg(self.bot)
-            await ctx.message.add_reaction('✔')
-        else:
-            guild_raid_list = []
-            for curr_raid in self.raid_list:
-                if curr_raid.guild_id == ctx.message.guild.id and not curr_raid.member_dict.get(name):
-                    guild_raid_list.append(curr_raid)
-                    break
-            if not guild_raid_list:  # If list empty
-                module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нет рейдов')
-                await ctx.message.add_reaction('❌')
-                return
-            smaller_raid = min(guild_raid_list)
+
+            smaller_raid = min(available_raids)
             smaller_raid += name
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+            await smaller_raid.raid_msgs.update_coll_msg(self.bot)
             await ctx.message.add_reaction('✔')
+            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+            return
+
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+
+        if not curr_raid:
+            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого рейда.')
+            await ctx.message.add_reaction('❌')
+            return
+        if curr_raid.is_full:
+            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Рейд заполнен.')
+            await ctx.message.add_reaction('❌')
+            return
+        if name in curr_raid:
+            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Уже есть в рейде.')
+            await ctx.message.add_reaction('❌')
+            return
+        if self.raid_list.is_correct_join(name, time_leaving):
+            module_logger.info(
+                f'{ctx.author} неудачно использовал команду {ctx.message.content}. Уже есть в похожем рейде.'
+            )
+            await ctx.author.send(messages.already_joined)
+            await ctx.message.add_reaction('❌')
+            return
+
+        curr_raid += name
+        module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+        await curr_raid.raid_msgs.update_coll_msg(self.bot)
+        await ctx.message.add_reaction('✔')
 
     @commands.command(name=command_names.function_command.remove_res, help=help_text.remove_res)
     @commands.has_role('Капитан')
@@ -107,16 +131,16 @@ class RaidJoining(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        for finding_raid in self.raid_list:
-            finding_raid -= name
-            if finding_raid:
-                module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-                await finding_raid.raid_msgs.update_coll_msg(self.bot)
-                await ctx.message.add_reaction('✔')
-                break
-        else:
+        current_raid = self.raid_list.find_raid_by_nickname(name)
+
+        if not current_raid:
             module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету в рейдах')
             await ctx.message.add_reaction('❌')
+        else:
+            current_raid -= name
+            await current_raid.raid_msgs.update_coll_msg(self.bot)
+            await ctx.message.add_reaction('✔')
+            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
 
 
 def setup(bot):
