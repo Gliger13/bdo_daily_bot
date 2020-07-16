@@ -62,11 +62,11 @@ class Statistics(commands.Cog):
             colour=discord.Colour.blue(),
             description=text_message
         )
-
-        embed.set_author(
-            name=str(user),
-            icon_url=user.avatar_url,
-        )
+        if user:
+            embed.set_author(
+                name=str(user),
+                icon_url=user.avatar_url,
+            )
         return embed
 
     @commands.command(name=command_names.function_command.user_statistics, help=help_text.user_statistics)
