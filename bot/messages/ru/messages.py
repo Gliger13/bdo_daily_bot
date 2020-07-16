@@ -166,7 +166,7 @@ https://discord.gg/VaEsRTc"
 
 # ============================== commands.statistics ===============================
 
-no_data = 'Я ничего не знаю о тебе.'
+no_data = 'Нету информации'
 
 captain_title = 'Капитан '
 
