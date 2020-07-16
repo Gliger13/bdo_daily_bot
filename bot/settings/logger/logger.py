@@ -19,7 +19,7 @@ if settings.DEBUG:
     logger.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
 else:
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.DEBUG)
     logger.setLevel(logging.INFO)
 
 logger.addHandler(file_handler)
