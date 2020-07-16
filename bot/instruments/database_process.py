@@ -96,6 +96,13 @@ class UserCollection(Database):
         post = self.find_user_post(user)
         return post['nickname'] if post else None
 
+    def find_user_post_by_name(self, name: str):
+        return self.collection.find_one(
+            {
+                'nickname': name
+            }
+        )
+
     def user_joined_raid(self, user: str):
         self.collection.find_one_and_update(
             {
