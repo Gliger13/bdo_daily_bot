@@ -32,14 +32,13 @@ class Database(metaclass=MetaSingleton):
     Connect with Mongo Database
 
     """
-    _connection = None
     _cluster = None
 
     def _connect(self):
-        if not self._connection:
-            module_logger.debug('Запуск базы данных')
+        if not self._cluster:
+            module_logger.debug('Initialisation database.')
             self._cluster = MongoClient(settings.BD_STRING)[settings.CLUSTER_NAME]
-            module_logger.debug('База данных успешно загружена')
+            module_logger.debug('Database connected.')
         return self._cluster
 
     @property
@@ -47,17 +46,14 @@ class Database(metaclass=MetaSingleton):
         return self._connect()
 
 
-class UserCollection(Database):
+class UserCollection(metaclass=MetaSingleton):
     _collection = None
-    _connection = None
-
-    def __new__(cls, *args, **kwargs):
-        return super(Database, cls).__new__(cls, *args, **kwargs)
 
     @property
     def collection(self):
-        if not self._connection:
-            self._collection = self.database[settings.USER_COLLECTION]
+        if not self._collection:
+            self._collection = Database().database[settings.USER_COLLECTION]
+            module_logger.debug(f'Collection {settings.USER_COLLECTION} connected.')
         return self._collection
 
     def reg_user(self, discord_id: int, discord_user: str, nickname: str):
@@ -147,17 +143,14 @@ class UserCollection(Database):
         return list(post)
 
 
-class CaptainCollection(Database):
+class CaptainCollection(metaclass=MetaSingleton):
     _collection = None
-    _connection = None
-
-    def __new__(cls, *args, **kwargs):
-        return super(Database, cls).__new__(cls, *args, **kwargs)
 
     @property
     def collection(self):
-        if not self._connection:
-            self._collection = self.database[settings.CAPTAIN_COLLECTION]
+        if not self._collection:
+            self._collection = Database().database[settings.CAPTAIN_COLLECTION]
+            module_logger.debug(f'Collection {settings.CAPTAIN_COLLECTION} connected.')
         return self._collection
 
     def create_captain(self, user: str):
@@ -239,17 +232,14 @@ class CaptainCollection(Database):
         return captain_post.get('last_raids')
 
 
-class SettingsCollection(Database):
+class SettingsCollection(metaclass=MetaSingleton):
     _collection = None
-    _connection = None
-
-    def __new__(cls, *args, **kwargs):
-        return super(Database, cls).__new__(cls, *args, **kwargs)
 
     @property
     def collection(self):
-        if not self._connection:
-            self._collection = self.database[settings.SETTINGS_COLLECTION]
+        if not self._collection:
+            self._collection = Database().database[settings.USER_COLLECTION]
+            module_logger.debug(f'Collection {settings.SETTINGS_COLLECTION} connected.')
         return self._collection
 
     def find_settings_post(self, guild_id: int):
