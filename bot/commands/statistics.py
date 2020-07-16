@@ -15,11 +15,8 @@ class Statistics(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name=command_names.function_command.user_statistics, help=help_text.user_statistics)
-    async def user_statistics(self, ctx: commands.context.Context):
-        user = ctx.author
-        user_info = self.database.user.find_user_post(str(user))
-        captain_info = self.database.captain.find_captain_post(str(user))
+    @staticmethod
+    def user_stat_msg(user, user_info: dict, captain_info: dict):
         text_message = messages.no_data
         if user_info:
             if captain_info and captain_info.get('raids_created'):
@@ -70,6 +67,24 @@ class Statistics(commands.Cog):
             name=str(user),
             icon_url=user.avatar_url,
         )
+        return embed
+
+    @commands.command(name=command_names.function_command.user_statistics, help=help_text.user_statistics)
+    async def user_statistics(self, ctx: commands.context.Context, nickname=''):
+        user = None
+        if nickname:
+            user_info = self.database.user.find_user_post_by_name(nickname)
+            if user_info:
+                captain_info = self.database.captain.find_captain_post(user_info['discord_user'])
+                user = self.bot.get_user(user_info['discord_id'])
+            else:
+                captain_info = None
+        else:
+            user = ctx.author
+            user_info = self.database.user.find_user_post(str(user))
+            captain_info = self.database.captain.find_captain_post(str(user))
+
+        embed = self.user_stat_msg(user, user_info, captain_info)
         await ctx.send(embed=embed)
         module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
 
