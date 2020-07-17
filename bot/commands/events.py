@@ -5,8 +5,9 @@ import traceback
 import discord
 from discord.ext import commands
 
-from messages import messages
+from messages import messages, logger_msgs
 from settings import settings
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -20,56 +21,44 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         if member.guild.id == settings.MAIN_GUILD_ID:
-            module_logger.info(f'Новое тело появилось на лодке {member}')
             await member.send(messages.hello_new_member)
 
     @commands.Cog.listener()
     async def on_ready(self):
         if not self.is_bot_ready:
-            module_logger.info('Бот начал свою работу')
+            module_logger.info(logger_msgs.bot_ready)
             self.is_bot_ready = True
         else:
-            critical_msg = (f"Бот был только что перезапущен. Смайлики в сообщении о сборе скорее всего не работают\n"
-                            f"Так что нужно перезапустить все сообщения о сборе через !!сбор")
-            module_logger.critical(critical_msg)
+            log_template.bot_restarted()
         custom_status = 'Покоряем мир и людишек'
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        base_log = f"{ctx.author} неправильно ввёл команду {ctx.message.content}. "
         if isinstance(error, commands.errors.BadArgument):
-            log = base_log + str(error)
             await ctx.message.add_reaction('❔')
         elif isinstance(error, commands.errors.CheckFailure):
-            log = base_log + "Нет прав"
             await ctx.message.add_reaction('⛔')
         elif isinstance(error, commands.errors.MissingRequiredArgument):
-            log = base_log + "Неправильные аргументы"
             await ctx.message.add_reaction('❔')
         elif isinstance(error, commands.errors.CommandNotFound):
-            log = base_log + "Команда не найдена"
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.PrivateMessageOnly):
-            log = base_log + "Команда только приватная"
-            await ctx.message.author.send('Введённая команда должна быть написана только в личные сообщения боту')
+            await ctx.message.author.send(messages.private_msg_only)
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.NoPrivateMessage):
-            log = base_log + "Команда должна быть не приватной"
-            await ctx.message.author.send('Введённая команда не должна быть написана в личные сообщения боту')
+            await ctx.message.author.send(messages.no_private_msg)
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.BotMissingPermissions):
-            log = base_log + "Бот не может выполнить команду. Нету прав."
-            await ctx.message.author.send(f'У бота нету необходимых прав, ему нужны {error.missing_perms}')
+            await ctx.message.author.send(messages.missing_perms.format(missing_perms=error.missing_perms))
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.UserInputError):
-            log = base_log + f"Неправильные аргументы. {error}"
             await ctx.message.add_reaction('❓')
         else:
-            log = base_log + "????"
-            log += f'\n{error}\n'
+            log_template.unknown_command_error(ctx, error)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        module_logger.info(log)
+            return
+        log_template.command_error(ctx, error)
 
     async def add_role_from_reaction(self, payload: discord.RawReactionActionEvent):
         if (
@@ -78,11 +67,14 @@ class Events(commands.Cog):
                 str(payload.emoji) not in settings.ROLE_EMOJI
         ):
             return
+        emoji = str(payload.emoji)
         guild = self.bot.get_guild(payload.guild_id)
-        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[str(payload.emoji)])
-        if str(payload.emoji) == '🔑':
-            await payload.member.send(messages.NSFW_warning)
-        await payload.member.add_roles(role)
+        member = payload.member
+        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[emoji])
+        if emoji == '🔑':
+            await member.send(messages.NSFW_warning)
+        await member.add_roles(role)
+        log_template.role_from_reaction(guild, member, role, emoji, is_get=True)
 
     async def remove_role_from_reaction(self, payload: discord.RawReactionActionEvent):
         if (
@@ -91,10 +83,12 @@ class Events(commands.Cog):
                 str(payload.emoji) not in settings.ROLE_EMOJI
         ):
             return
+        emoji = str(payload.emoji)
         guild = self.bot.get_guild(payload.guild_id)
         member = guild.get_member(payload.user_id)
-        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[str(payload.emoji)])
+        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[emoji])
         await member.remove_roles(role)
+        log_template.role_from_reaction(guild, member, role, emoji, is_get=False)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
@@ -121,4 +115,4 @@ class Events(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Events(bot))
-    module_logger.debug('Успешный запуск bot.events')
+    log_template.cog_launched('Events')

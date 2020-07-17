@@ -3,14 +3,12 @@
 import logging
 import re
 
+from messages import messages, regex
 from discord.ext.commands import BadArgument
 
-module_logger = logging.getLogger(__name__)
+from settings.logger import log_template
 
-# Different regex constructions for checking correct input
-is_time = re.compile(r'^([0-1]?[0-9]|[2][0-3]):([0-5][0-9])$')
-is_server = re.compile('^[А-я]-?[1-4]$')
-is_name = re.compile(r'^([А-ЯЁ][А-яЁё,0-9]{1,15}|[A-Z][A-z,0-9]{1,15})$')
+module_logger = logging.getLogger('my_bot')
 
 
 async def validation(**kwargs):
@@ -26,23 +24,22 @@ def check_args(**kwargs):
     for key, value in kwargs.items():
         if value:
             if key.count('name'):
-                if not re.match(is_name, value):
-                    errors.append(f'- Неправильное имя **{value}**')
+                if not re.match(regex.is_name, value):
+                    errors.append(messages.wrong_name.format(name=value))
             elif key.count('server'):
-                if not re.match(is_server, value):
-                    errors.append(f'- Неправильный сервер **{value}**')
+                if not re.match(regex.is_server, value):
+                    errors.append(messages.wrong_server.format(server=value))
             elif key.count('time'):
-                if not re.match(is_time, value):
-                    errors.append(f'- Неправильное время **{value}**')
+                if not re.match(regex.is_time, value):
+                    errors.append(messages.wrong_time.format(time=value))
             elif key.count('number'):
                 if not value.isdigit():
-                    errors.append(f'- Неправильное число **{value}**')
+                    errors.append(messages.wrong_number.format(number=value))
     return errors
 
 
 async def not_correct(ctx, *errors):
-    module_logger.info(f'{ctx.author} с ошибкой ввёл команду {ctx.message.content}')
-    message = f'Команда `{ctx.message.content}` была неправильно введена.\n'
-    for error in errors:
-        message += error + '\n'
-    await ctx.author.send(message)
+    message = messages.wrong_command.format(ctx.message.content)
+    errors = ''.join(errors)
+    await ctx.author.send(message + errors)
+    log_template.command_fail(ctx, errors)

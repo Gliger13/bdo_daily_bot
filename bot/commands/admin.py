@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from discord.ext import commands
 
 from instruments import database_process
-from messages import command_names, help_text, messages
+from messages import command_names, help_text, messages, logger_msgs
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -22,7 +23,10 @@ class Admin(commands.Cog):
         guild = ctx.guild
         channel = ctx.channel
         self.database.settings.update_settings(guild.id, str(guild), channel.id, str(channel))
+
         await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
+
         await asyncio.sleep(10)
         await ctx.message.delete()
 
@@ -45,11 +49,11 @@ class Admin(commands.Cog):
                     messages_to_remove.append(msg)
                     msg_count += 1
             await channel.delete_messages(messages_to_remove)
-            module_logger.info(f'{ctx.author} успешно ввёл команду {ctx.message.content}')
+            log_template.command_success(ctx)
         else:
             await ctx.message.add_reaction('❌')
             await ctx.author.send(messages.wrong_channel)
-            module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}. Плохой канал')
+            log_template.command_fail(ctx, logger_msgs.wrong_channel)
 
     @commands.command(name=command_names.function_command.not_remove_there, help=help_text.not_remove_there)
     @commands.has_permissions(administrator=True, manage_messages=True)
@@ -57,9 +61,11 @@ class Admin(commands.Cog):
         guild = ctx.guild
         channel = ctx.channel
         self.database.settings.not_delete_there(guild.id, channel.id)
+
         await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
 
 
 def setup(bot):
     bot.add_cog(Admin(bot))
-    module_logger.debug('Успешный запуск bot.admin')
+    log_template.cog_launched('Admin')

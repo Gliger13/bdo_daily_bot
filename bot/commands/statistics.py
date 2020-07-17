@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from instruments import database_process
 from messages import command_names, help_text, messages
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -86,7 +87,7 @@ class Statistics(commands.Cog):
 
         embed = self.user_stat_msg(user, user_info, captain_info)
         await ctx.send(embed=embed)
-        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+        log_template.command_success(ctx)
 
     @commands.command(name=command_names.function_command.guild_statistics, help=help_text.guild_statistics)
     @commands.has_permissions(administrator=True, manage_messages=True)
@@ -111,9 +112,9 @@ class Statistics(commands.Cog):
             icon_url=user.guild.icon_url,
         )
         await ctx.send(embed=embed)
-        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+        log_template.command_success(ctx)
 
 
 def setup(bot):
     bot.add_cog(Statistics(bot))
-    module_logger.debug(f'Успешный запуск bot.statistics')
+    log_template.cog_launched('Statistics')

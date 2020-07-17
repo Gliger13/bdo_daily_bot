@@ -6,7 +6,8 @@ from discord.ext import commands
 
 from commands.raid_manager import raid_list
 from instruments import check_input, raid
-from messages import command_names, help_text
+from messages import command_names, help_text, logger_msgs
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -46,8 +47,9 @@ class RaidSaveLoad(commands.Cog):
         old_raid.member_dict.update(raid_information['members_dict'])
         old_raid.members_count = raid_information['members_count']
         self.raid_list.append(old_raid)
-        module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+
         await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
 
     @commands.command(name=command_names.function_command.save_raids, help=help_text.save_raids)
     @commands.has_role('Капитан')
@@ -55,11 +57,12 @@ class RaidSaveLoad(commands.Cog):
         if self.raid_list:
             for some_raid in self.raid_list:
                 some_raid.save_raid()
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+
             await ctx.message.add_reaction('✔')
+            log_template.command_success(ctx)
         else:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Не рейдов')
             await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raids_not_found)
 
     @commands.command(name=command_names.function_command.save_raid, help=help_text.save_raid)
     @commands.has_role('Капитан')
@@ -71,13 +74,15 @@ class RaidSaveLoad(commands.Cog):
         # if not find raid to save
         if not curr_raid:
             await check_input.not_correct(ctx, 'Не нашёл рейд для сохранение.')
+            log_template.command_fail(ctx, logger_msgs.raids_not_found)
             return
 
         curr_raid.save_raid()
-        module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+
         await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
 
 
 def setup(bot):
     bot.add_cog(RaidSaveLoad(bot))
-    module_logger.debug(f'Успешный запуск bot.raid_manager.save_load')
+    log_template.cog_launched('RaidSaveLoad')
