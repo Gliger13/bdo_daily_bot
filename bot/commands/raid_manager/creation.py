@@ -6,7 +6,8 @@ from discord.ext import commands
 from commands.raid_manager import raid_list
 from instruments import check_input, raid, database_process, tools
 from instruments.raid import Raid
-from messages import command_names, help_text, messages
+from messages import command_names, help_text, messages, logger_msgs
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -54,14 +55,18 @@ class RaidCreation(commands.Cog):
         await sleep_task
 
         users_list = self.database.user.get_users_id(list(current_raid.member_dict.keys()))
+        amount = 0
         for member in users_list:
             if member:
                 user = self.bot.get_user(member.get('discord_id'))
                 await user.send(messages.member_notification)
+                amount += 1
 
         captain_id = self.database.user.user_post_by_name(current_raid.captain_name).get('discord_id')
         captain = self.bot.get_user(captain_id)
         await captain.send(messages.captain_notification)
+
+        log_template.notify_success(current_raid.raid_time.time_leaving, amount + 1)
 
     @commands.command(name=command_names.function_command.remove_raid, help=help_text.remove_raid)
     @commands.has_role('Капитан')
@@ -73,11 +78,12 @@ class RaidCreation(commands.Cog):
         if curr_raid:
             curr_raid.end_work()
             self.raid_list.remove(curr_raid)
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+
             await ctx.message.add_reaction('✔')
+            log_template.command_success(ctx)
         else:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
             await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
 
     @commands.command(name=command_names.function_command.collection, help=help_text.collection)
     @commands.has_role('Капитан')
@@ -85,11 +91,13 @@ class RaidCreation(commands.Cog):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = self.raid_list.find_raid(
+            ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True
+        )
 
         if not curr_raid:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого рейда.')
             await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
             return
 
         if curr_raid.is_deleted_raid:
@@ -101,6 +109,8 @@ class RaidCreation(commands.Cog):
         # Send message about collection
         collection_msg = await curr_raid.raid_msgs.send_coll_msg(ctx)
         await collection_msg.add_reaction('❤')
+
+        log_template.command_success(ctx)
 
         curr_raid.raid_time.validate_time()
 
@@ -150,12 +160,13 @@ class RaidCreation(commands.Cog):
             if captain_raid.raid_time.time_leaving == time_leaving:
                 await ctx.author.send(messages.raid_exist_error)
                 await ctx.message.add_reaction('❌')
+                log_template.command_fail(ctx, logger_msgs.raid_exist)
                 raise commands.errors.UserInputError('Такой рейд уже существует.')
 
         active_raids = self.captain_raids_str(captain_name)
         message = await ctx.author.send(messages.raid_exist_warning + active_raids)
-        await message.add_reaction('❌')
         await message.add_reaction('✔')
+        await message.add_reaction('❌')
 
         def check(reaction, user):
             return user.id == ctx.message.author.id and (str(reaction.emoji) == '✔' or str(reaction.emoji) == '❌')
@@ -164,9 +175,12 @@ class RaidCreation(commands.Cog):
         try:
             reaction, user = await self.bot.wait_for('reaction_add', timeout=300.0, check=check)
         except asyncio.TimeoutError:
+            log_template.command_fail(ctx, logger_msgs.user_not_response)
             raise commands.errors.UserInputError('Капитан не ответил на вопрос о создании рейда')
         else:
-            if str(reaction.emoji) == '❌':
+            emoji = str(reaction.emoji)
+            log_template.user_answer(ctx, emoji)
+            if emoji == '❌':
                 raise commands.errors.UserInputError('Капитан отказался создавать новый рейд')
 
     @commands.command(name=command_names.function_command.captain, help=help_text.captain)
@@ -193,7 +207,7 @@ class RaidCreation(commands.Cog):
 
         await ctx.send(messages.raid_created.format(time_reservation_open=time_reservation_open))
         await ctx.message.add_reaction('✔')
-        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+        log_template.command_success(ctx)
 
         # Wait time reservation open
         time_left_sec = tools.get_sec_left(time_reservation_open)
@@ -219,10 +233,11 @@ class RaidCreation(commands.Cog):
         if not captain_post:
             await ctx.message.add_reaction('❌')
             await ctx.author.send(messages.new_captain)
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого капитана')
+            log_template.command_fail(ctx, logger_msgs.captain_not_exist)
             return
         last_raids = captain_post.get('last_raids')
         raids_msg = messages.raid_create_choice_start.format(captain_name=captain_post['captain_name'])
+
         for index, last_raid in enumerate(last_raids):
             raids_msg += messages.raid_create_choice_server_time.format(
                 index=index + 1, server=last_raid['server'], time_leaving=last_raid['time_leaving']
@@ -250,13 +265,15 @@ class RaidCreation(commands.Cog):
         try:
             reaction, user = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
         except asyncio.TimeoutError:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Время на ответ вышло')
+            log_template.command_fail(ctx, logger_msgs.user_not_response)
             await ctx.message.add_reaction('❌')
         else:
-            user_choice = NUMBER_REACTIONS[str(reaction.emoji)]
+            emoji = str(reaction.emoji)
+            log_template.user_answer(ctx, emoji)
+            user_choice = NUMBER_REACTIONS[emoji]
+
             user_raid = last_raids[user_choice - 1]
             await self.check_raid_exists(ctx, captain_post.get('captain_name'), user_raid.get('time_leaving'))
-            module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
             await self.captain(
                 ctx,
                 captain_post.get('captain_name'),
@@ -269,4 +286,4 @@ class RaidCreation(commands.Cog):
 
 def setup(bot):
     bot.add_cog(RaidCreation(bot))
-    module_logger.debug(f'Успешный запуск bot.raid_manager.creation')
+    log_template.cog_launched('RaidCreation')

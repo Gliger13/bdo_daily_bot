@@ -5,7 +5,8 @@ from discord.ext import commands
 
 from commands.raid_manager import raid_list
 from instruments import check_input, database_process
-from messages import command_names, help_text, messages
+from messages import command_names, help_text, messages, logger_msgs
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -19,7 +20,7 @@ class RaidOverview(commands.Cog):
 
     @commands.command(name=command_names.function_command.show_raids, help=help_text.show_raids)
     async def show_raids(self, ctx: commands.context.Context, show_all=''):
-        module_logger.info(f'{ctx.author} использовал команду {ctx.message.content}')
+        log_template.command_success(ctx)
         if not show_all:
             if self.raid_list:
                 msg_of_raid = messages.active_raids_start
@@ -69,10 +70,10 @@ class RaidOverview(commands.Cog):
             )
             await ctx.send(curr_raid.table.create_text_table())
             await ctx.message.add_reaction('✔')
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+            log_template.command_success(ctx)
         else:
             await ctx.message.add_reaction('❌')
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
 
     @commands.command(name=command_names.function_command.show, help=help_text.show)
     @commands.has_role('Капитан')
@@ -88,12 +89,12 @@ class RaidOverview(commands.Cog):
             curr_raid.save_raid()
             await ctx.send(file=discord.File(path))
             await ctx.message.add_reaction('✔')
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
+            log_template.command_success(ctx)
         else:
             await ctx.message.add_reaction('❌')
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
 
 
 def setup(bot):
     bot.add_cog(RaidOverview(bot))
-    module_logger.debug(f'Успешный запуск bot.raid_manager.overview')
+    log_template.cog_launched('RaidOverview')

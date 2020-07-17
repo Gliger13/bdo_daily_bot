@@ -12,7 +12,7 @@ from settings import settings
 # from commands.raid_manager import creation, save_load, registration, joining, overview
 
 # Initialization logger
-from settings import logger
+from settings.logger import logger
 module_logger = logging.getLogger('my_bot')
 
 bot = commands.Bot(command_prefix=settings.PREFIX)
