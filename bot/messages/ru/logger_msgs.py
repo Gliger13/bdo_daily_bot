@@ -63,6 +63,8 @@ no_available_raids = 'Нету доступных рейдов'
 
 nope_in_raids = 'Нету в рейдах'
 
+logs_not_found = 'Логи не найдены'
+
 # ============================== commands.raid_manager.registration ===============================
 
 already_registered = 'Уже зарегистрирован'
