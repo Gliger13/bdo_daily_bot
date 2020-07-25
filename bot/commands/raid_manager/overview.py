@@ -49,6 +49,7 @@ class RaidOverview(commands.Cog):
                 await ctx.send(messages.no_active_raids)
 
     @commands.command(name=command_names.function_command.show_text_raids, help=help_text.show_text_raids)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def show_text_raids(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
@@ -76,6 +77,7 @@ class RaidOverview(commands.Cog):
             log_template.command_fail(ctx, logger_msgs.raid_not_found)
 
     @commands.command(name=command_names.function_command.show, help=help_text.show)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def show(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments

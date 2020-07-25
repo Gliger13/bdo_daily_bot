@@ -19,6 +19,7 @@ class RaidSaveLoad(commands.Cog):
         self.bot = bot
 
     @commands.command(name=command_names.function_command.load_raid, help=help_text.load_raid)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def load_raid(self, ctx: commands.context.Context, captain_name, time_leaving):
         # Checking correct input
@@ -52,6 +53,7 @@ class RaidSaveLoad(commands.Cog):
         log_template.command_success(ctx)
 
     @commands.command(name=command_names.function_command.save_raids, help=help_text.save_raids)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def save_raids(self, ctx: commands.context.Context):
         if self.raid_list:
@@ -65,12 +67,14 @@ class RaidSaveLoad(commands.Cog):
             log_template.command_fail(ctx, logger_msgs.raids_not_found)
 
     @commands.command(name=command_names.function_command.save_raid, help=help_text.save_raid)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def save_raid(self, ctx: commands.context.Context, captain_name: str, time_leaving=''):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id,
+                                             captain_name, time_leaving, ignore_channels=True)
         # if not find raid to save
         if not curr_raid:
             await check_input.not_correct(ctx, 'Не нашёл рейд для сохранение.')

@@ -37,8 +37,6 @@ class Events(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.errors.BadArgument):
             await ctx.message.add_reaction('❔')
-        elif isinstance(error, commands.errors.CheckFailure):
-            await ctx.message.add_reaction('⛔')
         elif isinstance(error, commands.errors.MissingRequiredArgument):
             await ctx.message.add_reaction('❔')
         elif isinstance(error, commands.errors.CommandNotFound):
@@ -50,7 +48,7 @@ class Events(commands.Cog):
             await ctx.message.author.send(messages.no_private_msg)
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.BotMissingPermissions):
-            await ctx.message.author.send(messages.missing_perms.format(missing_perms=error.missing_perms))
+            await ctx.message.author.send(messages.missing_perms.format(missing_perms='.'.join(error.missing_perms)))
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.UserInputError):
             await ctx.message.add_reaction('❓')

@@ -146,10 +146,10 @@ class Base(commands.Cog):
                 await help_msg.edit(embed=embed)
 
     @commands.command(name=command_names.function_command.turn_off_bot, help=help_text.turn_off_bot)
+    @commands.is_owner()
     async def turn_off_bot(self, ctx):
-        if ctx.author.id == 324528465682366468:
-            log_template.command_success(ctx)
-            await self.bot.logout()
+        log_template.command_success(ctx)
+        await self.bot.logout()
 
     @commands.command(name=command_names.function_command.author_of_bot, help=help_text.author_of_bot)
     async def author_of_bot(self, ctx: commands.context.Context):
