@@ -39,6 +39,7 @@ function_command = FunctionCommand({
     'help': 'help',
     'turn_off_bot': 'заверши_работу',
     'author_of_bot': 'автор',
+    'send_logs': 'логи',
     # commands.fun
     'where': 'где',
     'order': 'выполни_приказ',

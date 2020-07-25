@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import discord
 from discord.ext import commands
@@ -47,6 +48,19 @@ class Base(commands.Cog):
         else:
             await ctx.message.add_reaction('❌')
             log_template.command_fail(ctx, logger_msgs.command_not_found)
+
+    @commands.command(name=command_names.function_command.send_logs, help=help_text.send_logs)
+    @commands.is_owner()
+    async def send_logs(self, ctx: commands.context.Context):
+        path_to_logs = os.path.join('settings', 'logger', 'logs.log')
+        if os.path.exists(path_to_logs):
+            await ctx.send(file=discord.File(path_to_logs))
+            await ctx.message.add_reaction('✔')
+            log_template.command_success(ctx)
+        else:
+            await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.logs_not_found)
+
 
     # Custom help
     @commands.command(name=command_names.function_command.help, help=help_text.help)
