@@ -19,6 +19,7 @@ class Admin(commands.Cog):
 
     @commands.command(name=command_names.function_command.remove_there, help=help_text.remove_there)
     @commands.guild_only()
+    @commands.has_role('Капитан')
     async def remove_there(self, ctx: commands.context.Context):
         guild = ctx.guild
         channel = ctx.channel
