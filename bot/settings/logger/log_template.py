@@ -59,10 +59,13 @@ def command_error(ctx, error):
 
 def unknown_command_error(ctx, error):
     log = (
+        f"{'-' * 20}\n"
         f"{_guild_channel_msg(ctx)}: "
         f"{logger_msgs.unknown_command_error.format(user=ctx.author, command=ctx.message.content)}\n"
-        f"Type: {type(error)}.\nShort: {error}.\nTraceback:\n"
-    ) + ''.join(traceback.format_tb(error.__traceback__))
+        f"Type: {type(error)}.\n"
+        f"Short: {error}.\n"
+        f"Traceback:\n"
+    ) + ''.join(traceback.format_tb(error.__traceback__)) + f"\n{'-' * 20}"
     module_logger.error(log)
 
 
