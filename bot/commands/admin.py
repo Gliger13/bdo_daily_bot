@@ -18,7 +18,7 @@ class Admin(commands.Cog):
         self.bot = bot
 
     @commands.command(name=command_names.function_command.remove_there, help=help_text.remove_there)
-    @commands.has_permissions(administrator=True, manage_messages=True)
+    @commands.guild_only()
     async def remove_there(self, ctx: commands.context.Context):
         guild = ctx.guild
         channel = ctx.channel
@@ -31,6 +31,7 @@ class Admin(commands.Cog):
         await ctx.message.delete()
 
     @commands.command(name=command_names.function_command.remove_msgs, help=help_text.remove_msgs)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def remove_msgs(self, ctx: commands.context.Context, amount=100):
         guild = ctx.guild
@@ -39,8 +40,8 @@ class Admin(commands.Cog):
             messages_to_remove = []
             msg_count = 0
             async for msg in channel.history(limit=int(amount)):
-                is_time_has_passed = datetime.now() - msg.created_at < timedelta(days=14)
-                if is_time_has_passed:
+                is_time_has_passed = datetime.now() - msg.created_at > timedelta(days=14)
+                if not msg.pinned and is_time_has_passed:
                     await ctx.author.send(
                         messages.remove_msgs_fail_14.format(msg_count=msg_count, amount=amount)
                     )
@@ -56,6 +57,7 @@ class Admin(commands.Cog):
             log_template.command_fail(ctx, logger_msgs.wrong_channel)
 
     @commands.command(name=command_names.function_command.not_remove_there, help=help_text.not_remove_there)
+    @commands.guild_only()
     @commands.has_permissions(administrator=True, manage_messages=True)
     async def not_remove_there(self, ctx: commands.context.Context):
         guild = ctx.guild

@@ -39,7 +39,7 @@ def check_args(**kwargs):
 
 
 async def not_correct(ctx, *errors):
-    message = messages.wrong_command.format(ctx.message.content)
+    message = messages.wrong_command.format(command=ctx.message.content)
     errors = ''.join(errors)
     await ctx.author.send(message + errors)
     log_template.command_fail(ctx, errors)

@@ -18,7 +18,6 @@ class Fun(commands.Cog):
         self.order_66_notify = False
 
     @commands.command(name=command_names.function_command.judge_him, help=help_text.judge_him)
-    @commands.has_role('Капитан')
     async def judge_him(self, ctx, username=''):
         log_template.command_success(ctx)
 

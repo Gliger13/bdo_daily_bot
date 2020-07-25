@@ -69,6 +69,7 @@ class RaidCreation(commands.Cog):
         log_template.notify_success(current_raid.raid_time.time_leaving, amount + 1)
 
     @commands.command(name=command_names.function_command.remove_raid, help=help_text.remove_raid)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def remove_raid(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
@@ -86,6 +87,7 @@ class RaidCreation(commands.Cog):
             log_template.command_fail(ctx, logger_msgs.raid_not_found)
 
     @commands.command(name=command_names.function_command.collection, help=help_text.collection)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def collection(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
@@ -184,6 +186,7 @@ class RaidCreation(commands.Cog):
                 raise commands.errors.UserInputError('Капитан отказался создавать новый рейд')
 
     @commands.command(name=command_names.function_command.captain, help=help_text.captain)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def captain(self, ctx: commands.context.Context,
                       captain_name: str, server: str, time_leaving: str, time_reservation_open='', reservation_count=0):
@@ -220,6 +223,7 @@ class RaidCreation(commands.Cog):
         await collection_task
 
     @commands.command(name=command_names.function_command.cap, help=help_text.cap)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def cap(self, ctx: commands.context.Context):
         NUMBER_REACTIONS = {

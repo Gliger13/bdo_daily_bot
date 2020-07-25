@@ -84,6 +84,7 @@ class RaidJoining(commands.Cog):
                               logger_msgs.raid_leaving.format(captain_name=current_raid.captain_name))
 
     @commands.command(name=command_names.function_command.reserve, help=help_text.reserve)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def reserve(self, ctx: commands.context.Context, name: str, captain_name='', time_leaving=''):
         # Checking correct input
@@ -130,6 +131,7 @@ class RaidJoining(commands.Cog):
         log_template.command_success(ctx)
 
     @commands.command(name=command_names.function_command.remove_res, help=help_text.remove_res)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def remove_res(self, ctx: commands.context.Context, name: str):
         # Checking correct inputs arguments
