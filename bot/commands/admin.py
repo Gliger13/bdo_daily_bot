@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from datetime import datetime, timedelta
 
@@ -27,9 +26,6 @@ class Admin(commands.Cog):
 
         await ctx.message.add_reaction('✔')
         log_template.command_success(ctx)
-
-        await asyncio.sleep(10)
-        await ctx.message.delete()
 
     @commands.command(name=command_names.function_command.remove_msgs, help=help_text.remove_msgs)
     @commands.guild_only()
