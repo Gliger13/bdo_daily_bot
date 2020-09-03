@@ -52,6 +52,8 @@ class Events(commands.Cog):
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.UserInputError):
             await ctx.message.add_reaction('❓')
+        elif isinstance(error, commands.errors.MissingRole):
+            await ctx.message.add_reaction('⛔️')
         else:
             log_template.unknown_command_error(ctx, error)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
