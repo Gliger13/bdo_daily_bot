@@ -65,12 +65,10 @@ class Fun(commands.Cog):
         channel = self.bot.get_channel(int(channel_id))
         if not channel:
             await ctx.message.add_reaction('❌')
-            print(1)
             return
         message = await channel.fetch_message(int(message_id))
         if not message:
             await ctx.message.add_reaction('❌')
-            print(2)
             return
         await message.add_reaction(reaction)
         await ctx.message.add_reaction('✔')

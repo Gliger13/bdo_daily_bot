@@ -45,6 +45,7 @@ function_command = FunctionCommand({
     'order': 'выполни_приказ',
     'judge_him': 'осуди_его',
     'say': 'скажи',
+    'react': 'реакция',
     # commands.statistics
     'user_statistics': 'стат',
     'guild_statistics': 'сервер_стат',
