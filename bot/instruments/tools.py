@@ -1,6 +1,18 @@
 from datetime import datetime, timedelta
 
 
+class MetaSingleton(type):
+    """
+    Realize pattern Singleton
+    """
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
 def get_sec_left(time_end: str) -> int:
     hours_end, minutes_end = tuple(map(int, time_end.split(':')))
     time_start = datetime.now()
@@ -8,6 +20,12 @@ def get_sec_left(time_end: str) -> int:
     delta_end = timedelta(hours=hours_end, minutes=minutes_end)
     delta_left = delta_end - delta_start
     return delta_left.seconds
+
+
+def now_time_plus_minute() -> str:
+    now_plus_1 = datetime.now() + timedelta(minutes=1)
+    now_time_plus_1 = timedelta(hours=now_plus_1.hour, minutes=now_plus_1.minute)
+    return ':'.join(str(now_time_plus_1).split(':')[:-1])
 
 
 def get_time_difference(time_start, time_end) -> int:
