@@ -7,7 +7,7 @@ Discord Bot making for BDO community that help collect daily raid, usually sea r
 
 **Technologies**: Python 3.8, discord, Pillow, MongoDB.
 
-**Command localisation**: so far only Russian.
+**Command localisation**: Russion, you can add any other language.
 
 ## Features
 
@@ -64,7 +64,7 @@ The bot does auto-save the raid when it changes.
  - ```!!загрузи_рейд *[captain_name] *[time_leaving]``` - Load raid.
 
 **Statistics**
- - ```!!стат``` - Show statistics that the bot knows about user. 
+ - ```!!стат [name]``` - Show statistics that the bot knows about user. 
  - ```!!сервер_стат``` - Show statistics that the bot knows about user.
 
 ## Additional features
@@ -76,9 +76,8 @@ The bot does auto-save the raid when it changes.
  - ```!!удалять_тут``` - Bot specify a channel where can remove messages.
  - ```!!не_удалять``` - Bot deny users use remove messages command in this channel.
  - ```!!очисти_чат [n=100]``` - Remove last n messages in the channel.
+ - ```!!логи``` - Send logs list as message.
 
-**Give/Remove role**
- - ```!!pvp``` - bot send message with emodji. The bot give role 'pvp', if user click on emodji. 
 -----
 # Community
 
