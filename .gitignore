@@ -14,7 +14,7 @@ __pycache__/
 # Files created by script and user data
 bot/saves/
 bot/images/
-bot/settings/logs.log
+bot/settings/logger/logs.log
 
 # Secrets
 bot/settings/secrets.py

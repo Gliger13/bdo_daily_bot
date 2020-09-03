@@ -4,7 +4,8 @@ import random
 
 from discord.ext import commands
 
-from instruments import help_messages
+from messages import command_names, help_text, messages
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
@@ -14,10 +15,12 @@ class Fun(commands.Cog):
         self.bot = bot
         self.exit_status = 0
 
-    @commands.command(name='осуди_его', help=help_messages.judge_him)
-    @commands.has_role('Капитан')
+        self.order_66_notify = False
+
+    @commands.command(name=command_names.function_command.judge_him, help=help_text.judge_him)
     async def judge_him(self, ctx, username=''):
-        module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
+        log_template.command_success(ctx)
+
         bot_msg = await ctx.send(f"Я осуждаю {username}!")
         await asyncio.sleep(10)
         await bot_msg.edit(content='Фу таким быть')
@@ -28,10 +31,9 @@ class Fun(commands.Cog):
         await asyncio.sleep(10)
         await bot_msg.edit(content=f"Я осуждаю {username}!")
 
-    @commands.command(name='где', help=help_messages.where)
+    @commands.command(name=command_names.function_command.where, help=help_text.where)
     @commands.has_role('Капитан')
     async def where(self, ctx, name: str):
-        module_logger.info(f'{ctx.author} ввёл команду {ctx.message.content}')
         with_who = ['у Mandeson(pornhub)']
         woods = ['На маленькой ', 'На высокой ', 'На большой ', 'На средней', 'На пиратской ', 'На милой ']
         random_index1 = random.randrange(0, len(with_who))
@@ -43,27 +45,36 @@ class Fun(commands.Cog):
             await ctx.send("На своей мачте")
         else:
             await ctx.send("В море наверное")
+        log_template.command_success(ctx)
 
-    @commands.command(name='выполни_приказ', help=help_messages.order)
+    @commands.command(name=command_names.function_command.order, help=help_text.order)
     async def order(self, ctx, number: int):
-        if number == 12:
-            msg_under_leave = ("Гильдия моего создателя покинула этот альянс"
-                               "и я вместе с ним ухожу отсюда :cry:.\n"
-                               "Но вы можете увидеть меня ещё на сервере Отряд Бартерят\n"
-                               "https://discord.gg/msMnCaV")
+        guild = ctx.guild
 
-            if not ctx.author.id == 324528465682366468:
-                return
-            for server in self.bot.guilds:
-                if server.name == 'ХАНЫЧ':
-                    for channel in server.channels:
-                        if channel.name == '✒флудилка':
-                            channel = self.bot.get_channel(channel.id)
-                            await channel.send(f'{msg_under_leave}')
-                            await server.leave()
-                            await ctx.send(f'Я покинул сервер {server.name}')
+        if number == 66 and not self.order_66_notify:
+            await ctx.channel.send(f'Хорошая попытка, уже был бунт')
 
-    @commands.command(name='скажи', help=help_messages.say)
+        if number == 12 and ctx.author.id == 324528465682366468:
+            await ctx.channel.send(messages.msg_under_leave)
+            await guild.leave()
+
+        log_template.command_success(ctx)
+
+    @commands.command(name=command_names.function_command.react)
+    async def react(self, ctx, channel_id, message_id, reaction):
+        channel = self.bot.get_channel(int(channel_id))
+        if not channel:
+            await ctx.message.add_reaction('❌')
+            return
+        message = await channel.fetch_message(int(message_id))
+        if not message:
+            await ctx.message.add_reaction('❌')
+            return
+        await message.add_reaction(reaction)
+        await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
+
+    @commands.command(name=command_names.function_command.say, help=help_text.say)
     async def say(self, ctx, server_id, channel_id, *text):
         if not ctx.author.id == 324528465682366468:
             return
@@ -74,8 +85,9 @@ class Fun(commands.Cog):
                 for channel in server.channels:
                     if channel.id == channel_id:
                         await channel.send(' '.join(text))
+        log_template.command_success(ctx)
 
 
 def setup(bot):
     bot.add_cog(Fun(bot))
-    module_logger.debug('Успешный запуск bot.fun')
+    log_template.cog_launched('Fun')

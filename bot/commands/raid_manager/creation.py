@@ -1,30 +1,27 @@
 import asyncio
 import logging
-import time
 
-import discord
 from discord.ext import commands
 
-from commands.raid_manager import common
-from commands.raid_manager.common import Raids
-from instruments import check_input, raid, help_messages, database_process, tools
+from commands.raid_manager import raid_list
+from instruments import check_input, raid, database_process, tools
 from instruments.raid import Raid
+from messages import command_names, help_text, messages, logger_msgs
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
 
 class RaidCreation(commands.Cog):
     database = database_process.DatabaseManager()
-    raid_list = common.Raids.active_raids
+    raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
-    def captain_raids(captain_name: str) -> list or None:
-        raids = Raids().active_raids
+    def captain_raids(self, captain_name: str) -> list or None:
         current_raids = []
-        for some_raid in raids:
+        for some_raid in self.raid_list:
             if some_raid.captain_name == captain_name:
                 current_raids.append(some_raid)
         return current_raids
@@ -36,18 +33,15 @@ class RaidCreation(commands.Cog):
         current_raids = self.captain_raids(captain_name)
 
         if current_raids:
-            msg_for_author = (
-                "Ваши текущие рейды:\n"
-                "дискорд сервер/текстовый канал/сервер/время отплытия\n"
-            )
+            msg = messages.yours_current_raids_start
             for captain_raid in current_raids:
                 guild_name = str(self.bot.get_guild(captain_raid.guild_id))
                 channel_name = str(self.bot.get_channel(captain_raid.channel_id))
-                msg_for_author += (
+                msg += (
                     f"**{guild_name}**/**{channel_name}**/"
                     f"**{captain_raid.server}**/**{captain_raid.raid_time.time_leaving}**\n"
                 )
-            return msg_for_author
+            return msg
         else:
             return
 
@@ -60,151 +54,149 @@ class RaidCreation(commands.Cog):
         current_raid.raid_time.notification_task = sleep_task
         await sleep_task
 
-        member_msg = (
-            f"До отплытия капитана осталось **7 минут**!\n"
-            f"У тебя есть ещё время подготовиться, если ещё не готов."
-        )
         users_list = self.database.user.get_users_id(list(current_raid.member_dict.keys()))
+        amount = 0
         for member in users_list:
             if member:
                 user = self.bot.get_user(member.get('discord_id'))
-                await user.send(member_msg)
-
-        captain_msg = (
-            f"Капитан, у вас отплытие через **7 минут**!\n"
-        )
+                await user.send(messages.member_notification)
+                amount += 1
 
         captain_id = self.database.user.user_post_by_name(current_raid.captain_name).get('discord_id')
         captain = self.bot.get_user(captain_id)
-        await captain.send(captain_msg)
+        await captain.send(messages.captain_notification)
 
-    @commands.command(name='удали_рейд', help=help_messages.remove_raid)
+        log_template.notify_success(current_raid.raid_time.time_leaving, amount + 1)
+
+    @commands.command(name=command_names.function_command.remove_raid, help=help_text.remove_raid)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def remove_raid(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
         if curr_raid:
             curr_raid.end_work()
             self.raid_list.remove(curr_raid)
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('✔')
-        else:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('❌')
 
-    @commands.command(name='сбор', help=help_messages.collection)
+            await ctx.message.add_reaction('✔')
+            log_template.command_success(ctx)
+        else:
+            await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+
+    @commands.command(name=command_names.function_command.collection, help=help_text.collection)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def collection(self, ctx: commands.context.Context, captain_name, time_leaving=''):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True)
-        if curr_raid and not curr_raid.is_delete_raid:
-            # Send msg about collection and save data
-            collection_msg = (f"Капитан **{curr_raid.captain_name}** выплывает на морские ежедневки с Око Окиллы в "
-                              f"**{curr_raid.raid_time.time_leaving}** на канале **{curr_raid.server}**.\n"
-                              f"Желающие присоединиться к кэпу должны нажать на :heart:.\n"
-                              f"И обязательно, посмотрите сообщение,"
-                              f"которое я вам выслал в личные сообщения, может быть вы не попали в рейд.\n"
-                              f"Мест осталось {curr_raid.places_left}.\n"
-                              f"Обновлённая таблица появится скоро")
-            curr_raid.guild = ctx.message.guild
-            curr_raid.collection_msg = await ctx.send(collection_msg)
-            await curr_raid.collection_msg.add_reaction('❤')
+        curr_raid = self.raid_list.find_raid(
+            ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True
+        )
 
-            # Show raid_table in time
-            curr_raid.table_msg = await ctx.send('Тут будет таблица')
-            curr_raid.raid_time.validate_time()
-            for tasks in curr_raid.task_list:
-                tasks.cancel()
-
-            # Notify user if possible before leaving
-            asyncio.ensure_future(self.notify_about_leaving(curr_raid))
-
-            raid_time = curr_raid.raid_time.time_to_display.copy()
-            for index, time_display in enumerate(raid_time):
-                # Update text msg of start collection Raid
-                edited_text = f'Обновлённая таблица появится в {time_display}.'
-                old_text = curr_raid.collection_msg.content
-                start_index = old_text.find('Обновлённая')
-                new_text = old_text[:start_index] + edited_text
-                await curr_raid.collection_msg.edit(content=new_text)
-                curr_raid.save_raid()
-                module_logger.info(f'Сохранение рейда {curr_raid.captain_name}')
-
-                secs_left = curr_raid.raid_time.secs_left_to_display()
-                sleep_task = asyncio.create_task(asyncio.sleep(secs_left))
-                curr_raid.task_list.append(sleep_task)
-                await sleep_task
-
-                for tasks in curr_raid.task_list:
-                    tasks.cancel()
-                await curr_raid.table_msg.delete()
-                curr_raid.table_msg = await ctx.send(file=discord.File(curr_raid.table_path()))
-
-            self.database.captain.update_captain(str(ctx.author), curr_raid)
-
-            await ctx.send(f"Рейд на {curr_raid.server} с капитаном {curr_raid.captain_name} уже уплыли на ежедневки")
-            await self.remove_raid(ctx, captain_name, time_leaving)
-        else:
+        if not curr_raid:
             await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            return
 
-    @commands.command(name='капитан', help=help_messages.captain)
-    @commands.has_role('Капитан')
-    async def captain(self, ctx: commands.context.Context, captain_name: str, server: str,
-                      time_leaving: str, time_reservation_open='', reservation_count=0):
-        # Checking correct inputs arguments
-        await check_input.validation(**locals())
+        if curr_raid.is_deleted_raid:
+            return
+
+        if curr_raid.waiting_collection_task:
+            curr_raid.waiting_collection_task.cancel()
+
+        # Send message about collection
+        collection_msg = await curr_raid.raid_msgs.send_coll_msg(ctx)
+        await collection_msg.add_reaction('❤')
+
+        log_template.command_success(ctx)
+
+        curr_raid.raid_time.validate_time()
+
+        # Notify user if possible before leaving
+        asyncio.ensure_future(self.notify_about_leaving(curr_raid))
+
+        raid_time = curr_raid.raid_time.time_to_display.copy()
+        for index, time_display in enumerate(raid_time):
+            curr_raid.save_raid()
+
+            # Update text msg of start collection Raid
+            await curr_raid.raid_msgs.update_coll_msg(self.bot)
+
+            # Wait next time to display raid table
+            secs_left = curr_raid.raid_time.secs_left_to_display()
+            curr_raid.coll_sleep_task = asyncio.create_task(asyncio.sleep(secs_left))
+            await curr_raid.coll_sleep_task
+            curr_raid.raid_time.time_passed()
+
+            # Resend new message with raid table if not first time else just send table
+            await curr_raid.raid_msgs.update_table_msg(self.bot, ctx)
+
+        self.database.captain.update_captain(str(ctx.author), curr_raid)
+
+        await ctx.send(messages.collection_end.format(server=curr_raid.server, captain_name=curr_raid.captain_name))
+        await self.remove_raid(ctx, captain_name, time_leaving)
+
+    def check_captain_registration(self, user, captain_name: str):
+        nickname = self.database.user.find_user(str(user))
+        if nickname == captain_name:
+            return
+        else:
+            self.database.user.rereg_user(user.id, str(user), captain_name)
+
+    async def check_raid_exists(self, ctx, captain_name, time_leaving=''):
         # Check captain exists
         captain_post = self.database.captain.find_captain_post(str(ctx.author))
         if not captain_post:
             self.database.captain.create_captain(str(ctx.author))
-        # Check raid exists by this captain
+
+        # Check raid exists of this captain
         captain_raids = self.captain_raids(captain_name)
-        if captain_raids:
-            for captain_raid in captain_raids:
-                if captain_raid.raid_time.time_leaving == time_leaving:
-                    await ctx.author.send(
-                        "**Я не создам такой рейд!**\n"
-                        "У вас уже есть такой созданный рейд с таким временим отплытия.\n"
-                        "Используйте его или удалите его."
-                    )
-                    await ctx.message.add_reaction('❌')
-                    module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}.\n'
-                                       f'Такой рейд существует.')
-                    return
+        if not captain_raids:
+            return
+        # If raid with this credentials absolutely matched
+        for captain_raid in captain_raids:
+            if captain_raid.raid_time.time_leaving == time_leaving:
+                await ctx.author.send(messages.raid_exist_error)
+                await ctx.message.add_reaction('❌')
+                log_template.command_fail(ctx, logger_msgs.raid_exist)
+                raise commands.errors.UserInputError('Такой рейд уже существует.')
 
-            active_raids = self.captain_raids_str(captain_name)
-            message = await ctx.author.send(
-                "Вы действительно хотите создать ещё один рейд?\n"
-                "У вас уже есть созданные рейды\n" + active_raids
-            )
-            await message.add_reaction('❌')
-            await message.add_reaction('✔')
+        active_raids = self.captain_raids_str(captain_name)
+        message = await ctx.author.send(messages.raid_exist_warning + active_raids)
+        await message.add_reaction('✔')
+        await message.add_reaction('❌')
 
-            def check(reaction, user):
-                return user.id == ctx.message.author.id and (str(reaction.emoji) == '✔' or str(reaction.emoji) == '❌')
+        def check(reaction, user):
+            return user.id == ctx.message.author.id and (str(reaction.emoji) == '✔' or str(reaction.emoji) == '❌')
 
-            try:
-                reaction, user = await self.bot.wait_for('reaction_add', timeout=300.0, check=check)
-            except asyncio.TimeoutError:
-                return
-            else:
-                if str(reaction.emoji) == '❌':
-                    module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}.\n'
-                                       f'Отказался создавать ещё один рейд.')
-                    return
+        # Wait answer of user
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=300.0, check=check)
+        except asyncio.TimeoutError:
+            log_template.command_fail(ctx, logger_msgs.user_not_response)
+            raise commands.errors.UserInputError('Капитан не ответил на вопрос о создании рейда')
+        else:
+            emoji = str(reaction.emoji)
+            log_template.user_answer(ctx, emoji)
+            if emoji == '❌':
+                raise commands.errors.UserInputError('Капитан отказался создавать новый рейд')
+
+    @commands.command(name=command_names.function_command.captain, help=help_text.captain)
+    @commands.guild_only()
+    @commands.has_role('Капитан')
+    async def captain(self, ctx: commands.context.Context,
+                      captain_name: str, server: str, time_leaving: str, time_reservation_open='', reservation_count=0):
+        await check_input.validation(**locals())
+        await self.check_raid_exists(ctx, captain_name, time_leaving)
+        self.check_captain_registration(ctx.author, captain_name)
 
         if not time_reservation_open:
-            current_hour, current_minute = map(int, time.ctime()[11:16].split(':'))
-            if current_minute + 1 < 60:
-                current_minute += 1
-            else:
-                current_minute -= 59
-                current_hour += 1 if current_hour < 24 else -23
-            time_reservation_open = ':'.join((str(current_hour), str(current_minute)))
+            time_reservation_open = tools.now_time_plus_minute()
+
         new_raid = raid.Raid(
             captain_name,
             server,
@@ -215,23 +207,23 @@ class RaidCreation(commands.Cog):
             reservation_count
         )
         self.raid_list.append(new_raid)
-        new_raid.guild = ctx.guild
 
-        time_left_sec = tools.get_sec_left(time_reservation_open)
-        hour, minutes = time_reservation_open.split(':')
-        time_open = f"{hour}:{minutes}" if len(minutes) == 2 else f"{hour}:0{minutes}"
-        await ctx.send(f"Новый рейд создан! Теперь участники могут записатся к тебе!\n"
-                       f"Бронирование мест начнется в **{time_open}**")
+        await ctx.send(messages.raid_created.format(time_reservation_open=time_reservation_open))
         await ctx.message.add_reaction('✔')
-        module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+        log_template.command_success(ctx)
 
-        # Create sleep task for collection command
+        # Wait time reservation open
+        time_left_sec = tools.get_sec_left(time_reservation_open)
         sleep_task = asyncio.create_task(asyncio.sleep(time_left_sec))
-        new_raid.collection_task = sleep_task
+        new_raid.waiting_collection_task = sleep_task
         await sleep_task
-        await self.collection(ctx, captain_name, time_leaving)
+        # Start raid collection
+        collection_task = asyncio.create_task(self.collection(ctx, captain_name, time_leaving))
+        new_raid.collection_task = sleep_task
+        await collection_task
 
-    @commands.command(name='кэп', help=help_messages.cap)
+    @commands.command(name=command_names.function_command.cap, help=help_text.cap)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def cap(self, ctx: commands.context.Context):
         NUMBER_REACTIONS = {
@@ -241,24 +233,25 @@ class RaidCreation(commands.Cog):
 
         user = str(ctx.author)
         captain_post = self.database.captain.find_captain_post(user)
+
         if not captain_post:
             await ctx.message.add_reaction('❌')
-            await ctx.author.send(
-                f"Привет, я тебя ещё не знаю! Рэйдов ты не создавал ещё. Воспользуйся командой `!!капитан`"
-            )
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету такого капитана')
+            await ctx.author.send(messages.new_captain)
+            log_template.command_fail(ctx, logger_msgs.captain_not_exist)
             return
         last_raids = captain_post.get('last_raids')
-        raids_msg = f"Какой из рейдов мне создать, капитан **{captain_post['captain_name']}**?\n"
+        raids_msg = messages.raid_create_choice_start.format(captain_name=captain_post['captain_name'])
+
         for index, last_raid in enumerate(last_raids):
-            raids_msg += (
-                f"{index + 1}) На сервере **{last_raid['server']}**, который отплывает в"
-                f" **{last_raid['time_leaving']}**"
+            raids_msg += messages.raid_create_choice_server_time.format(
+                index=index + 1, server=last_raid['server'], time_leaving=last_raid['time_leaving']
             )
             if last_raid.get('time_reservation_open'):
-                raids_msg += f", время начала сбора в **{last_raid['time_reservation_open']}**"
+                raids_msg += messages.raid_create_choice_res_open.format(
+                    time_reservation_open=last_raid['time_reservation_open']
+                )
             if last_raid.get('reservation_count') and not last_raid['reservation_count'] == 1:
-                raids_msg += f", количество забронированных мест **{last_raid['reservation_count']}**"
+                raids_msg += messages.raid_create_choice_count.format(reservtaion_count=last_raid['reservation_count'])
             raids_msg += '.\n'
 
         msg = await ctx.send(raids_msg)
@@ -276,13 +269,15 @@ class RaidCreation(commands.Cog):
         try:
             reaction, user = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
         except asyncio.TimeoutError:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Время на ответ вышло')
+            log_template.command_fail(ctx, logger_msgs.user_not_response)
             await ctx.message.add_reaction('❌')
         else:
-            user_choice = NUMBER_REACTIONS[str(reaction.emoji)]
-            user_raid = last_raids[user_choice - 1]
+            emoji = str(reaction.emoji)
+            log_template.user_answer(ctx, emoji)
+            user_choice = NUMBER_REACTIONS[emoji]
 
-            module_logger.info(f'{ctx.author} удачно использовал команду {ctx.message.content}')
+            user_raid = last_raids[user_choice - 1]
+            await self.check_raid_exists(ctx, captain_post.get('captain_name'), user_raid.get('time_leaving'))
             await self.captain(
                 ctx,
                 captain_post.get('captain_name'),
@@ -295,4 +290,4 @@ class RaidCreation(commands.Cog):
 
 def setup(bot):
     bot.add_cog(RaidCreation(bot))
-    module_logger.debug(f'Успешный запуск bot.raid_manager.creation')
+    log_template.cog_launched('RaidCreation')

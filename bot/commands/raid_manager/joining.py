@@ -2,133 +2,153 @@ import logging
 
 from discord.ext import commands
 
-from commands.raid_manager import common
-from instruments import messages, help_messages, check_input, database_process
+from commands.raid_manager import raid_list
+from instruments import check_input, database_process
+from messages import command_names, help_text, messages, logger_msgs
 from settings import settings
+from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 
 
 class RaidJoining(commands.Cog):
     database = database_process.DatabaseManager()
-    raid_list = common.Raids.active_raids
+    raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
-    async def update_info(curr_raid):
-        old_text = curr_raid.collection_msg.content
-        edited_text = f"Мест осталось {curr_raid.places_left}.\n"
-        start_index = old_text.find('Мест осталось')
-        end_index = old_text.find('Обновлённая')
-        new_text_msg = old_text[:start_index] + edited_text + old_text[end_index:]
-        await curr_raid.collection_msg.edit(content=new_text_msg)
-
     async def raid_reaction_add(self, collection_msg, emoji, user):
-        if str(emoji) == '❤' and not user.id == settings.BOT_ID:  # Ignore bot action
-            for curr_raid in self.raid_list:
-                if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id and
-                        curr_raid.guild == collection_msg.guild):
-                    nickname = self.database.user.find_user(str(user))
-                    if nickname:  # if find user in data base
-                        if curr_raid.member_dict.get(nickname):
-                            await user.send(messages.msg_fail1)
-                            module_logger.info(f'{user} не смог попасть в рейд к кэпу. Уже есть в рейде')
-                            break
-                        else:
-                            if curr_raid.places_left != 0:
-                                msg_success = (
-                                    f"**Привет!**\n"
-                                    f"Ты попал на морские ежедневки к капитану **{curr_raid.captain_name}**"
-                                    f" на сервере **{curr_raid.server}**.\n"
-                                    f"Отплытие с Ока Окиллы в **{curr_raid.raid_time.time_leaving}**.\n"
-                                    f"Об сборе рейда обычно пишут за 5 - 10 минут "
-                                    f"до отплытия. Если информации нету, то пиши на"
-                                    f" фамилию капитана **{curr_raid.captain_name}**.")
-                                curr_raid += str(nickname)
-                                self.database.user.user_joined_raid(str(user))
-                                module_logger.info(f'{user} попал в рейд к кэпу {curr_raid.captain_name}')
-                                await user.send(msg_success)
-                                await RaidJoining.update_info(curr_raid)
-                                break
-                            else:
-                                msg_no_space = "Ты не попал в рейд. Мест не осталось :crying_cat_face:"
-                                module_logger.info(f'{user} не попал в рейд к кэпу {curr_raid.captain_name}. Нет мест')
-                                await user.send(msg_no_space)
-                                break
-                    else:
-                        module_logger.info(f'{user} не попал в рейд. Нет регистрации')
-                        await user.send(messages.msg_fail2)
-                        break
+        if str(emoji) != '❤' or user.id == settings.BOT_ID:
+            return
+
+        guild = collection_msg.guild
+        channel = collection_msg.channel
+        # Check registration
+        nickname = self.database.user.find_user(str(user))
+        if not nickname:
+            await user.send(messages.no_registration)
+            log_template.reaction(guild, channel, user, emoji, logger_msgs.no_registration)
+            return
+
+        current_raid = self.raid_list.find_raid_by_coll_id(collection_msg.id)
+
+        # Check user exists in raid
+        if nickname in current_raid:
+            await user.send(messages.already_in_raid)
+            log_template.reaction(guild, channel, user, emoji, logger_msgs.already_in_raid)
+            return
+
+        if current_raid.is_full:
+            log_template.reaction(guild, channel, user, emoji, logger_msgs.raid_is_full)
+            await user.send(messages.raid_not_joined)
+            return
+
+        if not self.raid_list.is_correct_join(nickname, current_raid.raid_time.time_leaving):
+            log_template.reaction(guild, channel, user, emoji, logger_msgs.already_in_same_raid)
+            await user.send(messages.already_joined)
+            return
+
+        msg_success = messages.raid_joined.format(
+            captain_name=current_raid.captain_name, server=current_raid.server,
+            time_leaving=current_raid.raid_time.time_leaving,
+        )
+
+        current_raid += nickname
+
+        self.database.user.user_joined_raid(str(user))
+
+        await user.send(msg_success)
+        await current_raid.raid_msgs.update_coll_msg(self.bot)
+        log_template.reaction(guild, channel, user, emoji,
+                              logger_msgs.raid_joining.format(captain_name=current_raid.captain_name))
 
     async def raid_reaction_remove(self, collection_msg, emoji, user):
-        if str(emoji) == '❤':
-            for curr_raid in self.raid_list:
-                if (curr_raid.collection_msg and curr_raid.collection_msg.id == collection_msg.id
-                        and curr_raid.guild == collection_msg.guild):
-                    nickname = self.database.user.find_user(str(user))
-                    if nickname:
-                        if curr_raid.member_dict.get(nickname):
-                            msg_remove = (
-                                f"Я тебя удалил из списка на ежедневки с капитаном **{curr_raid.captain_name}**"
-                            )
-                            curr_raid -= str(nickname)
-                            self.database.user.user_leave_raid(str(user))
-                            module_logger.info(f'{user} убрал себя из рейда кэпа {curr_raid.captain_name}')
-                            await user.send(msg_remove)
-                            await RaidJoining.update_info(curr_raid)
-                            break
+        if str(emoji) != '❤' or user.id == settings.BOT_ID:
+            return
 
-    @commands.command(name='бронь', help=help_messages.reserve)
+        current_raid = self.raid_list.find_raid_by_coll_id(collection_msg.id)
+
+        nickname = self.database.user.find_user(str(user))
+        if not nickname or nickname not in current_raid:
+            return
+
+        current_raid -= nickname
+        self.database.user.user_leave_raid(str(user))
+
+        await user.send(messages.raid_leave.format(captain_name=current_raid.captain_name))
+        await current_raid.raid_msgs.update_coll_msg(self.bot)
+        guild = collection_msg.guild
+        channel = collection_msg.channel
+        log_template.reaction(guild, channel, user, emoji,
+                              logger_msgs.raid_leaving.format(captain_name=current_raid.captain_name))
+
+    @commands.command(name=command_names.function_command.reserve, help=help_text.reserve)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def reserve(self, ctx: commands.context.Context, name: str, captain_name='', time_leaving=''):
         # Checking correct input
         await check_input.validation(**locals())
 
-        curr_raid = common.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
-        if curr_raid and not curr_raid.places_left == 0:
-            if curr_raid.member_dict.get(name):
-                module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Есть в рейде')
-                await ctx.message.add_reaction('❌')
-                return
-            curr_raid += name
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await RaidJoining.update_info(curr_raid)
-            await ctx.message.add_reaction('✔')
-        else:
-            guild_raid_list = []
-            for curr_raid in self.raid_list:
-                if curr_raid.guild == ctx.message.guild and not curr_raid.member_dict.get(name):
-                    guild_raid_list.append(curr_raid)
-                    break
-            if not guild_raid_list:  # If list empty
-                module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нет рейдов')
-                await ctx.message.add_reaction('❌')
-                return
-            smaller_raid = min(guild_raid_list)
-            smaller_raid += name
-            module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-            await ctx.message.add_reaction('✔')
+        if not captain_name and not time_leaving:
+            available_raids = self.raid_list.find_raids_by_guild(name, ctx.guild.id)
 
-    @commands.command(name='удали_бронь', help=help_messages.remove_res)
+            if not available_raids:
+                log_template.command_fail(ctx, logger_msgs.no_available_raids)
+                await ctx.message.add_reaction('❌')
+                return
+
+            smaller_raid = min(available_raids)
+            smaller_raid += name
+            await smaller_raid.raid_msgs.update_coll_msg(self.bot)
+            await ctx.message.add_reaction('✔')
+            log_template.command_success(ctx)
+            return
+
+        curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
+
+        if not curr_raid:
+            await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            return
+        if curr_raid.is_full:
+            await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.raid_is_full)
+            return
+        if name in curr_raid:
+            await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.already_in_raid)
+            return
+        if self.raid_list.is_correct_join(name, time_leaving):
+            await ctx.author.send(messages.already_joined)
+            await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.already_in_same_raid)
+            return
+
+        curr_raid += name
+        await curr_raid.raid_msgs.update_coll_msg(self.bot)
+        await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
+
+    @commands.command(name=command_names.function_command.remove_res, help=help_text.remove_res)
+    @commands.guild_only()
     @commands.has_role('Капитан')
     async def remove_res(self, ctx: commands.context.Context, name: str):
         # Checking correct inputs arguments
         await check_input.validation(**locals())
 
-        for finding_raid in self.raid_list:
-            finding_raid -= name
-            if finding_raid:
-                module_logger.info(f'{ctx.author} успешно использовал команду {ctx.message.content}')
-                await RaidJoining.update_info(finding_raid)
-                await ctx.message.add_reaction('✔')
-                break
-        else:
-            module_logger.info(f'{ctx.author} неудачно использовал команду {ctx.message.content}. Нету в рейдах')
+        current_raid = self.raid_list.find_raid_by_nickname(name)
+
+        if not current_raid:
             await ctx.message.add_reaction('❌')
+            log_template.command_fail(ctx, logger_msgs.nope_in_raids)
+        else:
+            current_raid -= name
+            await current_raid.raid_msgs.update_coll_msg(self.bot)
+            await ctx.message.add_reaction('✔')
+            log_template.command_success(ctx)
 
 
 def setup(bot):
     bot.add_cog(RaidJoining(bot))
-    module_logger.debug(f'Успешный запуск bot.raid_manager.joining')
+    log_template.cog_launched('RaidJoining')
