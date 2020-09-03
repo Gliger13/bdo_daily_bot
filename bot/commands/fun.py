@@ -60,6 +60,22 @@ class Fun(commands.Cog):
 
         log_template.command_success(ctx)
 
+    @commands.command(name=command_names.function_command.react)
+    async def react(self, ctx, channel_id, message_id, reaction):
+        channel = self.bot.get_channel(int(channel_id))
+        if not channel:
+            await ctx.message.add_reaction('❌')
+            print(1)
+            return
+        message = await channel.fetch_message(int(message_id))
+        if not message:
+            await ctx.message.add_reaction('❌')
+            print(2)
+            return
+        await message.add_reaction(reaction)
+        await ctx.message.add_reaction('✔')
+        log_template.command_success(ctx)
+
     @commands.command(name=command_names.function_command.say, help=help_text.say)
     async def say(self, ctx, server_id, channel_id, *text):
         if not ctx.author.id == 324528465682366468:
