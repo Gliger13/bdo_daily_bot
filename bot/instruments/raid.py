@@ -15,7 +15,6 @@ from messages import messages
 class Raid:
     """
     Create Raid Object that contain members amount of members and etc
-
     """
     def __init__(self, captain_name, server, time_leaving, time_reservation_open,
                  guild_id, channel_id, reservation_count=2):

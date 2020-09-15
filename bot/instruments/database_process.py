@@ -17,7 +17,8 @@ class Error(Exception):
 
 
 class UserExists(Error):
-    """Exception raised when user exist in database
+    """
+    Exception raised when user exist in database
 
     Attributes:
         expression -- input expression in which the error occurred
@@ -30,7 +31,6 @@ class UserExists(Error):
 class Database(metaclass=MetaSingleton):
     """
     Connect with Mongo Database
-
     """
     _cluster = None
 

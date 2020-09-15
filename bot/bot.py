@@ -28,6 +28,7 @@ bot = commands.Bot(command_prefix=settings.PREFIX)
 #                 print(f'Failed to load extension {extension}.')
 #                 traceback.print_exc()
 
+# Explicitly loading cogs for pyinstaller
 bot.load_extension(f"commands.events")
 bot.load_extension(f"commands.base")
 bot.load_extension(f"commands.admin")

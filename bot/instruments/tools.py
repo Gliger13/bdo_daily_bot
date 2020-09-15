@@ -14,6 +14,9 @@ class MetaSingleton(type):
 
 
 def get_sec_left(time_end: str) -> int:
+    """
+    Return seconds left from now
+    """
     hours_end, minutes_end = tuple(map(int, time_end.split(':')))
     time_start = datetime.now()
     delta_start = timedelta(hours=time_start.hour, minutes=time_start.minute, seconds=time_start.second)
