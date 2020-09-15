@@ -1,6 +1,7 @@
 import logging
 
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from instruments import check_input, database_process
 from messages import command_names, help_text, messages, logger_msgs
@@ -10,13 +11,24 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidRegistration(commands.Cog):
+    """
+    Cog that responsible for user registration. After registration user can use reaction.
+    """
     database = database_process.DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(name=command_names.function_command.reg, help=help_text.reg)
-    async def reg(self, ctx: commands.context.Context, name: str):
+    async def reg(self, ctx: Context, name: str):
+        """
+        Register game nickname in bot database.
+
+        Attributes:
+        ----------
+        name: str
+            Game user nickname.
+        """
         # Checking correct input
         await check_input.validation(**locals())
 
@@ -30,7 +42,15 @@ class RaidRegistration(commands.Cog):
             log_template.command_fail(ctx, logger_msgs.already_registered)
 
     @commands.command(name=command_names.function_command.rereg, help=help_text.rereg)
-    async def rereg(self, ctx: commands.context.Context, name: str):
+    async def rereg(self, ctx: Context, name: str):
+        """
+        Re-register game nickname in bot database.
+
+        Attributes:
+        ----------
+        name: str
+            Game user nickname.
+        """
         # Checking correct input
         await check_input.validation(**locals())
 

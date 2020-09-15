@@ -4,6 +4,7 @@ import os
 
 import discord
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from instruments import check_input, database_process
 from messages import command_names, help_text, messages, logger_msgs
@@ -14,21 +15,37 @@ module_logger = logging.getLogger('my_bot')
 
 
 class Base(commands.Cog):
+    """
+    Cog that responsible for basic bot commands.
+    """
     database = database_process.DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
-        self.bot.remove_command('help')  # To make custom help
+        self.bot.remove_command('help')  # Remove command to create custom help
 
     @commands.command(name=command_names.function_command.test, help=help_text.test)
-    async def test(self, ctx: commands.context.Context):
+    async def test(self, ctx: Context):
+        """
+        Command witch does nothing. For developer and debugging.
+        """
         await check_input.validation(**locals())
         await ctx.message.add_reaction('❌')
         await ctx.message.add_reaction('✔')
         log_template.command_success(ctx)
 
-    async def help_command(self, ctx, command):
+    async def help_command(self, ctx: Context, command):
+        """
+        Send command description as message in channel.
+
+        Attributes
+        ----------
+        command: str
+            The name of command for getting the description
+        """
+        # Get command obj from the name
         command = self.bot.get_command(command)
+
         if command:
             embed = discord.Embed(
                 title=command.name,
@@ -51,8 +68,12 @@ class Base(commands.Cog):
 
     @commands.command(name=command_names.function_command.send_logs, help=help_text.send_logs)
     @commands.is_owner()
-    async def send_logs(self, ctx: commands.context.Context):
+    async def send_logs(self, ctx: Context):
+        """
+        Command for admins and developers. Send the bot logs as msg to channel.
+        """
         path_to_logs = os.path.join('settings', 'logger', 'logs.log')
+
         if os.path.exists(path_to_logs):
             await ctx.send(file=discord.File(path_to_logs))
             await ctx.message.add_reaction('✔')
@@ -61,18 +82,28 @@ class Base(commands.Cog):
             await ctx.message.add_reaction('❌')
             log_template.command_fail(ctx, logger_msgs.logs_not_found)
 
-
-    # Custom help
     @commands.command(name=command_names.function_command.help, help=help_text.help)
-    async def help(self, ctx, command=''):
+    async def help(self, ctx: Context, command=''):
+        """
+        Custom help command.
+
+        Attributes
+        ----------
+        command: str
+            The name of command for getting the description
+        """
+        # If user enter name of command to get description
         if command:
             await self.help_command(ctx, command)
             return
 
+        # Dict of emoji for control custom help
         HELP_EMODJI = ['🔼', '1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣']
         pages = {}
+        # Cogs witch should not be shown in help
         not_help_cogs = ['Base', 'Events']
 
+        # Get all available commands of the bot
         cogs_commands = {}
         for cog_name in self.bot.cogs:
             if cog_name not in not_help_cogs:
@@ -88,6 +119,8 @@ class Base(commands.Cog):
             name=str(bot_as_user),
             icon_url=bot_as_user.avatar_url,
         )
+
+        # Generate pages of cogs with description of all commands in cog
         section_help = messages.section_help.format(emoji=HELP_EMODJI[0])
         for index, (cog_name, bot_commands) in enumerate(cogs_commands.items()):
             section_help += f"**{HELP_EMODJI[1:][index]}  -  {cog_name}**\n"
@@ -132,16 +165,21 @@ class Base(commands.Cog):
             inline=False
         )
 
+        # Set home page
         pages[HELP_EMODJI[0]] = main_embed
 
         help_msg = await ctx.send(embed=main_embed)
 
         log_template.command_success(ctx)
 
+        # Add control emoji for message
         for emoji in HELP_EMODJI:
             await help_msg.add_reaction(emoji)
 
         def check(reaction, user):
+            """
+            Only user who use command can use control emoji
+            """
             return (
                     user == ctx.message.author and
                     str(reaction.emoji) in HELP_EMODJI
@@ -149,24 +187,32 @@ class Base(commands.Cog):
 
         while True:
             try:
+                # Waiting for a click reaction from the user
                 reaction, user = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
             except asyncio.TimeoutError:
                 return
 
             log_template.user_answer(ctx, str(reaction))
 
+            # Switch page
             embed = pages.get(str(reaction))
             if embed:
                 await help_msg.edit(embed=embed)
 
     @commands.command(name=command_names.function_command.turn_off_bot, help=help_text.turn_off_bot)
     @commands.is_owner()
-    async def turn_off_bot(self, ctx):
+    async def turn_off_bot(self, ctx: Context):
+        """
+        Disables the bot. Available only to the bot creator.
+        """
         log_template.command_success(ctx)
         await self.bot.logout()
 
     @commands.command(name=command_names.function_command.author_of_bot, help=help_text.author_of_bot)
-    async def author_of_bot(self, ctx: commands.context.Context):
+    async def author_of_bot(self, ctx: Context):
+        """
+        Send information about creator and bot as message in current channel.
+        """
         embed = discord.Embed(
             title=messages.author_title,
             colour=discord.Colour.blue(),

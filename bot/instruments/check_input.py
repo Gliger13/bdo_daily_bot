@@ -12,6 +12,10 @@ module_logger = logging.getLogger('my_bot')
 
 
 async def validation(**kwargs):
+    """
+    Check function input arguments from the command via discord message.
+    If wrong input raise error.
+    """
     ctx = kwargs.pop('ctx')
     errors = check_args(**kwargs)
     if errors:
@@ -20,6 +24,9 @@ async def validation(**kwargs):
 
 
 def check_args(**kwargs):
+    """
+    Check function input arguments from the command via discord message.
+    """
     errors = []
     for key, value in kwargs.items():
         if value:
@@ -39,6 +46,9 @@ def check_args(**kwargs):
 
 
 async def not_correct(ctx, *errors):
+    """
+    Responsible for wrong input handling
+    """
     message = messages.wrong_command.format(command=ctx.message.content)
     errors = ''.join(errors)
     await ctx.author.send(message + errors)
