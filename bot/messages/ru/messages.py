@@ -146,7 +146,7 @@ section_title = 'Разделы команд'
 
 about_author = """
 Бот был сделан **Gliger#7748** (Андрей).
-Версия бота: **2.1.0**.
+Версия бота: **2.1.1**.
 Сделан на Python, исходный код можно увидеть на https://github.com/Gliger13/bdo_daily_bot.
 Приглашение в Сообщество Бартерят - https://discord.gg/VaEsRTc
 """

@@ -1,5 +1,5 @@
 # Daily Discord Bot BDO
-![Generic badge](https://img.shields.io/badge/version-2.0.0-green.svg) ![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot) ![Generic badge](https://img.shields.io/badge/python-3.8-blue.svg) [![Discord](https://img.shields.io/discord/726859545082855483)](https://discord.gg/VaEsRTc)
+![Generic badge](https://img.shields.io/badge/version-2.1.1-green.svg) ![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot) ![Generic badge](https://img.shields.io/badge/python-3.8-blue.svg) [![Discord](https://img.shields.io/discord/726859545082855483)](https://discord.gg/VaEsRTc)
 
 Discord Bot for help in collection daily raid in the game **Black Desert Online[RU]**(BDO).
 

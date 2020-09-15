@@ -3,6 +3,7 @@ import logging
 import os
 
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from commands.raid_manager import raid_list
 from instruments import check_input, raid
@@ -13,6 +14,9 @@ module_logger = logging.getLogger('my_bot')
 
 
 class RaidSaveLoad(commands.Cog):
+    """
+    Cog that responsible for saving and loading raid parameters.
+    """
     raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
@@ -21,7 +25,17 @@ class RaidSaveLoad(commands.Cog):
     @commands.command(name=command_names.function_command.load_raid, help=help_text.load_raid)
     @commands.guild_only()
     @commands.has_role('Капитан')
-    async def load_raid(self, ctx: commands.context.Context, captain_name, time_leaving):
+    async def load_raid(self, ctx: Context, captain_name: str, time_leaving: str):
+        """
+        Load raid from locale storage.
+
+        Attributes:
+        ----------
+        captain_name: str
+            Name of the captain that created the raid.
+        time_leaving: str or None
+            Time when raid leaving. Required to fill if captain has more than one raid.
+        """
         # Checking correct input
         await check_input.validation(**locals())
 
@@ -55,7 +69,10 @@ class RaidSaveLoad(commands.Cog):
     @commands.command(name=command_names.function_command.save_raids, help=help_text.save_raids)
     @commands.guild_only()
     @commands.has_role('Капитан')
-    async def save_raids(self, ctx: commands.context.Context):
+    async def save_raids(self, ctx: Context):
+        """
+        Save all active raids in locale storage.
+        """
         if self.raid_list:
             for some_raid in self.raid_list:
                 some_raid.save_raid()
@@ -69,7 +86,17 @@ class RaidSaveLoad(commands.Cog):
     @commands.command(name=command_names.function_command.save_raid, help=help_text.save_raid)
     @commands.guild_only()
     @commands.has_role('Капитан')
-    async def save_raid(self, ctx: commands.context.Context, captain_name: str, time_leaving=''):
+    async def save_raid(self, ctx: Context, captain_name: str, time_leaving=''):
+        """
+        Save active raid by specific captain name and time leaving
+
+        Attributes:
+        ----------
+        captain_name: str
+            Name of the captain that created the raid.
+        time_leaving: str or None
+            Time when raid leaving. Required to fill if captain has more than one raid.
+        """
         # Checking correct input
         await check_input.validation(**locals())
 
