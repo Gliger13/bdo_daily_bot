@@ -3,7 +3,7 @@ import pytest
 from instruments.database.db_manager import DatabaseManager
 from instruments.database.user_col import UserCollection
 
-TEST_CONNECTION_PATH = "bot/tests/test_database/test_connection_01.py::test_database_connection"
+TEST_CONNECTION_PATH = "bot/tests/test_database/test_01_connection.py::test_database_connection"
 
 
 @pytest.mark.dependency(depends=[TEST_CONNECTION_PATH], scope="session")
