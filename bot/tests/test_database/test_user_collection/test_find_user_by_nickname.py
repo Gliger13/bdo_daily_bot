@@ -1,7 +1,7 @@
 """Test of the correctness of obtaining a document about user by its name."""
 import pytest
 
-from instruments.database.user_col import UserCollection
+from instruments.database.user_collection import UserCollection
 from test_framework.asserts.database_asserts.check_user_collection import check_find_user_by_nickname
 from test_framework.scripts.common.data_factory import get_test_data
 

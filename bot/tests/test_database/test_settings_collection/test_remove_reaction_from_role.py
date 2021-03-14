@@ -1,7 +1,7 @@
 """Test the correct reactions are removed from the role"""
 import pytest
 
-from instruments.database.settings_col import SettingsCollection
+from instruments.database.settings_collection import SettingsCollection
 from test_framework.asserts.database_asserts.check_settings_collection import check_remove_reaction_from_role
 from test_framework.scripts.common.data_factory import get_test_data
 

@@ -1,7 +1,7 @@
 """Test creating new settings """
 import pytest
 
-from instruments.database.settings_col import SettingsCollection
+from instruments.database.settings_collection import SettingsCollection
 from test_framework.asserts.database_asserts.check_settings_collection import check_create_new_settings
 from test_framework.scripts.common.data_factory import get_test_data
 

@@ -1,6 +1,6 @@
 """Contain checks of the database user collection."""
-from instruments.database.captain_col import CaptainCollection
-from instruments.database.user_col import UserCollection
+from instruments.database.captain_collection import CaptainCollection
+from instruments.database.user_collection import UserCollection
 from instruments.raid.raid import Raid
 from test_framework.scripts.common.data_factory import parse_test_sample
 from test_framework.scripts.database_scripts.find_in_database import is_data_exist, find_document

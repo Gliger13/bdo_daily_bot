@@ -2,7 +2,7 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from instruments.database.db_init import Database
+from instruments.database.database import Database
 from instruments.tools import MetaSingleton
 from settings import settings
 

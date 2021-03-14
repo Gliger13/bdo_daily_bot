@@ -1,7 +1,7 @@
 """Test captain update."""
 import pytest
 
-from instruments.database.captain_col import CaptainCollection
+from instruments.database.captain_collection import CaptainCollection
 from test_framework.asserts.database_asserts.check_captain_collection import check_update_captain
 from test_framework.scripts.common.data_factory import get_test_data
 

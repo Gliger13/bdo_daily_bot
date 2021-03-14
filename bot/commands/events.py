@@ -5,7 +5,7 @@ import traceback
 import discord
 from discord.ext import commands
 
-from instruments.database.db_manager import DatabaseManager
+from instruments.database.manager import DatabaseManager
 from messages import messages, logger_msgs
 from settings import settings
 from settings.logger import log_template

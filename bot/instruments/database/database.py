@@ -29,5 +29,3 @@ class Database(metaclass=MetaSingleton):
     @property
     def database(self) -> AsyncIOMotorCollection:
         return self._connect()
-
-

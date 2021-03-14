@@ -1,6 +1,6 @@
 import logging
 
-from instruments.database.db_init import Database, Error
+from instruments.database.database import Database, Error
 from instruments.tools import MetaSingleton
 from settings import settings
 

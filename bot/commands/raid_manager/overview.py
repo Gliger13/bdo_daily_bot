@@ -6,7 +6,7 @@ from discord.ext.commands import Context
 
 from commands.raid_manager import raid_list
 from instruments import check_input
-from instruments.database.db_manager import DatabaseManager
+from instruments.database.manager import DatabaseManager
 from messages import command_names, help_text, messages, logger_msgs
 from settings.logger import log_template
 

@@ -23,7 +23,10 @@ LANGUAGE = 'ru'
 # Used Mongo Database
 
 # Cluster name
-CLUSTER_NAME = 'discord'
+
+# CLUSTER_NAME = 'discord'
+# For tests purpose
+CLUSTER_NAME = 'test_discord'
 
 # Collection names
 

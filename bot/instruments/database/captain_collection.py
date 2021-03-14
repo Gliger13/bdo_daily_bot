@@ -2,8 +2,8 @@ import datetime
 import logging
 
 from instruments import tools
-from instruments.database.db_init import Database
-from instruments.database.user_col import UserCollection
+from instruments.database.database import Database
+from instruments.database.user_collection import UserCollection
 from instruments.raid.raid import Raid
 from instruments.tools import MetaSingleton
 from settings import settings

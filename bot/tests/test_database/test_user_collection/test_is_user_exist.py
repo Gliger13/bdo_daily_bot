@@ -1,7 +1,7 @@
 """Test that checking for an existing user is correct."""
 import pytest
 
-from instruments.database.user_col import UserCollection
+from instruments.database.user_collection import UserCollection
 from test_framework.asserts.database_asserts.check_user_collection import check_is_user_exist
 from test_framework.scripts.common.data_factory import get_test_data
 
