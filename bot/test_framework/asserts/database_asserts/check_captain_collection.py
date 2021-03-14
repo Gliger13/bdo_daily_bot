@@ -30,6 +30,7 @@ async def check_create_captain(captain_collection: CaptainCollection, user_colle
     search_results = await find_document(captain_collection, data)
     search_results.pop('_id') if search_results and search_results.get('_id') else None
     # Remove time field
+    search_results.pop('registration_time') if search_results and search_results.get('registration_time') else None
     search_results.pop('last_created') if search_results and search_results.get('last_created') else None
 
     assert_message = "The updated document is not as expected, should be same."
@@ -54,25 +55,6 @@ async def check_find_captain_post(captain_collection: CaptainCollection, test_da
 
     assert_massage = "The saved and found document does not match, should be same."
     assert captain_post == expected_data, assert_massage
-
-
-async def check_get_captain_name_by_user(captain_collection: CaptainCollection, test_data: dict):
-    """
-    Check that receiving the current first notification is correct.
-
-    :param captain_collection: MongoDB collection.
-    :type captain_collection: CaptainCollection
-    :param test_data: Database test data.
-    :type test_data: dict
-    """
-    data_setup, data, expected_data = parse_test_sample(test_data)
-
-    await setup_database(captain_collection, data_setup)
-
-    captain_name = await captain_collection.get_captain_name_by_user(**data)
-
-    assert_massage = "The saved and found document does not match, should be same"
-    assert captain_name == expected_data, assert_massage
 
 
 async def check_get_last_raids(captain_collection: CaptainCollection, test_data: dict):
@@ -115,6 +97,7 @@ async def check_update_captain(captain_collection: CaptainCollection, test_data:
     search_results = await find_document(captain_collection, search_keys)
     search_results.pop('_id') if search_results and search_results.get('_id') else None
     # Remove time field
+    search_results.pop('registration_time') if search_results and search_results.get('registration_time') else None
     search_results.pop('last_created') if search_results and search_results.get('last_created') else None
 
     assert_message = "The updated document is not as expected, should be same."
