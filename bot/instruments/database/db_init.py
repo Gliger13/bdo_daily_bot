@@ -1,6 +1,6 @@
 import logging
 
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
 from instruments.tools import MetaSingleton
 from settings import settings
@@ -19,7 +19,7 @@ class Database(metaclass=MetaSingleton):
     """
     _cluster = None
 
-    def _connect(self):
+    def _connect(self) -> AsyncIOMotorCollection:
         if not self._cluster:
             module_logger.debug('Initialisation database.')
             self._cluster = AsyncIOMotorClient(settings.BD_STRING)[settings.CLUSTER_NAME]
@@ -27,7 +27,7 @@ class Database(metaclass=MetaSingleton):
         return self._cluster
 
     @property
-    def database(self):
+    def database(self) -> AsyncIOMotorCollection:
         return self._connect()
 
 

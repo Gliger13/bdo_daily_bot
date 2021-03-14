@@ -21,11 +21,9 @@ class CaptainCollection(metaclass=MetaSingleton):
             module_logger.debug(f'Collection {settings.CAPTAIN_COLLECTION} connected.')
         return self._collection
 
-    async def create_captain(self, user: str):
-        captain_name = await UserCollection().find_user(user)
+    async def create_captain(self, discord_id: int):
         post = {
-            "discord_user": user,
-            "captain_name": captain_name,
+            "discord_id": discord_id,
             "raids_created": 0,
             "drove_people": 0,
             "last_created": datetime.datetime.now().strftime('%H:%M %d.%m.%y'),
@@ -34,13 +32,13 @@ class CaptainCollection(metaclass=MetaSingleton):
         await self.collection.insert_one(post)
         return post
 
-    async def update_captain(self, user: str, raid: Raid):
-        captain_post = await self.find_captain_post(user)
+    async def update_captain(self, discord_id: int, raid: Raid):
+        captain_post = await self.find_captain_post(discord_id)
         if not captain_post:
-            await self.create_captain(user)
+            captain_post = await self.create_captain(discord_id)
 
         # update last raids
-        last_raids = captain_post['last_raids']
+        last_raids = captain_post.get('last_raids', [])
 
         # Get time normal time reservation open
         difference = tools.get_time_difference(raid.raid_time.time_reservation_open, raid.raid_time.time_leaving)
@@ -52,6 +50,7 @@ class CaptainCollection(metaclass=MetaSingleton):
         # is last raid with that credentials exists?
         is_raid_exists = False
         for last_raid in last_raids:
+            # noinspection PyTypeChecker
             is_raid_exists = (
                     last_raid['server'] == raid.server and
                     last_raid['time_leaving'] == raid.raid_time.time_leaving and
@@ -76,7 +75,7 @@ class CaptainCollection(metaclass=MetaSingleton):
 
         await self.collection.find_one_and_update(
             {
-                'discord_user': user
+                'discord_id': discord_id
             },
             {
                 '$inc': {
@@ -90,14 +89,14 @@ class CaptainCollection(metaclass=MetaSingleton):
             }
         )
 
-    async def find_captain_post(self, user: str):
+    async def find_captain_post(self, discord_id: int):
         return await self.collection.find_one({
-                'discord_user': user
+                'discord_id': discord_id
         })
 
-    async def get_last_raids(self, user: str):
-        captain_post = await self.find_captain_post(user)
+    async def get_last_raids(self, discord_id: int):
+        captain_post = await self.find_captain_post(discord_id)
         return captain_post.get('last_raids')
 
-    async def get_captain_name_by_user(self, user: str) -> str or None:
-        return (await self.find_captain_post(user)).get('captain_name')
+    async def get_captain_name_by_user(self, discord_id: int) -> str or None:
+        return (await self.find_captain_post(discord_id)).get('captain_name')

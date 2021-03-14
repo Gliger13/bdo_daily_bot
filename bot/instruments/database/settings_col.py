@@ -1,5 +1,7 @@
 import logging
 
+from motor.motor_asyncio import AsyncIOMotorCollection
+
 from instruments.database.db_init import Database
 from instruments.tools import MetaSingleton
 from settings import settings
@@ -11,7 +13,7 @@ class SettingsCollection(metaclass=MetaSingleton):
     _collection = None
 
     @property
-    def collection(self):
+    def collection(self) -> AsyncIOMotorCollection:
         if not self._collection:
             self._collection = Database().database[settings.SETTINGS_COLLECTION]
             module_logger.debug(f'Collection {settings.SETTINGS_COLLECTION} connected.')
@@ -34,92 +36,70 @@ class SettingsCollection(metaclass=MetaSingleton):
 
     async def find_or_new(self, guild_id: int, guild: str) -> dict:
         post = await self.find_settings_post(guild_id)
-        if post:
-            return post
-        else:
-            return await self.new_settings(guild_id, guild)
+        return post if post else await self.new_settings(guild_id, guild)
 
-    async def update_settings(self, guild_id: int, guild: str, channel_id: int, channel: str):
-        post = await self.find_settings_post(guild_id)
-        if not post:
-            # post = self.new_settings(guild_id, guild)
-            allowed_channels = {
-                str(channel_id): channel
-            }
-        else:
-            allowed_channels = post.get('can_remove_in_channels')
-            if allowed_channels:
-                allowed_channels.update({
-                    str(channel_id): channel
-                })
-            else:
-                allowed_channels = {
-                    str(channel_id): channel
-                }
+    async def update_allowed_channels(self, guild_id: int, guild: str, channel_id: int, channel: str):
+        settings_post = await self.find_settings_post(guild_id)
 
-        update_post = {
-            '$set': {
-                'can_remove_in_channels': allowed_channels
-            }
-        }
+        allowed_channel_to_update = {str(channel_id): channel}
+        if settings_post:
+            allowed_channels = channels if (channels := settings_post.get('can_remove_in_channels')) else {}
+            allowed_channels.update(allowed_channel_to_update)
+        else:
+            await self.new_settings(guild_id, guild)
+            allowed_channels = allowed_channel_to_update
+
+        post_to_update = {'$set': {'can_remove_in_channels': allowed_channels}}
         await self.collection.find_one_and_update(
             {
                 'guild_id': guild_id
             },
-            update_post
+            post_to_update
         )
 
-    async def can_delete_there(self, guild_id: int, channel_id: int):
-        post = await self.find_settings_post(guild_id)
-        if not post:
-            return False
-        if str(channel_id) in post.get('can_remove_in_channels'):
-            return True
+    async def can_delete_there(self, guild_id: int, channel_id: int) -> bool:
+        settings_post = await self.find_settings_post(guild_id)
+        channels = settings_post.get('can_remove_in_channels') if settings_post else None
+        return True if channels and str(channel_id) in channels else False
 
     async def not_delete_there(self, guild_id: int, channel_id: int):
-        old_post = await self.find_settings_post(guild_id)
-        if old_post:
-            allowed_channel = old_post.get('can_remove_in_channels').get(str(channel_id))
-            if allowed_channel:
-                new_allowed_channels = old_post['can_remove_in_channels'].copy()
-                new_allowed_channels.pop(str(channel_id))
-                new_post = {
-                    '$set': {
-                        'can_remove_in_channels': new_allowed_channels
-                    }
-                }
-                await self.collection.update_one(old_post, new_post)
+        settings_post = await self.find_settings_post(guild_id)
 
-    async def set_reaction_by_role(self, guild_id: int, guild: str, message_id: int, reaction_id: str, role_id: int):
-        old_post = await self.find_or_new(guild_id, guild)
+        if not settings_post:
+            return
 
-        role_from_reaction = old_post.get('role_from_reaction')
-        if role_from_reaction:
-            old_reaction_role = role_from_reaction.get('reaction_role')
+        allowed_channels = settings_post.get('can_remove_in_channels')
+        allowed_channel = allowed_channels.get(str(channel_id)) if allowed_channels else None
 
-            new_reaction_role = {reaction_id: role_id}
-            new_reaction_role.update(old_reaction_role)
+        if not allowed_channel:
+            return
 
-            update_post = {
-                '$set': {
-                    'role_from_reaction': {
-                        'message_id': message_id,
-                        'reaction_role': new_reaction_role,
-                    }
-                }
-            }
+        allowed_channels.pop(str(channel_id))
+
+        post_to_update = {"$set": {
+            "can_remove_in_channels": allowed_channels
+        }}
+        await self.collection.update_one(settings_post, post_to_update)
+
+    async def set_reaction_by_role(self, guild_id: int, guild: str, message_id: int, reaction_id: int, role_id: int):
+        message_id = str(message_id)
+        role_id = str(role_id)
+
+        settings_post = await self.find_or_new(guild_id, guild)
+
+        role_from_reaction = key if (key := settings_post.get('role_from_reaction')) else {}
+
+        roles_id_reactions_id = role_from_reaction.get(message_id)
+
+        role_reaction_to_add = {role_id: reaction_id}
+        if not roles_id_reactions_id:
+            role_from_reaction[message_id] = role_reaction_to_add
         else:
-            update_post = {
-                '$set': {
-                    'role_from_reaction': {
-                        'message_id': message_id,
-                        'reaction_role':
-                            {
-                                reaction_id: role_id
-                            }
-                    }
-                }
-            }
+            role_from_reaction[message_id].update(role_reaction_to_add)
+
+        update_post = {'$set': {
+            'role_from_reaction': role_from_reaction
+        }}
 
         await self.collection.find_one_and_update(
             {
@@ -138,19 +118,24 @@ class SettingsCollection(metaclass=MetaSingleton):
             return
 
         reaction_role = role_from_reaction.get('reaction_role')
+
+        reaction_id = str(reaction_id)
         if reaction_id in reaction_role:
             reaction_role.pop(reaction_id)
         else:
             return
 
-        update_post = {
-            '$set': {
+        if reaction_role:
+            update_post = {'$set': {
                 'role_from_reaction': {
                     'message_id': role_from_reaction.get('message_id'),
                     'reaction_role': reaction_role,
                 }
-            }
-        }
+            }}
+        else:
+            update_post = {'$set': {
+                'role_from_reaction': {}
+            }}
 
         await self.collection.find_one_and_update(
             {
