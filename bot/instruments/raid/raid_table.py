@@ -15,7 +15,8 @@ class RaidTable:
     # For text
     TEXT_FONT_SIZE = 18  # pt
     # Font path
-    FONT_PATH = os.path.join("settings", "font_table.ttf")
+    ROOT_DIR = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+    FONT_PATH = os.path.join(ROOT_DIR, "settings", "font_table.ttf")
     # Set font size and encoding
     FONT = ImageFont.truetype(FONT_PATH, TEXT_FONT_SIZE, encoding="UTF-8")
 
