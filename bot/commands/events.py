@@ -192,23 +192,23 @@ class Events(commands.Cog):
             await joining.raid_reaction_remove(message, payload.emoji, user)
 
     async def not_notify_me(self, user):
-        nickname = await self.database.user.find_user(str(user))
+        nickname = await self.database.user.find_user(user.id)
 
         if not nickname:
             return
 
-        await self.database.user.notify_off(str(user))
+        await self.database.user.notify_off(user.id)
 
         await user.send(messages.notification_off)
         log_template.user_notification_on(user)
 
     async def notify_me(self, user):
-        nickname = await self.database.user.find_user(str(user))
+        nickname = await self.database.user.find_user(user.id)
 
         if not nickname:
             return
 
-        await self.database.user.notify_on(str(user))
+        await self.database.user.notify_on(user.id)
         await user.send(messages.notification_on)
         log_template.user_notification_off(user)
 

@@ -112,18 +112,18 @@ class Statistics(commands.Cog):
         # Check specific user
         if nickname:
             # Try to find user in db
-            user_info = await self.database.user.find_user_post_by_name(nickname)
+            user_info = await self.database.user.find_user_by_nickname(nickname)
             # If user exist try to find captain activity in db
             if user_info:
-                captain_info = await self.database.captain.find_captain_post(user_info['discord_user'])
+                captain_info = await self.database.captain.find_captain_post(user_info['discord_id'])
                 user = self.bot.get_user(user_info['discord_id'])
             else:
                 captain_info = None
         else:
             # If specific user not exist get current user
             user = ctx.author
-            user_info = await self.database.user.find_user_post(str(user))
-            captain_info = await self.database.captain.find_captain_post(str(user))
+            user_info = await self.database.user.find_user_post(user.id)
+            captain_info = await self.database.captain.find_captain_post(user.id)
 
         embed = self.user_stat_msg(user, user_info, captain_info)
         await ctx.send(embed=embed)
