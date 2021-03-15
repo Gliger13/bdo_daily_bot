@@ -126,6 +126,21 @@ class CaptainCollection(metaclass=MetaSingleton):
         """
         return await self.collection.find_one({'discord_id': discord_id})
 
+    async def find_or_new(self, discord_id: int) -> Dict[str, Any]:
+        """
+        Returns the captain's document using its discord id.
+
+        Returns the captain's document using its discord id. If there is no such document,
+        then it creates and returns it.
+
+        :param discord_id: User discord id.
+        :type discord_id: int
+        :return: Captain's document.
+        :rtype: Dict[str, Any]
+        """
+        captain_post = self.find_captain_post(discord_id)
+        return captain_post if captain_post else await self.create_captain(discord_id)
+
     async def get_last_raids(self, discord_id: int) -> List[Dict[str, Any]]:
         """
         Returns the captain's last raids using its discord id.
