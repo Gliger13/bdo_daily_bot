@@ -3,9 +3,9 @@ import logging
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from instruments import check_input
-from instruments.database.manager import DatabaseManager
-from instruments.database.user_collection import UserExists
+from core import check_input
+from core.database.manager import DatabaseManager
+from core.database.user_collection import UserExists
 from messages import command_names, help_text, messages, logger_msgs
 from settings.logger import log_template
 

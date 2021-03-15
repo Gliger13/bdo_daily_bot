@@ -1,7 +1,7 @@
 """Test the correctness of staging a reaction to getting a role."""
 import pytest
 
-from instruments.database.settings_collection import SettingsCollection
+from core.database.settings_collection import SettingsCollection
 from test_framework.asserts.database_asserts.check_settings_collection import check_set_reaction_by_role
 from test_framework.scripts.common.data_factory import get_test_data
 

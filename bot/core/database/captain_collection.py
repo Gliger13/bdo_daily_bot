@@ -5,10 +5,10 @@ from typing import Any, Dict, List
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from instruments import tools
-from instruments.database.database import Database
-from instruments.raid.raid import Raid
-from instruments.tools import MetaSingleton
+from core.database.database import Database
+from core.raid.raid import Raid
+from core.tools import tools
+from core.tools.tools import MetaSingleton
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')

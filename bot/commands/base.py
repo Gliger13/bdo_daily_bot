@@ -6,9 +6,9 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.logger import log_template
 from messages import command_names, help_text, messages, logger_msgs
 from settings import settings
-from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 

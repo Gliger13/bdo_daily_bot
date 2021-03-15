@@ -5,10 +5,10 @@ import traceback
 import discord
 from discord.ext import commands
 
-from instruments.database.manager import DatabaseManager
+from core.database.manager import DatabaseManager
+from core.logger import log_template
 from messages import messages, logger_msgs
 from settings import settings
-from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 

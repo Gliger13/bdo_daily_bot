@@ -1,8 +1,8 @@
 """Test that the captain is created correctly."""
 import pytest
 
-from instruments.database.captain_collection import CaptainCollection
-from instruments.database.user_collection import UserCollection
+from core.database.captain_collection import CaptainCollection
+from core.database.user_collection import UserCollection
 from test_framework.asserts.database_asserts.check_captain_collection import check_create_captain
 from test_framework.scripts.common.data_factory import get_test_data
 

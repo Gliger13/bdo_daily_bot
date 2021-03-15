@@ -6,10 +6,10 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from commands.raid_manager import raid_list
-from instruments import check_input
-from instruments.raid.raid import Raid
+from core.logger import log_template
+from core.raid.raid import Raid
+from core.tools import check_input
 from messages import command_names, help_text, logger_msgs
-from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 

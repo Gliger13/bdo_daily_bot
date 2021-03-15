@@ -12,7 +12,7 @@ from commands import events, base, admin, fun, statistics
 from commands.raid_manager import creation, manager, save_load, registration, joining, overview
 
 # Initialization logger
-from settings.logger import logger
+from core.logger import logger
 module_logger = logging.getLogger('my_bot')
 
 intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)

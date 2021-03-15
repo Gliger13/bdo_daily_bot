@@ -3,7 +3,7 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from instruments.tools import MetaSingleton
+from core.tools.tools import MetaSingleton
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')

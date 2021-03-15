@@ -1,5 +1,5 @@
 """Contain checks of the database settings collection."""
-from instruments.database.settings_collection import SettingsCollection
+from core.database.settings_collection import SettingsCollection
 from test_framework.scripts.common.data_factory import parse_test_sample
 from test_framework.scripts.database_scripts.find_in_database import is_data_exist, find_document
 from test_framework.scripts.database_scripts.setup_database import setup_database

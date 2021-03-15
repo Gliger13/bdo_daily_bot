@@ -1,7 +1,7 @@
 """Contain the database manager that manages all database collections."""
-from instruments.database.captain_collection import CaptainCollection
-from instruments.database.settings_collection import SettingsCollection
-from instruments.database.user_collection import UserCollection
+from core.database.captain_collection import CaptainCollection
+from core.database.settings_collection import SettingsCollection
+from core.database.user_collection import UserCollection
 
 
 class DatabaseManager:

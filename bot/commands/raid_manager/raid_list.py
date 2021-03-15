@@ -1,7 +1,7 @@
 import logging
 
-from instruments.raid.raid import Raid
-from instruments.tools import MetaSingleton
+from core.raid.raid import Raid
+from core.tools.tools import MetaSingleton
 
 module_logger = logging.getLogger('my_bot')
 

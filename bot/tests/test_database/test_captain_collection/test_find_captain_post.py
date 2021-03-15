@@ -1,7 +1,7 @@
 """Test that is a correct search the captain post in collection."""
 import pytest
 
-from instruments.database.captain_collection import CaptainCollection
+from core.database.captain_collection import CaptainCollection
 from test_framework.asserts.database_asserts.check_captain_collection import check_find_captain_post
 from test_framework.scripts.common.data_factory import get_test_data
 

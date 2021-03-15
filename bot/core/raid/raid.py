@@ -3,9 +3,9 @@ import json
 import os
 from datetime import datetime
 
-from instruments.raid.raid_coll_msg import RaidCollMsg
-from instruments.raid.raid_table import RaidTable
-from instruments.raid.raid_time import RaidTime
+from core.raid.raid_coll_msg import RaidCollMsg
+from core.raid.raid_table import RaidTable
+from core.raid.raid_time import RaidTime
 
 
 class Raid:

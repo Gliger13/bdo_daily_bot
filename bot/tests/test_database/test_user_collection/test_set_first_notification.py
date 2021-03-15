@@ -1,7 +1,7 @@
 """Test the correctness of setting the fact of receiving the first notification."""
 import pytest
 
-from instruments.database.user_collection import UserCollection
+from core.database.user_collection import UserCollection
 from test_framework.asserts.database_asserts.check_user_collection import check_set_first_notification
 from test_framework.scripts.common.data_factory import get_test_data
 

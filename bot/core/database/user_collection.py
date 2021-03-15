@@ -4,8 +4,8 @@ from typing import List, Dict, Any
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from instruments.database.database import Database
-from instruments.tools import MetaSingleton
+from core.database.database import Database
+from core.tools.tools import MetaSingleton
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
