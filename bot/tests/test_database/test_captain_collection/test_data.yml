@@ -1,0 +1,162 @@
+test_sets:
+  test_create_captain:
+    - data_setup:
+        user_collection:
+          discord_id: 726859545082855483
+          nickname: "Mandeson"
+      data:
+        discord_id: 726859545082855483
+      expected_data:
+        discord_id: 726859545082855483
+        raids_created: 0
+        drove_people: 0
+        last_raids: []
+  test_update_captain:
+    - data:
+        discord_id: 726859545082855483
+        raid_setup:
+          captain_name: "Mandeson"
+          server: "К-4"
+          time_leaving: "23:00"
+          time_reservation_open: "22:30"
+          guild_id: 1
+          channel_id: 2
+      expected_data:
+        discord_id: 726859545082855483
+        raids_created: 1
+        drove_people: 0
+        last_raids:
+          - server: "К-4"
+            time_leaving: "23:00"
+            time_reservation_open: "22:30"
+            reservation_count: 2
+    - data_setup:
+        discord_id: 726859545082855483
+        raids_created: 0
+        drove_people: 0
+        last_raids: []
+      data:
+        discord_id: 726859545082855483
+        raid_setup:
+          captain_name: "Mandeson"
+          server: "К-4"
+          time_leaving: "23:00"
+          time_reservation_open: "22:30"
+          guild_id: 1
+          channel_id: 2
+      expected_data:
+        discord_id: 726859545082855483
+        raids_created: 1
+        drove_people: 0
+        last_raids:
+          - server: "К-4"
+            time_leaving: "23:00"
+            time_reservation_open: "22:30"
+            reservation_count: 2
+    - data_setup:
+        discord_id: 726859545082855483
+        raids_created: 0
+        drove_people: 0
+        last_raids:
+          - server: "К-4"
+            time_leaving: "22:00"
+            time_reservation_open: "21:30"
+            reservation_count: 2
+      data:
+        discord_id: 726859545082855483
+        raid_setup:
+          captain_name: "Mandeson"
+          server: "К-4"
+          time_leaving: "23:00"
+          time_reservation_open: "22:30"
+          guild_id: 1
+          channel_id: 2
+      expected_data:
+        discord_id: 726859545082855483
+        raids_created: 1
+        drove_people: 0
+        last_raids:
+          - server: "К-4"
+            time_leaving: "22:00"
+            time_reservation_open: "21:30"
+            reservation_count: 2
+          - server: "К-4"
+            time_leaving: "23:00"
+            time_reservation_open: "22:30"
+            reservation_count: 2
+    - data_setup:
+        discord_id: 726859545082855483
+        raids_created: 0
+        drove_people: 0
+        last_raids:
+          - server: "К-4"
+            time_leaving: "20:00"
+            time_reservation_open: "19:30"
+            reservation_count: 2
+          - server: "К-4"
+            time_leaving: "21:00"
+            time_reservation_open: "20:30"
+            reservation_count: 2
+          - server: "К-4"
+            time_leaving: "22:00"
+            time_reservation_open: "21:30"
+            reservation_count: 2
+      data:
+        discord_id: 726859545082855483
+        raid_setup:
+          captain_name: "Mandeson"
+          server: "К-4"
+          time_leaving: "23:00"
+          time_reservation_open: "22:30"
+          guild_id: 1
+          channel_id: 2
+      expected_data:
+        discord_id: 726859545082855483
+        raids_created: 1
+        drove_people: 0
+        last_raids:
+          - server: "К-4"
+            time_leaving: "21:00"
+            time_reservation_open: "20:30"
+            reservation_count: 2
+          - server: "К-4"
+            time_leaving: "22:00"
+            time_reservation_open: "21:30"
+            reservation_count: 2
+          - server: "К-4"
+            time_leaving: "23:00"
+            time_reservation_open: "22:30"
+            reservation_count: 2
+  test_get_captain_name_by_user:
+    - data_setup:
+        discord_id: 726859545082855483
+        captain_name: "Mandeson"
+      data:
+        discord_id: 726859545082855483
+      expected_data: "Mandeson"
+  test_get_last_raids:
+    - data_setup:
+        discord_id: 726859545082855483
+        last_raids:
+          - server: "К-4"
+            time_leaving: "21:00"
+            time_reservation_open: "20:30"
+            reservation_count: 2
+      data:
+        discord_id: 726859545082855483
+      expected_data:
+        - server: "К-4"
+          time_leaving: "21:00"
+          time_reservation_open: "20:30"
+          reservation_count: 2
+  test_find_captain_post:
+    - data:
+        discord_id: 726859545082855483
+    - data_setup:
+        discord_id: 726859545082855483
+        captain_name: "Mandeson"
+      data:
+        discord_id: 726859545082855483
+      expected_data:
+        discord_id: 726859545082855483
+        captain_name: "Mandeson"

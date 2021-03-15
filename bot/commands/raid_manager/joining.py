@@ -5,7 +5,8 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from commands.raid_manager import raid_list
-from instruments import check_input, database_process
+from instruments import check_input
+from instruments.database.manager import DatabaseManager
 from messages import command_names, help_text, messages, logger_msgs
 from settings import settings
 from settings.logger import log_template
@@ -17,7 +18,7 @@ class RaidJoining(commands.Cog):
     """
     Cog that responsible for entering and exiting the raid.
     """
-    database = database_process.DatabaseManager()
+    database = DatabaseManager()
     raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
@@ -43,7 +44,7 @@ class RaidJoining(commands.Cog):
         channel = collection_msg.channel
 
         # Check registration
-        nickname = self.database.user.find_user(str(user))
+        nickname = await self.database.user.find_user(user.id)
         if not nickname:
             await user.send(messages.no_registration)
             log_template.reaction(guild, channel, user, emoji, logger_msgs.no_registration)
@@ -78,7 +79,7 @@ class RaidJoining(commands.Cog):
 
         # Add user into raid
         current_raid += nickname
-        self.database.user.user_joined_raid(str(user))
+        await self.database.user.user_joined_raid(user.id)
 
         await user.send(msg_success)
         await current_raid.update_coll_msgs(self.bot)
@@ -107,13 +108,13 @@ class RaidJoining(commands.Cog):
         if not current_raid:
             return
 
-        nickname = self.database.user.find_user(str(user))
+        nickname = await self.database.user.find_user(user.id)
         if not nickname or nickname not in current_raid:
             return
 
         # Remove user from raid
         current_raid -= nickname
-        self.database.user.user_leave_raid(str(user))
+        await self.database.user.user_leave_raid(user.id)
 
         await user.send(messages.raid_leave.format(captain_name=current_raid.captain_name))
         await current_raid.update_coll_msgs(self.bot)

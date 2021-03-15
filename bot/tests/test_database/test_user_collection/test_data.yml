@@ -1,0 +1,137 @@
+test_sets:
+  test_is_user_exist:
+    - data:
+        discord_id: 324528465682366468
+      expected_data: False
+    - data_setup:
+        discord_user: "Gliger#7748"
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data: True
+  test_user_joined_raid:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        entries: 1
+    - data_setup:
+        discord_id: 324528465682366468
+        entries: 0
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        entries: 1
+  test_user_leave_raid:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+        entries: 1
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        entries: 0
+  test_find_user_by_nickname:
+    - data:
+        nickname: "Mandeson"
+    - data_setup:
+        discord_id: 324528465682366468
+        nickname: "Mandeson"
+      data:
+        nickname: "Mandeson"
+      expected_data:
+        discord_id: 324528465682366468
+        nickname: "Mandeson"
+  test_set_notify_off:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        not_notify: True
+    - data_setup:
+        discord_id: 324528465682366468
+        not_notify: False
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        not_notify: True
+  test_set_notify_on:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        not_notify: False
+    - data_setup:
+        discord_id: 324528465682366468
+        not_notify: True
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        not_notify: False
+  test_not_notify_status:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data: False
+    - data_setup:
+        discord_id: 324528465682366468
+        not_notify: True
+      data:
+        discord_id: 324528465682366468
+      expected_data: True
+    - data_setup:
+        discord_id: 324528465682366468
+        not_notify: False
+      data:
+        discord_id: 324528465682366468
+      expected_data: False
+  test_set_first_notification:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data:
+        discord_id: 324528465682366468
+        first_notification: True
+  test_first_notification_status:
+    - data:
+        discord_id: 324528465682366468
+    - data_setup:
+        discord_id: 324528465682366468
+      data:
+        discord_id: 324528465682366468
+      expected_data: False
+    - data_setup:
+        discord_id: 324528465682366468
+        first_notification: True
+      data:
+        discord_id: 324528465682366468
+      expected_data: True

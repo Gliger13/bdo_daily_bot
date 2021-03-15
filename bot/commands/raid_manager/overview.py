@@ -5,7 +5,8 @@ from discord.ext import commands
 from discord.ext.commands import Context
 
 from commands.raid_manager import raid_list
-from instruments import check_input, database_process
+from instruments import check_input
+from instruments.database.manager import DatabaseManager
 from messages import command_names, help_text, messages, logger_msgs
 from settings.logger import log_template
 
@@ -16,7 +17,7 @@ class RaidOverview(commands.Cog):
     """
     Cog of raid manager that responsible for raid overviewing.
     """
-    database = database_process.DatabaseManager()
+    database = DatabaseManager()
     raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
@@ -138,7 +139,7 @@ class RaidOverview(commands.Cog):
 
         # Get the name of the captain from db if not specified
         if not captain_name:
-            captain_post = self.database.captain.find_captain_post(str(ctx.author))
+            captain_post = await self.database.captain.find_captain_post(ctx.author.id)
             if captain_post:
                 captain_name = captain_post['captain_name']
             else:

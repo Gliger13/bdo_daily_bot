@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from instruments import database_process
+from instruments.database.manager import DatabaseManager
 from messages import command_names, help_text, messages, logger_msgs
 from settings.logger import log_template
 
@@ -15,7 +15,7 @@ class Admin(commands.Cog):
     """
     Cog for controlling server, channels and messages.
     """
-    database = database_process.DatabaseManager()
+    database = DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
@@ -29,7 +29,7 @@ class Admin(commands.Cog):
         """
         guild = ctx.guild
         channel = ctx.channel
-        self.database.settings.update_settings(guild.id, str(guild), channel.id, str(channel))
+        await self.database.settings.update_settings(guild.id, str(guild), channel.id, str(channel))
 
         await ctx.message.add_reaction('✔')
         log_template.command_success(ctx)
@@ -43,7 +43,7 @@ class Admin(commands.Cog):
         """
         guild = ctx.guild
         channel = ctx.channel
-        self.database.settings.not_delete_there(guild.id, channel.id)
+        await self.database.settings.not_delete_there(guild.id, channel.id)
 
         await ctx.message.add_reaction('✔')
         log_template.command_success(ctx)
@@ -63,7 +63,7 @@ class Admin(commands.Cog):
         guild = ctx.guild
         channel = ctx.channel
         # In this channel can raid creator remove messages by bot?
-        if not self.database.settings.can_delete_there(guild.id, channel.id):
+        if not await self.database.settings.can_delete_there(guild.id, channel.id):
             await ctx.message.add_reaction('❌')
             await ctx.author.send(messages.wrong_channel)
             log_template.command_fail(ctx, logger_msgs.wrong_channel)
@@ -111,7 +111,7 @@ class Admin(commands.Cog):
         if len(roles) == 1:
             role = roles[0]
 
-            self.database.settings.set_reaction_by_role(
+            await self.database.settings.set_reaction_by_role(
                 ctx.guild.id, str(ctx.guild), message.id, reaction, role.id,
             )
 
@@ -124,7 +124,7 @@ class Admin(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def remove_reaction_for_role(self, ctx: Context, reaction):
-        result = self.database.settings.remove_reaction_from_role(ctx.guild.id, reaction)
+        result = await self.database.settings.remove_reaction_from_role(ctx.guild.id, reaction)
 
         if result:
             await ctx.message.add_reaction('✔')

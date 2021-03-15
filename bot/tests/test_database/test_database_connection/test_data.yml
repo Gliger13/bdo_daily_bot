@@ -1,0 +1,6 @@
+test_sets:
+  test_connection:
+    - data:
+        database_string: "mongodb://localhost:27017"
+      expected_data:
+        connection_status: True

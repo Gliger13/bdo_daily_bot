@@ -5,7 +5,7 @@ import random
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from instruments import database_process
+from instruments.database.manager import DatabaseManager
 from messages import command_names, help_text, messages
 from settings.logger import log_template
 
@@ -16,7 +16,7 @@ class Fun(commands.Cog):
     """
     Cog that contain all an useless(fun) bot command
     """
-    database = database_process.DatabaseManager()
+    database = DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
@@ -119,7 +119,7 @@ class Fun(commands.Cog):
     @commands.guild_only()
     @commands.is_owner()
     async def update_specific_roles(self, ctx: Context):
-        discord_users = list(self.database.user.collection.find(
+        discord_users = list(await self.database.user.collection.find(
             {
                 'entries': {'$gt': 15}
             },

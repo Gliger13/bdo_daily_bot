@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from instruments import database_process
+from instruments.database.manager import DatabaseManager
 from messages import command_names, help_text, messages
 from settings.logger import log_template
 
@@ -15,7 +15,7 @@ class Statistics(commands.Cog):
     """
     Cog that provides all collected statistics.
     """
-    database = database_process.DatabaseManager()
+    database = DatabaseManager()
 
     def __init__(self, bot):
         self.bot = bot
@@ -112,18 +112,18 @@ class Statistics(commands.Cog):
         # Check specific user
         if nickname:
             # Try to find user in db
-            user_info = self.database.user.find_user_post_by_name(nickname)
+            user_info = await self.database.user.find_user_by_nickname(nickname)
             # If user exist try to find captain activity in db
             if user_info:
-                captain_info = self.database.captain.find_captain_post(user_info['discord_user'])
+                captain_info = await self.database.captain.find_captain_post(user_info['discord_id'])
                 user = self.bot.get_user(user_info['discord_id'])
             else:
                 captain_info = None
         else:
             # If specific user not exist get current user
             user = ctx.author
-            user_info = self.database.user.find_user_post(str(user))
-            captain_info = self.database.captain.find_captain_post(str(user))
+            user_info = await self.database.user.find_user_post(user.id)
+            captain_info = await self.database.captain.find_captain_post(user.id)
 
         embed = self.user_stat_msg(user, user_info, captain_info)
         await ctx.send(embed=embed)
@@ -137,7 +137,7 @@ class Statistics(commands.Cog):
         """
         guild = ctx.guild
         user = ctx.author
-        guild_info = self.database.settings.find_settings_post(guild.id)
+        guild_info = await self.database.settings.find_settings_post(guild.id)
 
         # Collect all information from db
 
