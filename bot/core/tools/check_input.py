@@ -6,7 +6,7 @@ import re
 from messages import messages, regex
 from discord.ext.commands import BadArgument
 
-from settings.logger import log_template
+from core.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 

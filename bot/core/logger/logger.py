@@ -10,7 +10,7 @@ console_handler.setLevel(logging.INFO)
 console_format = logging.Formatter('%(asctime)s   %(message)s', "%H:%M:%S")
 console_handler.setFormatter(console_format)
 
-path_to_logs = os.path.dirname(__file__)
+path_to_logs = os.path.join(settings.BOT_DATA_PATH)
 if not os.path.isdir(path_to_logs):
     os.mkdir(path_to_logs)
 path_to_logs = os.path.join(path_to_logs, 'logs.log')

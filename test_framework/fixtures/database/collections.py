@@ -1,10 +1,10 @@
 """Contain fixtures for database collections"""
 import pytest
 
-from core.database.captain_collection import CaptainCollection
-from core.database.manager import DatabaseManager
-from core.database.settings_collection import SettingsCollection
-from core.database.user_collection import UserCollection
+from bot.core.database.captain_collection import CaptainCollection
+from bot.core.database.manager import DatabaseManager
+from bot.core.database.settings_collection import SettingsCollection
+from bot.core.database.user_collection import UserCollection
 
 
 @pytest.fixture(scope="session")

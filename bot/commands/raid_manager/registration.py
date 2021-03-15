@@ -3,11 +3,11 @@ import logging
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from core import check_input
 from core.database.manager import DatabaseManager
 from core.database.user_collection import UserExists
+from core.logger import log_template
+from core.tools import check_input
 from messages import command_names, help_text, messages, logger_msgs
-from settings.logger import log_template
 
 module_logger = logging.getLogger('my_bot')
 

@@ -1,7 +1,7 @@
 """Test that the allowed channels in the settings collection are updated correctly."""
 import pytest
 
-from core.database.settings_collection import SettingsCollection
+from bot.core.database.settings_collection import SettingsCollection
 from test_framework.asserts.database_asserts.check_settings_collection import check_update_allowed_channels
 from test_framework.scripts.common.data_factory import get_test_data
 

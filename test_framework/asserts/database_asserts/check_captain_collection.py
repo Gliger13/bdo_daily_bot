@@ -1,7 +1,7 @@
 """Contain checks of the database user collection."""
-from core.database.captain_collection import CaptainCollection
-from core.database.user_collection import UserCollection
-from core.raid.raid import Raid
+from bot.core.database.captain_collection import CaptainCollection
+from bot.core.database.user_collection import UserCollection
+from bot.core.raid.raid import Raid
 from test_framework.scripts.common.data_factory import parse_test_sample
 from test_framework.scripts.database_scripts.find_in_database import is_data_exist, find_document
 from test_framework.scripts.database_scripts.setup_database import setup_database

@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
 
+from settings.settings import BOT_DATA_PATH
+
 
 class RaidTable:
     # Text settings
@@ -134,11 +136,9 @@ class RaidTable:
     def _save(self, img):
         # Save image on local storage
         # Find dir 'images'. If not - create
-        for file in os.listdir():
-            if file == 'images':
-                break
-        else:
-            os.mkdir('images')
+        self.table_path = os.path.join(BOT_DATA_PATH)
+        if not os.path.isdir(self.table_path):
+            os.mkdir(self.table_path)
 
         self.table_path = os.path.join(
             'images', self.raid.captain_name + '_' + str(self.raid.raid_time.time_leaving) + ".png"
