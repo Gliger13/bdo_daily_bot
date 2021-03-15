@@ -12,9 +12,7 @@ __pycache__/
 .idea/
 
 # Files created by script and user data
-bot/saves/
-bot/images/
-bot/settings/logger/logs.log
+bot_data/
 
 # Files by static code analysis - SonarQube
 .scannerwork/
