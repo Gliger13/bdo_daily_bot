@@ -5,8 +5,8 @@ import os
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from commands.raid_manager import raid_list
 from core.logger import log_template
+from core.raid import raid_list
 from core.raid.raid import Raid
 from core.tools import check_input
 from messages import command_names, help_text, logger_msgs

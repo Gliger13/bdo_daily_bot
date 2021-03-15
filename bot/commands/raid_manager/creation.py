@@ -5,9 +5,9 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
-from commands.raid_manager import raid_list
 from core.database.manager import DatabaseManager
 from core.logger import log_template
+from core.raid import raid_list
 from core.raid.raid import Raid
 from core.raid.raid_coll_msg import RaidCollMsg
 from core.tools import check_input, tools
