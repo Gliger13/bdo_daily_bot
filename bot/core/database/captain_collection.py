@@ -138,7 +138,7 @@ class CaptainCollection(metaclass=MetaSingleton):
         :return: Captain's document.
         :rtype: Dict[str, Any]
         """
-        captain_post = self.find_captain_post(discord_id)
+        captain_post = await self.find_captain_post(discord_id)
         return captain_post if captain_post else await self.create_captain(discord_id)
 
     async def get_last_raids(self, discord_id: int) -> List[Dict[str, Any]]:
@@ -150,4 +150,4 @@ class CaptainCollection(metaclass=MetaSingleton):
         :return: Captain's last raids.
         :rtype: List[Dict[str, Any]
         """
-        return (await self.find_captain_post(discord_id)).get('last_raids')
+        return (await self.find_captain_post(discord_id)).get('last_raids') # !!!!!!!!!!!!!!!!!!!!!

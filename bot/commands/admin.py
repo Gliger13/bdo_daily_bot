@@ -1,9 +1,12 @@
 import logging
 from datetime import datetime, timedelta
 
+import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from messages import command_names, help_text, messages, logger_msgs
@@ -19,6 +22,7 @@ class Admin(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.remove_there, help=help_text.remove_there)
     @commands.guild_only()
@@ -29,10 +33,9 @@ class Admin(commands.Cog):
         """
         guild = ctx.guild
         channel = ctx.channel
-        await self.database.settings.update_settings(guild.id, str(guild), channel.id, str(channel))
+        await self.database.settings.update_allowed_channels(guild.id, str(guild), channel.id, str(channel))
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.not_remove_there, help=help_text.not_remove_there)
     @commands.guild_only()
@@ -45,8 +48,7 @@ class Admin(commands.Cog):
         channel = ctx.channel
         await self.database.settings.not_delete_there(guild.id, channel.id)
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.remove_msgs, help=help_text.remove_msgs)
     @commands.guild_only()
@@ -64,9 +66,8 @@ class Admin(commands.Cog):
         channel = ctx.channel
         # In this channel can raid creator remove messages by bot?
         if not await self.database.settings.can_delete_there(guild.id, channel.id):
-            await ctx.message.add_reaction('❌')
-            await ctx.author.send(messages.wrong_channel)
-            log_template.command_fail(ctx, logger_msgs.wrong_channel)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.WRONG_CHANNEL_TO_DELETE_IN)
+            return
 
         messages_to_remove = []
         msg_count = 0
@@ -87,12 +88,12 @@ class Admin(commands.Cog):
 
         # Remove messages from channel
         await channel.delete_messages(messages_to_remove)
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.set_reaction_for_role, help=help_text.set_reaction_for_role)
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def set_reaction_for_role(self, ctx: Context, channel_id: int, message_id: int, reaction, *role_name):
+    async def set_reaction_for_role(self, ctx: Context, channel_id: int, message_id: int, reaction: str, *role_name):
         role_name = ' '.join(role_name)
 
         channel = self.bot.get_channel(channel_id)
@@ -104,8 +105,7 @@ class Admin(commands.Cog):
         await message.add_reaction(reaction)
 
         if not roles:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.role_not_exist)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.ROLES_NOT_EXIST)
             return
 
         if len(roles) == 1:
@@ -115,23 +115,20 @@ class Admin(commands.Cog):
                 ctx.guild.id, str(ctx.guild), message.id, reaction, role.id,
             )
 
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
 
     @commands.command(
         name=command_names.function_command.remove_reaction_for_role, help=help_text.remove_reaction_for_role
     )
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def remove_reaction_for_role(self, ctx: Context, reaction):
-        result = await self.database.settings.remove_reaction_from_role(ctx.guild.id, reaction)
+    async def remove_reaction_for_role(self, ctx: Context, message_id: int, reaction: str):
+        result = await self.database.settings.remove_reaction_from_role(ctx.guild.id, message_id, reaction)
 
         if result:
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.remove_reaction_fail)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.REMOVE_REACTION_FAILURE)
 
 
 def setup(bot):

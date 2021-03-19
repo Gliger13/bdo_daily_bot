@@ -5,6 +5,8 @@ import os
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.logger import log_template
 from core.raid import raid_list
 from core.raid.raid import Raid
@@ -22,6 +24,7 @@ class RaidSaveLoad(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.load_raid, help=help_text.load_raid)
     @commands.guild_only()
@@ -43,7 +46,7 @@ class RaidSaveLoad(commands.Cog):
         # Checking save file exists
         file_name = f"saves/{captain_name}_{'-'.join(time_leaving.split(':'))}.json"
         if not os.path.exists(file_name):
-            await check_input.not_correct(ctx, 'Файл сохранения не найден')
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_SAVE_FILE_NOT_FOUND)
             return
 
         # Open file and load information in new Raid
@@ -63,8 +66,7 @@ class RaidSaveLoad(commands.Cog):
         old_raid.member_dict.update(raid_information['members_dict'])
         self.raid_list.append(old_raid)
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.save_raids, help=help_text.save_raids)
     @commands.guild_only()
@@ -77,11 +79,9 @@ class RaidSaveLoad(commands.Cog):
             for some_raid in self.raid_list:
                 some_raid.save_raid()
 
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raids_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
 
     @commands.command(name=command_names.function_command.save_raid, help=help_text.save_raid)
     @commands.guild_only()
@@ -104,14 +104,12 @@ class RaidSaveLoad(commands.Cog):
                                              captain_name, time_leaving, ignore_channels=True)
         # if not find raid to save
         if not curr_raid:
-            await check_input.not_correct(ctx, 'Не нашёл рейд для сохранение.')
-            log_template.command_fail(ctx, logger_msgs.raids_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
             return
 
         curr_raid.save_raid()
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

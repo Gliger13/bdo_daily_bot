@@ -78,8 +78,9 @@ SETTINGS_COLLECTION = 'settings'
 
 MAIN_GUILD_ID = 726859545082855483
 
+ROOT_DIR_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 # Save path for all created files
-BOT_DATA_PATH = os.path.join(os.path.dirname(__file__), 'bot_data')
+BOT_DATA_PATH = os.path.join(ROOT_DIR_PATH, 'bot_data')
 
 # ====================================================================================================
 

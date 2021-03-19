@@ -4,6 +4,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from core.raid import raid_list
@@ -22,6 +24,7 @@ class RaidOverview(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.show_raids, help=help_text.show_raids)
     async def show_raids(self, ctx: Context, show_all=''):
@@ -33,17 +36,15 @@ class RaidOverview(commands.Cog):
         show_all: str
             If not None show all active raids witch created by bot
         """
-        log_template.command_success(ctx)
-
         if not show_all:
             # Check raids exist
             if not self.raid_list:
-                await ctx.send(messages.no_active_raids)
+                await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.NO_ACTIVE_RAIDS)
                 return
 
             available_raids = [some_raid for some_raid in self.raid_list if ctx.guild.id in some_raid.raid_coll_msgs]
             if not available_raids:
-                await ctx.send(messages.no_active_raids)
+                await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.NO_ACTIVE_RAIDS)
                 return
 
             # Generate information about active raids and send
@@ -57,11 +58,12 @@ class RaidOverview(commands.Cog):
                     server=curr_raid.server, time_leaving=curr_raid.raid_time.time_leaving,
                 ) + '\n'
             await ctx.send(msg_of_raid)
+            await self.reporter.report_success_command(ctx)
 
         else:
             # Check raids exist
             if not self.raid_list:
-                await ctx.send(messages.no_active_raids)
+                await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.NO_ACTIVE_RAIDS)
                 return
 
             # Generate information about active raids and send
@@ -75,6 +77,7 @@ class RaidOverview(commands.Cog):
                         captain_name=curr_raid.captain_name, time_leaving=curr_raid.raid_time.time_leaving,
                     ) + '\n'
             await ctx.send(msg_of_raid)
+            await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.show_text_raids, help=help_text.show_text_raids)
     @commands.guild_only()
@@ -113,11 +116,9 @@ class RaidOverview(commands.Cog):
             )
 
             await ctx.send(curr_raid.table.create_text_table())
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
 
     @commands.command(name=command_names.function_command.show, help=help_text.show)
     @commands.guild_only()
@@ -139,9 +140,9 @@ class RaidOverview(commands.Cog):
 
         # Get the name of the captain from db if not specified
         if not captain_name:
-            captain_post = await self.database.captain.find_captain_post(ctx.author.id)
-            if captain_post:
-                captain_name = captain_post['captain_name']
+            captain_document = await self.database.user.get_user_by_id(ctx.author.id)
+            if captain_document:
+                captain_name = captain_document.get('nickname')
             else:
                 return
 
@@ -155,11 +156,9 @@ class RaidOverview(commands.Cog):
             curr_raid.save_raid()
             await ctx.send(file=discord.File(path))
 
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
 
 
 def setup(bot):

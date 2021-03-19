@@ -3,6 +3,8 @@ import logging
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.database.user_collection import UserExists
 from core.logger import log_template
@@ -20,6 +22,7 @@ class RaidRegistration(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.reg, help=help_text.reg)
     async def reg(self, ctx: Context, name: str):
@@ -36,12 +39,9 @@ class RaidRegistration(commands.Cog):
 
         try:
             await self.database.user.register_user(ctx.author.id, str(ctx.author), name)
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         except UserExists:
-            await ctx.author.send(messages.already_registered)
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.already_registered)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.ALREADY_REGISTERED)
 
     @commands.command(name=command_names.function_command.rereg, help=help_text.rereg)
     async def rereg(self, ctx: Context, name: str):
@@ -58,8 +58,7 @@ class RaidRegistration(commands.Cog):
 
         await self.database.user.re_register_user(ctx.author.id, str(ctx.author), name)
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

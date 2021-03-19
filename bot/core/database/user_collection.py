@@ -80,6 +80,18 @@ class UserCollection(metaclass=MetaSingleton):
         """
         return await self.collection.find_one({'discord_id': discord_id})
 
+    async def get_user_nickname(self, discord_id: int) -> str or None:
+        """
+        Return the user's game nickname by its discord id.
+
+        :param discord_id: User discord id.
+        :type discord_id: int
+        :return: User game nickname.
+        :rtype: str or None
+        """
+        user_document = await self.get_user_by_id(discord_id)
+        return user_document.get('nickname') if user_document else None
+
     async def find_user_by_nickname(self, nickname: str) -> dict or None:
         """
         Returns the user's document by its discord id from the database collection.

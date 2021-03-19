@@ -3,6 +3,8 @@ import logging
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from core.raid import raid_list
@@ -21,6 +23,7 @@ class RaidManager(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.close_reservation, help=help_text.close_reservation)
     @commands.guild_only()
@@ -40,15 +43,16 @@ class RaidManager(commands.Cog):
         await check_input.validation(**locals())
 
         if not (20 > places > 0):
-            await ctx.message.add_reaction('❌')
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.VALIDATION_ERROR)
             return
 
         # Get the name of the captain from db if not specified
         if not captain_name:
-            captain_post = await self.database.captain.find_captain_post(ctx.author.id)
-            if captain_post:
-                captain_name = captain_post['captain_name']
-            else:
+            captain_name = await self.database.user.get_user_nickname(ctx.author.id)
+            if not captain_name:
+                await self.reporter.report_unsuccessful_command(
+                    ctx, CommandFailureReasons.NOT_CAPTAIN
+                )
                 return
 
         # Try find the raid with this credentials
@@ -58,21 +62,20 @@ class RaidManager(commands.Cog):
 
         # Does this captain have a raid with these parameters?
         if not current_raid:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
             return
 
         # Is bad try to reserve places
         if places > current_raid.places_left:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.wrong_places)
+            await self.reporter.report_unsuccessful_command(
+                ctx, CommandFailureReasons.NO_AVAILABLE_TO_CLOSE_RESERVATION
+            )
             return
 
         current_raid.reservation_count += places
         await current_raid.update_coll_msgs(self.bot)
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.open_reservation, help=help_text.open_reservation)
     @commands.guild_only()
@@ -92,15 +95,13 @@ class RaidManager(commands.Cog):
         await check_input.validation(**locals())
 
         if not (20 > places > 0):
-            await ctx.message.add_reaction('❌')
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.VALIDATION_ERROR)
             return
 
         # Get the name of the captain from db if not specified
         if not captain_name:
-            captain_post = await self.database.captain.find_captain_post(ctx.author.id)
-            if captain_post:
-                captain_name = captain_post['captain_name']
-            else:
+            captain_name = await self.database.user.get_user_nickname(ctx.author.id)
+            if not captain_name:
                 return
 
         # Try find the raid with this credentials
@@ -110,21 +111,20 @@ class RaidManager(commands.Cog):
 
         # Does this captain have a raid with these parameters?
         if not current_raid:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
             return
 
         # Is bad try to reserve places
         if places >= current_raid.reservation_count:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(
+                ctx, CommandFailureReasons.NO_AVAILABLE_TO_CLOSE_RESERVATION
+            )
             return
 
         current_raid.reservation_count -= places
         await current_raid.update_coll_msgs(self.bot)
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

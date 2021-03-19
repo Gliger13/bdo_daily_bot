@@ -5,6 +5,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from core.raid import raid_list
@@ -25,6 +27,7 @@ class RaidCreation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     def captain_raids(self, captain_name: str) -> list or None:
         """
@@ -127,7 +130,7 @@ class RaidCreation(commands.Cog):
         log_template.notify_success(current_raid.raid_time.time_leaving, amount)
 
     async def remove_captain_raid(self, ctx: Context):
-        captain_name = await self.database.user.get_user_by_id(ctx.author.id).get('nickname')
+        captain_name = await self.database.user.get_user_nickname(ctx.author.id)
 
         if not captain_name:
             await ctx.message.add_reaction('❌')
@@ -250,11 +253,9 @@ class RaidCreation(commands.Cog):
             curr_raid.end_work()
             self.raid_list.remove(curr_raid)
 
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
 
     @commands.command(name=command_names.function_command.collection, help=help_text.collection)
     @commands.guild_only()
@@ -276,10 +277,8 @@ class RaidCreation(commands.Cog):
 
         # Get the name of the captain from db if not specified
         if not captain_name:
-            captain_post = await self.database.captain.find_captain_post(ctx.author.id)
-            if captain_post:
-                captain_name = captain_post['captain_name']
-            else:
+            captain_name = await self.database.user.get_user_nickname(ctx.author.id)
+            if not captain_name:
                 return
 
         # Try find the raid with this credentials
@@ -289,8 +288,7 @@ class RaidCreation(commands.Cog):
 
         # Does this captain have a raid with these parameters?
         if not curr_raid:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
             return
 
         # Stop async task if such exists for this raid
@@ -316,7 +314,7 @@ class RaidCreation(commands.Cog):
             curr_raid.is_first_collection = False
             asyncio.ensure_future(self.raid_time_process(ctx, curr_raid, raid_coll_msg))
 
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     async def raid_time_process(self, ctx: Context, curr_raid: Raid, raid_coll_msg: RaidCollMsg):
         # Remove the time that has already passed
@@ -359,7 +357,7 @@ class RaidCreation(commands.Cog):
         captain_name: str
             game nickname of user
         """
-        nickname = await self.database.user.find_user(user.id)
+        nickname = await self.database.user.get_user_nickname(user.id)
         if nickname == captain_name:
             return
         else:
@@ -387,10 +385,7 @@ class RaidCreation(commands.Cog):
         # If raid with this credentials absolutely matched
         for captain_raid in captain_raids:
             if captain_raid.raid_time.time_leaving == time_leaving:
-                await ctx.author.send(messages.raid_exist_error)
-
-                await ctx.message.add_reaction('❌')
-                log_template.command_fail(ctx, logger_msgs.raid_exist)
+                await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_EXIST)
                 raise commands.errors.UserInputError('Такой рейд уже существует.')
 
         active_raids = self.captain_raids_str(captain_name)
@@ -457,8 +452,7 @@ class RaidCreation(commands.Cog):
         new_raid.start_collection(ctx.guild.id, ctx.channel.id)
 
         await ctx.send(messages.raid_created.format(time_reservation_open=time_reservation_open))
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
         # Wait time reservation open
         time_left_sec = tools.get_sec_left(time_reservation_open)
@@ -486,13 +480,13 @@ class RaidCreation(commands.Cog):
 
         # Get parameters of old raids
         if not captain_post:
-            await ctx.message.add_reaction('❌')
-            await ctx.author.send(messages.new_captain)
-            log_template.command_fail(ctx, logger_msgs.captain_not_exist)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.CAPTAIN_NOT_EXIST)
             return
+
         last_raids = captain_post.get('last_raids')
 
-        raids_msg = messages.raid_create_choice_start.format(captain_name=captain_post['captain_name'])
+        captain_nickname = await self.database.user.get_user_nickname(ctx.author.id)
+        raids_msg = messages.raid_create_choice_start.format(captain_name=captain_nickname)
 
         # Generate list of choices
         for index, last_raid in enumerate(last_raids):
@@ -525,8 +519,7 @@ class RaidCreation(commands.Cog):
             # Wait for user answer
             reaction, user = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
         except asyncio.TimeoutError:
-            log_template.command_fail(ctx, logger_msgs.user_not_response)
-            await ctx.message.add_reaction('❌')
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.CAPTAIN_NOT_EXIST)
         else:
             emoji = str(reaction.emoji)
             log_template.user_answer(ctx, emoji)
@@ -535,7 +528,7 @@ class RaidCreation(commands.Cog):
             user_raid = last_raids[user_choice - 1]
             await self.captain(
                 ctx,
-                captain_post.get('captain_name'),
+                captain_nickname,
                 user_raid.get('server'),
                 user_raid.get('time_leaving'),
                 user_raid.get('time_reservation_open'),

@@ -4,6 +4,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from core.raid import raid_list
@@ -23,6 +25,7 @@ class RaidJoining(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     async def raid_reaction_add(self, collection_msg: discord.Message, emoji: discord.Emoji, user: discord.User):
         """
@@ -44,7 +47,7 @@ class RaidJoining(commands.Cog):
         channel = collection_msg.channel
 
         # Check registration
-        nickname = await self.database.user.find_user(user.id)
+        nickname = await self.database.user.get_user_nickname(user.id)
         if not nickname:
             await user.send(messages.no_registration)
             log_template.reaction(guild, channel, user, emoji, logger_msgs.no_registration)
@@ -108,7 +111,7 @@ class RaidJoining(commands.Cog):
         if not current_raid:
             return
 
-        nickname = await self.database.user.find_user(user.id)
+        nickname = await self.database.user.get_user_nickname(user.id)
         if not nickname or nickname not in current_raid:
             return
 
@@ -146,8 +149,7 @@ class RaidJoining(commands.Cog):
             available_raids = self.raid_list.find_raids_by_guild(name, ctx.guild.id)
 
             if not available_raids:
-                log_template.command_fail(ctx, logger_msgs.no_available_raids)
-                await ctx.message.add_reaction('❌')
+                await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.NO_AVAILABLE_RAIDS)
                 return
 
             # Get raid which has the least people
@@ -160,42 +162,33 @@ class RaidJoining(commands.Cog):
             if smaller_raid.raid_coll_msgs.get(guild_id) and smaller_raid.raid_coll_msgs[guild_id].collection_msg_id:
                 await smaller_raid.update_coll_msgs(self.bot)
 
-            await ctx.message.add_reaction('✔')
-
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
             return
 
         curr_raid = self.raid_list.find_raid(ctx.guild.id, ctx.channel.id, captain_name, time_leaving)
 
         if not curr_raid:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
             return
 
         if curr_raid.is_full:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.raid_is_full)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_IS_FULL)
             return
 
         if name in curr_raid:
-            await ctx.author.send(messages.already_joined)
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.already_in_raid)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.ALREADY_IN_RAID)
             return
 
         # if user already in the same raid
         if not self.raid_list.is_correct_join(name, time_leaving):
-            await ctx.author.send(messages.already_joined)
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.already_in_same_raid)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.ALREADY_IN_SAME_RAID)
             return
 
         # Add user into the raid
         curr_raid += name
         await curr_raid.update_coll_msgs(self.bot)
 
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.remove_res, help=help_text.remove_res)
     @commands.guild_only()
@@ -219,14 +212,12 @@ class RaidJoining(commands.Cog):
         current_raid = self.raid_list.find_raid_by_nickname(name)
 
         if not current_raid:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.nope_in_raids)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.USER_NOT_FOUND_IN_RAID)
         else:
             current_raid -= name
             await current_raid.update_coll_msgs(self.bot)
 
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

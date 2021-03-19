@@ -6,6 +6,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.logger import log_template
 from messages import command_names, help_text, messages, logger_msgs
 from settings import settings
@@ -20,6 +22,7 @@ class Base(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
         self.bot.remove_command('help')  # Remove command to create custom help
 
     @commands.command(name=command_names.function_command.test, help=help_text.test)
@@ -27,10 +30,8 @@ class Base(commands.Cog):
         """
         Command witch does nothing. For developer and debugging.
         """
-
-        await ctx.message.add_reaction('❌')
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
+        await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
 
     async def help_command(self, ctx: Context, command):
         """
@@ -58,11 +59,9 @@ class Base(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.command_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.COMMAND_NOT_FOUND)
 
     @commands.command(name=command_names.function_command.send_logs, help=help_text.send_logs)
     @commands.is_owner()
@@ -74,11 +73,9 @@ class Base(commands.Cog):
 
         if os.path.exists(path_to_logs):
             await ctx.send(file=discord.File(path_to_logs))
-            await ctx.message.add_reaction('✔')
-            log_template.command_success(ctx)
+            await self.reporter.report_success_command(ctx)
         else:
-            await ctx.message.add_reaction('❌')
-            log_template.command_fail(ctx, logger_msgs.logs_not_found)
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.LOGS_NOT_FOUND)
 
     @commands.command(name=command_names.function_command.help, help=help_text.help)
     async def help(self, ctx: Context, command=''):
@@ -168,7 +165,7 @@ class Base(commands.Cog):
 
         help_msg = await ctx.send(embed=main_embed)
 
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
         # Add control emoji for message
         for emoji in HELP_EMODJI:
@@ -203,7 +200,7 @@ class Base(commands.Cog):
         """
         Disables the bot. Available only to the bot creator.
         """
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
         await self.bot.logout()
 
     @commands.command(name=command_names.function_command.author_of_bot, help=help_text.author_of_bot)
@@ -217,7 +214,7 @@ class Base(commands.Cog):
             description=messages.about_author
         )
         await ctx.send(embed=embed)
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

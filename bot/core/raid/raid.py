@@ -6,6 +6,7 @@ from datetime import datetime
 from core.raid.raid_coll_msg import RaidCollMsg
 from core.raid.raid_table import RaidTable
 from core.raid.raid_time import RaidTime
+from settings.settings import BOT_DATA_PATH
 
 
 class Raid:
@@ -123,12 +124,12 @@ class Raid:
             "members_count": self.members_count,
         }
         # Find dir 'saves'. If not - create
-        for file in os.listdir(path='.'):
-            if file == 'saves':
-                break
-        else:
-            os.mkdir('saves')
+        save_path = os.path.join(BOT_DATA_PATH, 'saves')
+        if not os.path.isdir(save_path):
+            os.mkdir(save_path)
+
         # Save raid in txt file
-        file_name = f"saves/{self.captain_name}_{'-'.join(self.raid_time.time_leaving.split(':'))}.json"
-        with open(file_name, 'w', encoding='utf-8') as save_file:
+        file_name = f"{self.captain_name}_{'-'.join(self.raid_time.time_leaving.split(':'))}.json"
+        file_path = os.path.join(save_path, file_name)
+        with open(file_path, 'w', encoding='utf-8') as save_file:
             json.dump(raid_information, save_file)

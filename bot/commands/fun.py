@@ -5,6 +5,8 @@ import random
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.command_failure_reasons import CommandFailureReasons
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from messages import command_names, help_text, messages
@@ -20,13 +22,14 @@ class Fun(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.judge_him, help=help_text.judge_him)
     async def judge_him(self, ctx: Context, username=''):
         """
         The bot begins to judge the person.
         """
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
         bot_msg = await ctx.send(f"Я осуждаю {username}!")
         await asyncio.sleep(10)
@@ -52,7 +55,8 @@ class Fun(commands.Cog):
             await ctx.send("На своей мачте")
         else:
             await ctx.send("В море наверное")
-        log_template.command_success(ctx)
+
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.order, help=help_text.order)
     async def order(self, ctx: Context, number: int):
@@ -65,7 +69,7 @@ class Fun(commands.Cog):
             await ctx.channel.send(messages.msg_under_leave)
             await guild.leave()
 
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.react)
     async def react(self, ctx: Context, channel_id: int, message_id: int, reaction: str):
@@ -84,18 +88,18 @@ class Fun(commands.Cog):
         channel = self.bot.get_channel(int(channel_id))
         # Try to find channel
         if not channel:
-            await ctx.message.add_reaction('❌')
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.CHANNEL_NOT_FOUND)
             return
 
         message = await channel.fetch_message(int(message_id))
         # Try to find message in specific channel
         if not message:
-            await ctx.message.add_reaction('❌')
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.MESSAGE_NOT_FOUND)
             return
 
         await message.add_reaction(reaction)
-        await ctx.message.add_reaction('✔')
-        log_template.command_success(ctx)
+
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.say, help=help_text.say)
     @commands.is_owner()
@@ -113,7 +117,8 @@ class Fun(commands.Cog):
         channel = self.bot.get_channel(int(channel_id))
 
         await channel.send(' '.join(text))
-        log_template.command_success(ctx)
+
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.update_specific_roles, help=help_text.update_specific_roles)
     @commands.guild_only()
@@ -157,7 +162,7 @@ class Fun(commands.Cog):
         )
 
         await ctx.send(message)
-        await ctx.message.add_reaction('✔')
+        await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

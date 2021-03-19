@@ -139,7 +139,7 @@ class SettingsCollection(metaclass=MetaSingleton):
         }}
         await self.collection.find_one_and_update({"guild_id": guild_id}, post_to_update)
 
-    async def set_reaction_by_role(self, guild_id: int, guild: str, message_id: int, reaction_id: int, role_id: int):
+    async def set_reaction_by_role(self, guild_id: int, guild: str, message_id: int, reaction: str, role_id: int):
         """
         Set the receipt of the specified role in the specified message by the specified reaction.
 
@@ -149,20 +149,19 @@ class SettingsCollection(metaclass=MetaSingleton):
         :type guild: str
         :param message_id: Discord message id.
         :type message_id: int
-        :param reaction_id: Discord reaction id.
-        :type reaction_id: int
+        :param reaction: Discord reaction.
+        :type reaction: str
         :param role_id: Discord role id.
         :type role_id: int
         """
         message_id = str(message_id)
-        role_id = str(role_id)
 
         settings_document = await self.find_or_new(guild_id, guild)
 
         role_from_reaction = settings_document.get('role_from_reaction', {})
         roles_id_reactions_id = role_from_reaction.get(message_id)
 
-        role_reaction_to_add = {role_id: reaction_id}
+        role_reaction_to_add = {reaction: role_id}
         if not roles_id_reactions_id:
             role_from_reaction[message_id] = role_reaction_to_add
         else:
@@ -173,14 +172,16 @@ class SettingsCollection(metaclass=MetaSingleton):
             {'$set': {'role_from_reaction': role_from_reaction}}
         )
 
-    async def remove_reaction_from_role(self, guild_id: int, reaction_id: int):
+    async def remove_reaction_from_role(self, guild_id: int, message_id: int, reaction: str):
         """
         Removes getting a given role from a given reaction.
 
         :param guild_id: Discord guild id.
         :type guild_id: int
-        :param reaction_id: Discord reaction id.
-        :type reaction_id: int
+        :param message_id: Discord message id.
+        :type message_id: int
+        :param reaction: Discord reaction.
+        :type reaction: str
         """
         settings_document = await self.find_settings_post(guild_id)
 
@@ -188,19 +189,17 @@ class SettingsCollection(metaclass=MetaSingleton):
             return
 
         role_from_reaction = settings_document.get('role_from_reaction')
-        reaction_role = role_from_reaction.get('reaction_role')
+        reaction_role = role_from_reaction.get(str(message_id))
 
-        reaction_id = str(reaction_id)
-        if reaction_id not in reaction_role:
+        if not reaction_role or reaction not in reaction_role:
             return
 
-        reaction_role.pop(reaction_id)
+        reaction_role.pop(reaction)
 
         if reaction_role:
             update_post = {'$set': {
                 'role_from_reaction': {
-                    'message_id': role_from_reaction.get('message_id'),
-                    'reaction_role': reaction_role,
+                    str(message_id): reaction_role
                 }
             }}
         else:
@@ -212,3 +211,4 @@ class SettingsCollection(metaclass=MetaSingleton):
             {'guild_id': guild_id},
             update_post
         )
+        return True

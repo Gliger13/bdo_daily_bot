@@ -136,13 +136,12 @@ class RaidTable:
     def _save(self, img):
         # Save image on local storage
         # Find dir 'images'. If not - create
-        self.table_path = os.path.join(BOT_DATA_PATH)
+        self.table_path = os.path.join(BOT_DATA_PATH, 'images')
         if not os.path.isdir(self.table_path):
             os.mkdir(self.table_path)
 
-        self.table_path = os.path.join(
-            'images', self.raid.captain_name + '_' + str(self.raid.raid_time.time_leaving) + ".png"
-        )
+        self.table_path = os.path.join(self.table_path,
+                                       self.raid.captain_name + '_' + str(self.raid.raid_time.time_leaving) + ".png")
         cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):

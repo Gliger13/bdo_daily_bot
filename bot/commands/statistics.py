@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from messages import command_names, help_text, messages
@@ -19,6 +20,7 @@ class Statistics(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
 
     @staticmethod
     def user_stat_msg(user, user_info: dict, captain_info: dict) -> discord.Embed:
@@ -122,12 +124,12 @@ class Statistics(commands.Cog):
         else:
             # If specific user not exist get current user
             user = ctx.author
-            user_info = await self.database.user.find_user_post(user.id)
+            user_info = await self.database.user.get_user_by_id(user.id)
             captain_info = await self.database.captain.find_captain_post(user.id)
 
         embed = self.user_stat_msg(user, user_info, captain_info)
         await ctx.send(embed=embed)
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.guild_statistics, help=help_text.guild_statistics)
     @commands.has_permissions(administrator=True, manage_messages=True)
@@ -147,14 +149,14 @@ class Statistics(commands.Cog):
             # Information about getting role from clicking reaction
             role_from_reaction = guild_info.get('role_from_reaction')
             if role_from_reaction:
-                text_message = messages.can_get_role_from.format(
-                    message_id=role_from_reaction.get('message_id')
-                )
-                for emoji, role_id in role_from_reaction.get('reaction_role').items():
-                    role = discord.utils.get(guild.roles, id=role_id)
-                    text_message += messages.reaction_role.format(
-                        role=role, emoji=emoji
-                    )
+                for message_id in role_from_reaction:
+                    role_reaction_message = messages.can_get_role_from.format(message_id=message_id)
+                    for emoji, role_id in role_from_reaction.get(str(message_id)).items():
+                        role = discord.utils.get(guild.roles, id=role_id)
+                        role_reaction_message += messages.reaction_role.format(
+                            role=role, emoji=emoji
+                        )
+                    text_message += role_reaction_message
 
             # Information about ability to remove channels
             if guild_info and guild_info.get('can_remove_in_channels'):
@@ -176,7 +178,7 @@ class Statistics(commands.Cog):
         )
 
         await ctx.send(embed=embed)
-        log_template.command_success(ctx)
+        await self.reporter.report_success_command(ctx)
 
 
 def setup(bot):

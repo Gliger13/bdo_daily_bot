@@ -5,6 +5,7 @@ import traceback
 import discord
 from discord.ext import commands
 
+from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from messages import messages, logger_msgs
@@ -21,6 +22,7 @@ class Events(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.reporter = Reporter()
         # Needed to track unplanned bot reboots
         self.is_bot_ready = False
 
@@ -95,16 +97,13 @@ class Events(commands.Cog):
             return
 
         reaction = str(payload.emoji)
-        reaction_role = role_from_reaction.get('reaction_role')
+        reaction_role = role_from_reaction.get(str(payload.message_id))
 
-        if (
-            payload.message_id == role_from_reaction.get('message_id') and
-            reaction in reaction_role
-        ):
+        if reaction_role and reaction in reaction_role:
             guild = self.bot.get_guild(payload.guild_id)
             member = payload.member
 
-            role = discord.utils.get(guild.roles, id=reaction_role[reaction])
+            role = discord.utils.get(guild.roles, id=reaction_role.get(reaction))
             await member.add_roles(role)
 
             log_template.role_add_from_reaction(guild, member, role, reaction)
@@ -125,16 +124,13 @@ class Events(commands.Cog):
             return
 
         reaction = str(payload.emoji)
-        reaction_role = role_from_reaction.get('reaction_role')
+        reaction_role = role_from_reaction.get(str(payload.message_id))
 
-        if (
-                payload.message_id == role_from_reaction.get('message_id') and
-                reaction in reaction_role
-        ):
+        if reaction_role and reaction in reaction_role:
             guild = self.bot.get_guild(payload.guild_id)
             member = guild.get_member(payload.user_id)
 
-            role = discord.utils.get(guild.roles, id=reaction_role[reaction])
+            role = discord.utils.get(guild.roles, id=reaction_role.get(reaction))
             await member.remove_roles(role)
 
             log_template.role_remove_from_reaction(guild, member, role, reaction)
@@ -157,7 +153,7 @@ class Events(commands.Cog):
         # If user react in dm channel
         if isinstance(channel, discord.channel.DMChannel):
             if emoji == '💤':
-                await self.not_notify_me(user)
+                await self.not_notify_me(payload.user_id)
         else:  # If user react in text channel on server
             message = await channel.fetch_message(payload.message_id)
 
@@ -183,7 +179,7 @@ class Events(commands.Cog):
         # If user react in dm channel
         if isinstance(channel, discord.channel.DMChannel):
             if emoji == '💤':
-                await self.notify_me(user)
+                await self.notify_me(payload.user_id)
         else:  # If user react in text channel on server
             message = await channel.fetch_message(payload.message_id)
 
@@ -192,7 +188,7 @@ class Events(commands.Cog):
             await joining.raid_reaction_remove(message, payload.emoji, user)
 
     async def not_notify_me(self, user):
-        nickname = await self.database.user.find_user(user.id)
+        nickname = await self.database.user.get_user_by_id(user.id)
 
         if not nickname:
             return
@@ -200,17 +196,17 @@ class Events(commands.Cog):
         await self.database.user.notify_off(user.id)
 
         await user.send(messages.notification_off)
-        log_template.user_notification_on(user)
+        log_template.user_notification_on(user.id)
 
     async def notify_me(self, user):
-        nickname = await self.database.user.find_user(user.id)
+        nickname = await self.database.user.get_user_by_id(user.id)
 
         if not nickname:
             return
 
         await self.database.user.notify_on(user.id)
         await user.send(messages.notification_on)
-        log_template.user_notification_off(user)
+        log_template.user_notification_off(user.id)
 
 
 def setup(bot):
