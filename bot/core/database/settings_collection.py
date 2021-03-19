@@ -137,7 +137,7 @@ class SettingsCollection(metaclass=MetaSingleton):
         post_to_update = {"$set": {
             "can_remove_in_channels": allowed_channels
         }}
-        await self.collection.update_one(settings_post, post_to_update)
+        await self.collection.find_one_and_update({"guild_id": guild_id}, post_to_update)
 
     async def set_reaction_by_role(self, guild_id: int, guild: str, message_id: int, reaction_id: int, role_id: int):
         """
