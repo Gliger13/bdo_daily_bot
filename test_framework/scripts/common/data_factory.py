@@ -24,7 +24,7 @@ class DataFactory:
         :return: Absolute path of the yaml test data file.
         :rtype: str
         """
-        return os.path.join(os.path.dirname(self._test_file_path), 'test_data.yml')
+        return os.path.join(os.path.dirname(self._test_file_path), 'test_data.yaml')
 
     def _load_yaml_test_data(self) -> dict:
         """
