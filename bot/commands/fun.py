@@ -1,7 +1,9 @@
 import asyncio
 import logging
 import random
+import re
 
+from discord import File
 from discord.ext import commands
 from discord.ext.commands import Context
 
@@ -30,6 +32,11 @@ class Fun(commands.Cog):
         The bot begins to judge the person.
         """
         await self.reporter.report_success_command(ctx)
+
+        if "@" in username:
+            user_id = re.match(r"<@!(?P<user_id>\d*)>", username).group("user_id")
+            member = ctx.guild.get_member(int(user_id))
+            username = member.nick if member else ""
 
         bot_msg = await ctx.send(f"Я осуждаю {username}!")
         await asyncio.sleep(10)
@@ -124,14 +131,10 @@ class Fun(commands.Cog):
     @commands.guild_only()
     @commands.is_owner()
     async def update_specific_roles(self, ctx: Context):
-        discord_users = list(await self.database.user.collection.find(
-            {
-                'entries': {'$gt': 15}
-            },
-            {
-                'discord_id': 1,
-            }
-        ))
+        discord_users = await self.database.user.collection.find(
+            {'entries': {'$gt': 15}},
+            {'discord_id': 1}
+        ).to_list(length=None)
 
         discord_users_exists = []
         for user in discord_users:
