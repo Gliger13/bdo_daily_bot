@@ -8,7 +8,7 @@ WORKDIR /bot
 RUN apt-get update \
     && apt-get install -y \
     && apt-get install ffmpeg libsm6 libxext6 -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
     && echo "Europe/Minsk" > /etc/timezone
 
 # copy source code and requirements
