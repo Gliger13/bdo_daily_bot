@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    container_name: bot
+    volumes:
+      - ./bot_data/:/bot_data
+    restart: on-failure
+    command: python bot.py
