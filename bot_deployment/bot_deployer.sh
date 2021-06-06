@@ -165,7 +165,7 @@ function build() {
   fi
 
   log "Starting building docker images and container"
-  if docker-compose build
+  if sudo docker-compose build
   then
     log "Bot build is successful"
   else
@@ -177,7 +177,7 @@ function build() {
 # Start functions
 
 function start() {
-  if docker-compose up -d
+  if sudo docker-compose up -d
   then
     log "Bot is running"
   else
@@ -189,7 +189,7 @@ function start() {
 # Stop functions
 
 function stop() {
-  if docker-compose stop
+  if sudo docker-compose stop
   then
     log "Bot stopped"
   else
@@ -201,7 +201,7 @@ function stop() {
 # Down functions
 
 function down() {
-  if docker-compose down
+  if sudo docker-compose down
   then
     log "Bot is down"
   else
