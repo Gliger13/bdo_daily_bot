@@ -6,7 +6,7 @@ from settings import secrets
 
 
 # Chose run mode. If False run production mode
-DEBUG = True
+DEBUG = False
 
 
 # ====================================================================================================
@@ -27,9 +27,9 @@ LANGUAGE = 'ru'
 
 # Cluster name
 
-# CLUSTER_NAME = 'discord'
+CLUSTER_NAME = 'discord'
 # For tests purpose
-CLUSTER_NAME = 'test_discord'
+# CLUSTER_NAME = 'test_discord'
 
 # Collection names
 
