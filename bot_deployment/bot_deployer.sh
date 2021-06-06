@@ -143,7 +143,7 @@ function build() {
     exit 1
   fi
 
-  if cp -r $GIT_CLONE_DST_FOLDER/{bot,requirements.txt} ./ &&
+  if cp -r $GIT_CLONE_DST_FOLDER/{bot,requirements.txt} ./ && \
      cp $GIT_CLONE_DST_FOLDER/bot_deployment/{Dockerfile,docker-compose.yml} ./
   then
     log "Bot source code is moved"
