@@ -5,7 +5,7 @@
 # ======================================================================
 # Constants and settings
 
-GIT_REMOTE_REPO_URL="git@github.com:Gliger13/bdo_daily_bot.git"
+GIT_REMOTE_REPO_URL="https://github.com/Gliger13/bdo_daily_bot.git"
 GIT_BRANCH="update"
 GIT_CLONE_DST_FOLDER="bdo_daily_bot_src"
 
@@ -62,8 +62,12 @@ function check_and_install_docker() {
     then
         exit 1
     else
-      if sudo apt-get update && sudo apt-get install apt-transport-https ca-certificates curl gnupg lsb-releasedocker-ce
-        docker-ce-cli containerd.io
+      sudo apt-get install apt-transport-https ca-certificates curl gnupg lsb-releasedocker-ce
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg |
+           sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+           $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      if sudo apt-get update && docker-ce docker-ce-cli containerd.io
       then
         log "Docker installed"
       else
@@ -139,7 +143,8 @@ function build() {
     exit 1
   fi
 
-  if cp -r $GIT_CLONE_DST_FOLDER/{bot,requirements.txt} ./ && cp $GIT_CLONE_DST_FOLDER/bot_deployment/* ./
+  if cp -r $GIT_CLONE_DST_FOLDER/{bot,requirements.txt} ./ &&
+     cp $GIT_CLONE_DST_FOLDER/bot_deployment/{Dockerfile,docker-compose.yml} ./
   then
     log "Bot source code is moved"
   else
@@ -166,8 +171,6 @@ function build() {
   else
     log "ERROR Bot build is unsuccessful"
   fi
-
-  log "WARNING Please don't forget to fill secrets in bot/settings/secrets.py" 
 }
 
 # ======================================================================
