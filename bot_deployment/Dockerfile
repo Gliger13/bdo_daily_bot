@@ -4,12 +4,15 @@ FROM python:3.8
 # set the working directory in the container
 WORKDIR /bot
 
+ENV TZ=Europe/Minsk
+
 # upate and install environment
 RUN apt-get update \
     && apt-get install -y \
     && apt-get install ffmpeg libsm6 libxext6 -y \
     && rm -rf /var/lib/apt/lists/* \
-    && echo "Europe/Minsk" > /etc/timezone
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
 
 # copy source code and requirements
 COPY requirements.txt bot/ ./
