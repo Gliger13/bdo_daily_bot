@@ -25,7 +25,7 @@ This repository contains docker configuration, scripts and information for deplo
   Example of content of **secrets.py**:
     ```text
     PRODUCTION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cf.df.dfa.das.d"
-    PRODUCTION_BOT_ID = f
+    PRODUCTION_BOT_ID = 324528465682366468
     DB_STRING = "mongodb://localhost:27017"
     ```
 - Run build command and bot will be deployed
@@ -63,7 +63,7 @@ This repository contains docker configuration, scripts and information for deplo
   Example of content of **secrets.py**:
     ```text
     PRODUCTION_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cf.df.dfa.das.d"
-    PRODUCTION_BOT_ID = f
+    PRODUCTION_BOT_ID = 324528465682366468
     DB_STRING = "mongodb://localhost:27017"
     ```
 - Copy docker configurations to working directory:
