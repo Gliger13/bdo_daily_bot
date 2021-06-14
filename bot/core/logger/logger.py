@@ -1,7 +1,7 @@
 """Contain class for logger handlers and formats"""
 import logging
-import os
 
+from core.tools.path_factory import ProjectPathFactory
 from settings import settings
 
 
@@ -46,29 +46,17 @@ class BotLogger:
 
         :return: log formatted file handler
         """
-        file_handler = logging.FileHandler(cls.get_path_to_logs())
+        file_handler = logging.FileHandler(ProjectPathFactory.get_logs_path())
         file_format = logging.Formatter('[%(levelname)-8s] %(asctime)s | %(message)s')
         file_handler.setFormatter(file_format)
         file_handler.setLevel(logging.DEBUG)
         return file_handler
 
-    @classmethod
-    def get_path_to_logs(cls) -> str:
-        """
-        Return path to the log file
-        
-        :return: path to the log file
-        """
-        path_to_logs = os.path.join(settings.BOT_DATA_PATH)
-        if not os.path.isdir(path_to_logs):
-            os.mkdir(path_to_logs)
-        return os.path.join(path_to_logs, 'logs.log')
-
     def write_start_log_line(self):
         """
         Write initial line of the log file
         """
-        with open(self.get_path_to_logs(), 'a') as file:
+        with open(ProjectPathFactory.get_logs_path(), 'a') as file:
             demarcation_line = f"{'Level':=^8}=|={'Time':=^23}=|={'Message':=^33}\n"
             file.write(demarcation_line)
 

@@ -9,7 +9,8 @@ from discord.ext.commands import Context
 from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
 from core.logger import log_template
-from messages import command_names, help_text, messages, logger_msgs
+from core.tools.path_factory import ProjectPathFactory
+from messages import command_names, help_text, messages
 from settings import settings
 
 module_logger = logging.getLogger('my_bot')
@@ -67,10 +68,9 @@ class Base(commands.Cog):
     @commands.is_owner()
     async def send_logs(self, ctx: Context):
         """
-        Command for admins and developers. Send the bot logs as msg to channel.
+        Command for admins and developers. Send the bot logs as message with attachment to a channel.
         """
-        path_to_logs = os.path.join('settings', 'logger', 'logs.log')
-
+        path_to_logs = ProjectPathFactory.get_logs_path()
         if os.path.exists(path_to_logs):
             await ctx.send(file=discord.File(path_to_logs))
             await self.reporter.report_success_command(ctx)

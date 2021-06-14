@@ -11,6 +11,7 @@ class ProjectFileMapping:
     COMMANDS_DIR_NAME = "commands"
     BOT_DATA_DIR_NAME = "bot_data"
     EXCLUDE_DIRS_FROM_SEARCH = {"venv", ".idea", "__pycache__"}
+    LOGS_FILE_NAME = "logs.log"
 
 
 class ProjectPathFactory:
@@ -88,3 +89,12 @@ class ProjectPathFactory:
             split_path = os.path.normpath(relative_cog_path).split(os.sep)
             discord_cogs_paths.append(".".join(split_path)[:-3])
         return discord_cogs_paths
+
+    @classmethod
+    def get_logs_path(cls) -> str:
+        """
+        Gets abs path to log file
+
+        :return: abs log file path
+        """
+        return os.path.join(cls.get_bot_data_dir_path(), ProjectFileMapping.LOGS_FILE_NAME)
