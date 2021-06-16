@@ -19,3 +19,6 @@ bot_data/
 
 # Secrets
 bot/settings/secrets.py
+
+# Pytest logs
+pytest.log
