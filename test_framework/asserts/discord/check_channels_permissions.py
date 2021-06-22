@@ -23,7 +23,7 @@ async def soft_check_role_permissions_in_channel(guild_channel: TextChannel, rol
         # noinspection PyTypeChecker
         permission_enabled = getattr(guild_channel.permissions_for(test_member), permission)
         expect(permission_enabled == enabled,
-               TestResult(check_message=f"Role {role.name} have correct permission in channel",
+               TestResult(check_message=f"Role {role.name} have correct {permission} permission in channel",
                           resource_type="Channel",
                           resource_name=guild_channel.name,
                           resource_id=guild_channel.id,
