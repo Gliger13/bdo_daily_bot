@@ -1,11 +1,11 @@
 """Contain asserts to check discord role permissions in every guild channel"""
-import logging
 from typing import Optional, List, Tuple
 
-from discord import TextChannel, Role, Member
+from discord import TextChannel, Role
 
 from test_framework.asserts.discord.check_guild_roles import soft_check_roles
 from test_framework.models.test_member import TestMember
+from test_framework.scripts.test_results.expectation_report import TestResult
 from test_framework.scripts.test_results.soft_assert import assert_expectations, expect
 
 
@@ -20,9 +20,15 @@ async def soft_check_role_permissions_in_channel(guild_channel: TextChannel, rol
     """
     test_member = TestMember([role.id])
     for permission, enabled in expected_permission:
-        expect(getattr(guild_channel.permissions_for(test_member), permission) == enabled,
-               f"{role.name} in channel {guild_channel.name} have correct "
-               f"{permission} permission. Should be {enabled}")
+        # noinspection PyTypeChecker
+        permission_enabled = getattr(guild_channel.permissions_for(test_member), permission)
+        expect(permission_enabled == enabled,
+               TestResult(check_message=f"Role {role.name} have correct permission in channel",
+                          resource_type="Channel",
+                          resource_name=guild_channel.name,
+                          resource_id=guild_channel.id,
+                          actual_result=permission_enabled,
+                          expected_result=enabled))
 
 
 async def soft_check_role_permissions_in_channels(guild_channels: List[Optional[TextChannel]], role: Role,
