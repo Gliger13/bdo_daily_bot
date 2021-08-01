@@ -1,7 +1,5 @@
-import logging
 from datetime import datetime, timedelta
 
-import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
@@ -9,9 +7,10 @@ from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
-from messages import command_names, help_text, messages, logger_msgs
+from core.users_interactor.senders import ChannelsSender
+from messages import command_names, help_text, messages
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class Admin(commands.Cog):
@@ -129,6 +128,15 @@ class Admin(commands.Cog):
             await self.reporter.report_success_command(ctx)
         else:
             await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.REMOVE_REACTION_FAILURE)
+
+    @commands.command(name='бан')
+    @commands.is_owner()
+    async def ban(self, ctx: Context, user_id: int, *reason: str):
+        if user_to_ban := self.bot.get_user(user_id):
+            await ctx.guild.ban(user_to_ban, reason=reason, delete_message_days=0)
+            await ChannelsSender.send(ctx.channel, f"Пользователь с ником '{user_to_ban.name}' был забанен")
+        else:
+            await ChannelsSender.send(ctx.channel, "Не смог найти такого пользователя")
 
 
 def setup(bot):

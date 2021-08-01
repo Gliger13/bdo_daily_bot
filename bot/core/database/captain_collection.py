@@ -6,12 +6,11 @@ from typing import Any, Dict, List
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from core.database.database import Database
-from core.raid.raid import Raid
 from core.tools import tools
-from core.tools.tools import MetaSingleton
+from core.tools.common import MetaSingleton
 from settings import settings
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class CaptainCollection(metaclass=MetaSingleton):
@@ -27,11 +26,11 @@ class CaptainCollection(metaclass=MetaSingleton):
         If the collection does not exist, then it is create and provide.
 
         :return: captain database collection.
-        :rtype: AsyncIOMotorCollection
+        :rinput_type: AsyncIOMotorCollection
         """
         if not self._collection:
             self._collection = Database().database[settings.CAPTAIN_COLLECTION]
-            module_logger.debug(f'Collection {settings.CAPTAIN_COLLECTION} connected.')
+            logging.debug(f'Collection {settings.CAPTAIN_COLLECTION} connected.')
         return self._collection
 
     async def create_captain(self, discord_id: int) -> Dict[str, Any]:
@@ -39,9 +38,9 @@ class CaptainCollection(metaclass=MetaSingleton):
         Creates a new document about the captain in the captain database collection.
 
         :param discord_id: User discord id.
-        :type discord_id: int
+        :input_type discord_id: int
         :return: Document about the new captain.
-        :rtype: Dict[str, Any]
+        :rinput_type: Dict[str, Any]
         """
         captain_new_document = {
             "discord_id": discord_id,
@@ -53,14 +52,14 @@ class CaptainCollection(metaclass=MetaSingleton):
         await self.collection.insert_one(captain_new_document)
         return captain_new_document
 
-    async def update_captain(self, discord_id: int, raid: Raid):
+    async def update_captain(self, discord_id: int, raid):
         """
         Updates the captain's information after taken away raid.
 
         :param discord_id: User discord id.
-        :type discord_id: int
+        :input_type discord_id: int
         :param raid: Taken away raid.
-        :type raid: Raid
+        :input_type raid: Raid
         """
         captain_post = await self.find_captain_post(discord_id)
 
@@ -120,9 +119,9 @@ class CaptainCollection(metaclass=MetaSingleton):
         Returns the captain's document using its discord id.
 
         :param discord_id: User discord id.
-        :type discord_id: int
+        :input_type discord_id: int
         :return: Captain's document.
-        :rtype: Dict[str, Any] or None
+        :rinput_type: Dict[str, Any] or None
         """
         return await self.collection.find_one({'discord_id': discord_id})
 
@@ -134,9 +133,9 @@ class CaptainCollection(metaclass=MetaSingleton):
         then it creates and returns it.
 
         :param discord_id: User discord id.
-        :type discord_id: int
+        :input_type discord_id: int
         :return: Captain's document.
-        :rtype: Dict[str, Any]
+        :rinput_type: Dict[str, Any]
         """
         captain_post = await self.find_captain_post(discord_id)
         return captain_post if captain_post else await self.create_captain(discord_id)
@@ -146,8 +145,8 @@ class CaptainCollection(metaclass=MetaSingleton):
         Returns the captain's last raids using its discord id.
 
         :param discord_id: User discord id.
-        :type discord_id: int
+        :input_type discord_id: int
         :return: Captain's last raids.
-        :rtype: List[Dict[str, Any]
+        :rinput_type: List[Dict[str, Any]
         """
-        return (await self.find_captain_post(discord_id)).get('last_raids') # !!!!!!!!!!!!!!!!!!!!!
+        return (await self.find_captain_post(discord_id)).get('last_raids')  # !!!!!!!!!!!!!!!!!!!!!

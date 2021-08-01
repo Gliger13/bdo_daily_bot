@@ -1,14 +1,13 @@
 # Module that check input of commands for mistakes or wrong enter
 
-import logging
 import re
 
-from messages import messages, regex
 from discord.ext.commands import BadArgument
 
 from core.logger import log_template
+from messages import messages, regex
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 async def validation(**kwargs):

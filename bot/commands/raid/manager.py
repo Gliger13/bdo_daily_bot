@@ -1,6 +1,3 @@
-import logging
-
-import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 
@@ -8,123 +5,120 @@ from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
-from core.raid import raid_list
 from core.tools import check_input
-from messages import command_names, help_text, messages, logger_msgs
-from settings import settings
-
-module_logger = logging.getLogger('my_bot')
+from messages import command_names, help_text
 
 
-class RaidJoining(commands.Cog):
+class RaidManager(commands.Cog):
     """
-    Cog that responsible for entering and exiting the raid.
+    Cog that responsible for management raids
     """
     database = DatabaseManager()
-    raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
         self.bot = bot
         self.reporter = Reporter()
 
-    async def raid_reaction_add(self, collection_msg: discord.Message, emoji: discord.Emoji, user: discord.User):
+    @commands.command(name=command_names.function_command.close_reservation, help=help_text.close_reservation)
+    @commands.guild_only()
+    @commands.has_role('Капитан')
+    async def close_reservation(self, ctx: Context, places: int, captain_name='', time_leaving=''):
         """
-        Getting user into raid by adding reaction.
+        Close places for joining in the raid
 
         Attributes:
         ----------
-        collection_msg: discord.Message
-            Collection message through which user can get into the raid.
-        emoji: discord.Emoji
-            Emoji that user added to get into raid.
-        user: discord.User
-            User that want to get into raid
+        captain_name: str
+            Name of the captain that created the raid.
+        time_leaving: str or None
+            Time when raid leaving. Required to fill if captain has more than one raid.
         """
-        if str(emoji) != '❤' or user.id == settings.BOT_ID:
+        # Checking correct input
+        await check_input.validation(**locals())
+
+        if not (20 > places > 0):
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.VALIDATION_ERROR)
             return
 
-        guild = collection_msg.guild
-        channel = collection_msg.channel
+        # Get the name of the captain from db if not specified
+        if not captain_name:
+            captain_name = await self.database.user.get_user_nickname(ctx.author.id)
+            if not captain_name:
+                await self.reporter.report_unsuccessful_command(
+                    ctx, CommandFailureReasons.NOT_CAPTAIN
+                )
+                return
 
-        # Check registration
-        nickname = await self.database.user.get_user_nickname(user.id)
-        if not nickname:
-            await user.send(messages.no_registration)
-            log_template.reaction(guild, channel, user, emoji, logger_msgs.no_registration)
-            return
-
-        current_raid = self.raid_list.find_raid_by_coll_id(guild.id, collection_msg.id)
-
-        if not current_raid:
-            return
-
-        # Check user exists in raid
-        if nickname in current_raid:
-            await user.send(messages.already_in_raid)
-            log_template.reaction(guild, channel, user, emoji, logger_msgs.already_in_raid)
-            return
-
-        if current_raid.is_full:
-            log_template.reaction(guild, channel, user, emoji, logger_msgs.raid_is_full)
-            await user.send(messages.raid_not_joined)
-            return
-
-        # If user already in same raid
-        if not self.raid_list.is_correct_join(nickname, current_raid.raid_time.time_leaving):
-            log_template.reaction(guild, channel, user, emoji, logger_msgs.already_in_same_raid)
-            await user.send(messages.already_joined)
-            return
-
-        msg_success = messages.raid_joined.format(
-            captain_name=current_raid.captain_name, server=current_raid.server,
-            time_leaving=current_raid.raid_time.time_leaving,
+        # Try find the raid with this credentials
+        current_raid = self.raid_list.find_raid(
+            ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True
         )
 
-        # Add user into raid
-        current_raid += nickname
-        await self.database.user.user_joined_raid(user.id)
+        # Does this captain have a raid with these parameters?
+        if not current_raid:
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
+            return
 
-        await user.send(msg_success)
+        # Is bad try to reserve places
+        if places > current_raid.places_left:
+            await self.reporter.report_unsuccessful_command(
+                ctx, CommandFailureReasons.NO_AVAILABLE_TO_CLOSE_RESERVATION
+            )
+            return
+
+        current_raid.reservation_count += places
         await current_raid.update_coll_msgs(self.bot)
-        log_template.reaction(guild, channel, user, emoji,
-                              logger_msgs.raid_joining.format(captain_name=current_raid.captain_name))
 
-    async def raid_reaction_remove(self, collection_msg: discord.Message, emoji: discord.Emoji, user: discord.User):
+        await self.reporter.report_success_command(ctx)
+
+    @commands.command(name=command_names.function_command.open_reservation, help=help_text.open_reservation)
+    @commands.guild_only()
+    @commands.has_role('Капитан')
+    async def open_reservation(self, ctx: Context, places: int, captain_name='', time_leaving=''):
         """
-        Allow user exit raid by removing reaction.
+        Remove available raid
 
         Attributes:
         ----------
-        collection_msg: discord.Message
-            Collection message through which user can get into the raid.
-        emoji: discord.Emoji
-            Emoji that user added to exit raid.
-        user: discord.User
-            User that want exit raid
+        captain_name: str
+            Name of the captain that created the raid.
+        time_leaving: str or None
+            Time when raid leaving. Required to fill if captain has more than one raid.
         """
-        if str(emoji) != '❤' or user.id == settings.BOT_ID:
+        # Checking correct input
+        await check_input.validation(**locals())
+
+        if not (20 > places > 0):
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.VALIDATION_ERROR)
             return
 
-        guild = collection_msg.guild
-        current_raid = self.raid_list.find_raid_by_coll_id(guild.id, collection_msg.id)
+        # Get the name of the captain from db if not specified
+        if not captain_name:
+            captain_name = await self.database.user.get_user_nickname(ctx.author.id)
+            if not captain_name:
+                return
 
+        # Try find the raid with this credentials
+        current_raid = self.raid_list.find_raid(
+            ctx.guild.id, ctx.channel.id, captain_name, time_leaving, ignore_channels=True
+        )
+
+        # Does this captain have a raid with these parameters?
         if not current_raid:
+            await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
             return
 
-        nickname = await self.database.user.get_user_nickname(user.id)
-        if not nickname or nickname not in current_raid:
+        # Is bad try to reserve places
+        if places >= current_raid.reservation_count:
+            await self.reporter.report_unsuccessful_command(
+                ctx, CommandFailureReasons.NO_AVAILABLE_TO_CLOSE_RESERVATION
+            )
             return
 
-        # Remove user from raid
-        current_raid -= nickname
-        await self.database.user.user_leave_raid(user.id)
-
-        await user.send(messages.raid_leave.format(captain_name=current_raid.captain_name))
+        current_raid.reservation_count -= places
         await current_raid.update_coll_msgs(self.bot)
 
-        channel = collection_msg.channel
-        log_template.reaction(guild, channel, user, emoji,
-                              logger_msgs.raid_leaving.format(captain_name=current_raid.captain_name))
+        await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.reserve, help=help_text.reserve)
     @commands.guild_only()
@@ -221,5 +215,5 @@ class RaidJoining(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(RaidJoining(bot))
-    log_template.cog_launched('RaidJoining')
+    bot.add_cog(RaidManager(bot))
+    log_template.cog_launched('RaidManager')

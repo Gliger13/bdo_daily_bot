@@ -1,135 +1,133 @@
-import datetime
-import json
-import os
+"""
+Module contain raid class to containing raid attributes and control raid flow
+"""
+import logging
 from datetime import datetime
+from typing import Optional
 
-from core.raid.raid_coll_msg import RaidCollMsg
+from core.database.manager import DatabaseManager
+from core.raid.raid_item import RaidItem
+from core.raid.raid_member import RaidMember
 from core.raid.raid_table import RaidTable
 from core.raid.raid_time import RaidTime
-from settings.settings import BOT_DATA_PATH
 
 
 class Raid:
     """
-    Create Raid Object that contain members amount of members and etc
+    Response for raid attributes and flow
+
+    Contain raid attributes and control raid flow.
+    Flow is raid life from creation to deleting.
     """
-    def __init__(self, captain_name, server, time_leaving, time_reservation_open,
-                 guild_id, channel_id, reservation_count=2):
-        # Info about BDO raid
-        self.captain_name = captain_name
-        self.member_dict = {}
-        self.server = server
-        self.raid_time = RaidTime(time_leaving, time_reservation_open)
-        self.reservation_count = max(int(reservation_count), 1)
+    MAX_RAID_MEMBERS_AMOUNT = 20
 
-        self.table = None
+    def __init__(self, *, captain: RaidMember, bdo_server: str, time_leaving: datetime,
+                 time_reservation_open: datetime = None, reservation_count: int = 1):
+        """
+        :param captain: raid captain
+        :param bdo_server: game server where raid will leave
+        :param time_leaving: time to leave
+        :param time_reservation_open: time to start members registration
+        :param reservation_count: amount of reserved members slots
+        """
+        self.captain = captain
+        self.bdo_server = bdo_server
+        self.time = RaidTime(time_leaving, time_reservation_open)
+        self.reservation_count = max(reservation_count, 1)
 
-        self.raid_coll_msgs = {}
+        self.members = []
 
-        self.is_first_collection = True
-        self.first_coll_guild_id = guild_id
-        self.first_collection_task = None
-
-        current_time = datetime.now()
-        self.time_of_creation = f'{current_time.hour}-{current_time.minute}-{current_time.second}'
-
-    def __iadd__(self, name_new_member):
-        if self.places_left == 0:
-            return False
-        self.member_dict.update({name_new_member: self.members_count})
-        return self
-
-    def __isub__(self, name_remove_member):
-        if self.member_dict.get(name_remove_member):
-            del self.member_dict[name_remove_member]
-            return self
-        else:
-            return False
-
-    def __cmp__(self, other):
-        if self.members_count > other.members_count:
-            return 1
-        elif self.members_count == other.members_count:
-            return 0
-        else:
-            return -1
-
-    def __lt__(self, other):
-        return self.members_count < other.members_count
-
-    def __gt__(self, other):
-        return self.members_count > other.members_count
-
-    def __contains__(self, member_name: str):
-        return member_name in self.member_dict.keys()
+        self.channels = []
+        self.information_channels = []
+        self.flow = None
 
     @property
-    def members_count(self) -> int:
-        return self.reservation_count + len(self.member_dict)
+    def members_amount(self) -> int:
+        """
+        Gets total number of registered members
+
+        :return: total number of registered members
+        """
+        return self.reservation_count + len(self.members)
 
     @property
     def places_left(self) -> int:
-        return 20 - self.members_count
+        """
+        Gets number of places where member can reserve
+
+        :return: number of places where member can reserve
+        """
+        return self.MAX_RAID_MEMBERS_AMOUNT - self.members_amount
 
     @property
     def is_full(self) -> bool:
-        if self.places_left <= 0:
-            return True
-        else:
-            return False
+        """
+        Check raid members slots is full or not
 
-    def start_collection(self, guild_id: int, channel_id: int):
-        new_raid_collection = RaidCollMsg(self, guild_id, channel_id)
-        self.raid_coll_msgs[guild_id] = new_raid_collection
-        return new_raid_collection
+        :return: boolean value of check
+        """
+        return self.places_left <= 0
 
-    async def update_coll_msgs(self, bot):
-        [await raid_msg.update_coll_msg(bot) for raid_msg in self.raid_coll_msgs.values()]
+    @property
+    def table(self) -> RaidTable:
+        """
+        Gets raid table image with raid information
 
-    async def update_table_msgs(self, bot):
-        [await raid_msg.update_table_msg(bot) for raid_msg in self.raid_coll_msgs.values()]
+        :return: raid table image with raid information
+        """
+        return RaidTable(self)
 
-    async def send_end_work_msgs(self, bot):
-        [await raid_msg.send_end_work_msg(bot) for raid_msg in self.raid_coll_msgs.values()]
+    @property
+    def raid_item(self) -> RaidItem:
+        """
+        Gets main raid information as raid item
 
-    def table_path(self) -> str:
-        if not self.table:
-            self.table = RaidTable(self)
-            self.table.create_table()
-        else:
-            self.table.update_table(self)
-        return self.table.table_path
+        :return: raid item with main raid information
+        """
+        return RaidItem(
+            captain_name=self.captain.nickname,
+            game_server=self.bdo_server,
+            time_leaving=self.time.time_leaving,
+            time_reservation_open=self.time.time_reservation_open,
+            creation_time=self.time.creation_time,
+            reservation_amount=self.reservation_count,
+            members=[member.attributes for member in self.members],
+            channels_info=[channel.get_info() for channel in self.channels],
+        )
 
-    def end_work(self):
-        self.save_raid()
+    def has_member(self, member: RaidMember) -> bool:
+        """
+        Check if member in current raid
 
-        if self.first_collection_task:
-            self.first_collection_task.cancel()
+        :param member: raid member
+        :return:
+        """
+        return bool(self.get_member(member))
 
-        [raid_msg.coll_sleep_task.cancel() for raid_msg in self.raid_coll_msgs.values() if raid_msg.coll_sleep_task]
+    async def add_new_member(self, member: RaidMember):
+        self.members.append(member)
+        await self.flow.update()
+        await self.save()
 
-        if self.raid_time.notification_task:
-            self.raid_time.notification_task.cancel()
+    async def remove_member(self, member_to_remove: RaidMember):
+        raid_member = self.get_member(member_to_remove)
+        self.members.remove(raid_member)
+        await self.flow.update()
+        await self.save()
 
-    def save_raid(self):
-        raid_information = {
-            "captain_name": self.captain_name,
-            "server": self.server,
-            "time_leaving": self.raid_time.time_leaving,
-            "time_reservation_open": self.raid_time.time_reservation_open,
-            "reservation_count": self.reservation_count,
-            "time_to_display": self.raid_time.time_to_display,
-            "secs_to_display": self.raid_time.secs_to_display,
-            "members_dict": self.member_dict,
-            "members_count": self.members_count,
-        }
-        # Find dir 'saves'. If not - create
-        save_path = os.path.join(BOT_DATA_PATH, 'saves')
-        if not os.path.isdir(save_path):
-            os.mkdir(save_path)
+    async def save(self):
+        await DatabaseManager().raid.update(self.raid_item)
+        logging.info("Raid with captain '{}' and time leaving '{}' was saved".
+                     format(self.captain.nickname, self.time.normal_time_leaving))
 
-        # Save raid in txt file
-        file_name = f"{self.captain_name}_{'-'.join(self.raid_time.time_leaving.split(':'))}.json"
-        file_path = os.path.join(save_path, file_name)
-        with open(file_path, 'w', encoding='utf-8') as save_file:
-            json.dump(raid_information, save_file)
+    def has_collection_message_with_id(self, collection_message_id: int) -> bool:
+        for channel in self.channels:
+            if channel.collection_message.message.id == collection_message_id:
+                return True
+        return False
+
+    def get_member(self, member: RaidMember) -> Optional[RaidMember]:
+        for raid_member in self.members:
+            if raid_member.nickname == member.nickname:
+                return raid_member
+        return

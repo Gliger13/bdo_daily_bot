@@ -1,16 +1,17 @@
 """Contain entry point for running bot"""
+import logging
+
 import discord
 from discord.ext.commands import Bot
 from discord_slash import SlashCommand
 
 from core.logger.logger import BotLogger
 from core.tools.path_factory import ProjectPathFactory
+from core.tools.common import MetaSingleton
 from settings import settings
 
-logger = BotLogger().logger
 
-
-class BdoDailyBot:
+class BdoDailyBot(metaclass=MetaSingleton):
     """
     Discord Black Desert Online Daily bot. Contain methods to initialize and run bot.
     """
@@ -45,8 +46,9 @@ class BdoDailyBot:
             try:
                 self.bot.load_extension(cog_path)
             except (discord.ClientException, ModuleNotFoundError):
-                logger.critical(f"Cog {cog_path} not loaded")
+                logging.critical(f"Cog {cog_path} not loaded")
 
 
 if __name__ == "__main__":
+    BotLogger.set_default()
     BdoDailyBot().run()

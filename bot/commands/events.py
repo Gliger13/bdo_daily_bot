@@ -5,13 +5,16 @@ import traceback
 import discord
 from discord.ext import commands
 
+from bot import BdoDailyBot
+from core.commands.raid.joining import join_raid_by_reaction, leave_raid_by_reaction
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
+from core.guild_managers.managers_controller import ManagersController
 from core.logger import log_template
-from messages import messages, logger_msgs
+from messages import logger_msgs, messages
 from settings import settings
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class Events(commands.Cog):
@@ -42,7 +45,7 @@ class Events(commands.Cog):
         """
         # Track unplanned bot reboot
         if not self.is_bot_ready:
-            module_logger.info(logger_msgs.bot_ready)
+            logging.info(logger_msgs.bot_ready)
             self.is_bot_ready = True
         else:
             log_template.bot_restarted()
@@ -50,6 +53,9 @@ class Events(commands.Cog):
         # Set custom status
         custom_status = 'Покоряем мир и людишек'
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
+        BdoDailyBot.bot = self.bot
+
+        await ManagersController.load_raids()
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -151,15 +157,14 @@ class Events(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
 
         # If user react in dm channel
-        if isinstance(channel, discord.channel.DMChannel):
+        if not payload.guild_id:
             if emoji == '💤':
-                await self.not_notify_me(payload.user_id)
+                await self.not_notify_me(user)
         else:  # If user react in text channel on server
             message = await channel.fetch_message(payload.message_id)
 
-            # Check if is reaction for get in raid
-            joining = self.bot.get_cog('RaidJoining')
-            await joining.raid_reaction_add(message, payload.emoji, user)
+            if emoji == '❤':
+                await join_raid_by_reaction(message, user)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
@@ -177,36 +182,26 @@ class Events(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
 
         # If user react in dm channel
-        if isinstance(channel, discord.channel.DMChannel):
+        if not payload.guild_id:
             if emoji == '💤':
-                await self.notify_me(payload.user_id)
+                await self.notify_me(user)
         else:  # If user react in text channel on server
             message = await channel.fetch_message(payload.message_id)
 
-            # Check if is reaction for get in raid
-            joining = self.bot.get_cog('RaidJoining')
-            await joining.raid_reaction_remove(message, payload.emoji, user)
+            if emoji == '❤':
+                await leave_raid_by_reaction(message, user)
 
     async def not_notify_me(self, user):
-        nickname = await self.database.user.get_user_by_id(user.id)
-
-        if not nickname:
-            return
-
-        await self.database.user.notify_off(user.id)
-
-        await user.send(messages.notification_off)
-        log_template.user_notification_on(user.id)
+        if await self.database.user.get_user_by_id(user.id):
+            await self.database.user.set_notify_off(user.id)
+            await user.send(messages.notification_off)
+            log_template.user_notification_on(user.id)
 
     async def notify_me(self, user):
-        nickname = await self.database.user.get_user_by_id(user.id)
-
-        if not nickname:
-            return
-
-        await self.database.user.notify_on(user.id)
-        await user.send(messages.notification_on)
-        log_template.user_notification_off(user.id)
+        if await self.database.user.get_user_by_id(user.id):
+            await self.database.user.set_notify_on(user.id)
+            await user.send(messages.notification_on)
+            log_template.user_notification_off(user.id)
 
 
 def setup(bot):

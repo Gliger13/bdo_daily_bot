@@ -1,5 +1,3 @@
-import logging
-
 from discord.ext import commands
 from discord.ext.commands import Context
 
@@ -9,9 +7,9 @@ from core.database.manager import DatabaseManager
 from core.database.user_collection import UserExists
 from core.logger import log_template
 from core.tools import check_input
-from messages import command_names, help_text, messages, logger_msgs
+from messages import command_names, help_text
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class RaidRegistration(commands.Cog):

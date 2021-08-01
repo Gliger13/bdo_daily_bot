@@ -1,5 +1,3 @@
-import logging
-
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -8,11 +6,8 @@ from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
-from core.raid import raid_list
 from core.tools import check_input
-from messages import command_names, help_text, messages, logger_msgs
-
-module_logger = logging.getLogger('my_bot')
+from messages import command_names, help_text, messages
 
 
 class RaidOverview(commands.Cog):
@@ -20,7 +15,6 @@ class RaidOverview(commands.Cog):
     Cog of raid manager that responsible for raid overviewing.
     """
     database = DatabaseManager()
-    raid_list = raid_list.RaidList()
 
     def __init__(self, bot):
         self.bot = bot
@@ -54,7 +48,7 @@ class RaidOverview(commands.Cog):
                     continue
                 channel = self.bot.get_channel(curr_raid.raid_coll_msgs[ctx.guild.id].channel_id)
                 msg_of_raid += messages.active_raid_all.format(
-                    channel_name=channel.mention, captain_name=curr_raid.captain_name,
+                    channel_name=channel.mention, captain_name=curr_raid.captain.nickname,
                     server=curr_raid.server, time_leaving=curr_raid.raid_time.time_leaving,
                 ) + '\n'
             await ctx.send(msg_of_raid)
@@ -74,7 +68,7 @@ class RaidOverview(commands.Cog):
                     channel_name = str(self.bot.get_channel(raid_coll_msg.channel_id))
                     msg_of_raid += messages.active_raid_hide.format(
                         guild_name=guild_name, channel_name=channel_name,
-                        captain_name=curr_raid.captain_name, time_leaving=curr_raid.raid_time.time_leaving,
+                        captain_name=curr_raid.captain.nickname, time_leaving=curr_raid.raid_time.time_leaving,
                     ) + '\n'
             await ctx.send(msg_of_raid)
             await self.reporter.report_success_command(ctx)

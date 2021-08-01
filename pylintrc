@@ -97,6 +97,8 @@ min-similarity-lines=4
 # several lines.
 check-str-concat-over-line-jumps=no
 
+disable=logging-format-interpolation
+
 [DESIGN]
 
 # Maximum number of arguments for function / method.

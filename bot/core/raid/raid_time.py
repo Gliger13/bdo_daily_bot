@@ -1,174 +1,165 @@
-import datetime
+"""
+Contain class for storing and processing raid time
+"""
 from datetime import datetime, timedelta
+from typing import List
 
 
 class RaidTime:
-    DISPLAY_FREQUENCY = 4  # times
-    NOTIFY_BEFORE_LEAVING = timedelta(minutes=7)
-    # Display n minutes before leaving
-    DISPLAY_BEFORE_LEAVING = [
-        timedelta(minutes=15),
-        timedelta(minutes=5),
-    ]
-    MIN_TIME_DISPLAY = timedelta(seconds=60)
+    """
+    Class for storing and processing raid time
+    """
+    __time_to_wait_after_leaving = timedelta(minutes=1)
+    __time_to_notify_before_leaving = timedelta(minutes=7)
 
-    def __init__(self, time_leaving, time_reservation_open):
-        self.creation_time = datetime.now()
-        self.time_to_display = []
-        self.secs_to_display = []
+    def __init__(self, time_leaving: datetime, time_reservation_open: datetime):
+        """
+        :param time_leaving: time when raid leaving
+        :param time_reservation_open: time when starts reservation places in raid
+        """
         self.time_leaving = time_leaving
         self.time_reservation_open = time_reservation_open
+        self.creation_time = None
 
-        self.notification_task = None
-        self.is_notified = False  # Have users received an notification?
-
-        self._time_leaving = datetime.strptime(time_leaving, '%H:%M')
-        self._time_reservation_open = datetime.strptime(time_reservation_open, '%H:%M')
-
-        self._set_intervals()
+        self.secs_to_display_list = self.__set_secs_list_before_display()
 
     @property
-    def _additional_time(self):
-        if self.DISPLAY_BEFORE_LEAVING:
-            time_list = list(reversed(sorted(self.DISPLAY_BEFORE_LEAVING)))
-            last_time = time_list.pop(0)
-            time_before_next = []
-            for current_time in time_list:
-                time_before_next.append(last_time - current_time)
-                last_time = current_time
-            time_before_next.append(last_time)
-            return time_before_next
-        else:
-            return []
+    def kebab_time_leaving(self) -> str:
+        """
+        Gets raid time leaving in kebab format, e.g. 19-00
 
-    @staticmethod
-    def _clear_additional_time(time_list, interval_part):
+        :return: raid time leaving in kebab format
         """
-        Remove time from time_list that greater than interval_part
-        """
-        return [time for time in time_list if time < interval_part]
+        return self.time_leaving.strftime('%H-%M')
 
     @property
-    def next_time_to_display(self):
-        return self.time_to_display[0]
+    def kebab_time_reservation_open(self) -> str:
+        """
+        Gets raid time reservation open in kebab format, e.g. 19-00
 
-    def secs_left_to_display(self):
-        hours_end, minutes_end = tuple(map(int, self.time_to_display[0].split(':')))
-        time_start = datetime.now()
-        delta_start = timedelta(hours=time_start.hour, minutes=time_start.minute, seconds=time_start.second)
-        delta_end = timedelta(hours=hours_end, minutes=minutes_end)
-        delta_left = delta_end - delta_start
-        return delta_left.seconds
+        :return: raid time leaving in kebab format
+        """
+        return self.time_reservation_open.strftime('%H-%M')
 
-    def time_passed(self):
-        self.time_to_display.pop(0)
+    @property
+    def normal_time_leaving(self) -> str:
+        """
+        Gets raid time leaving in human format, e.g. 19:00
 
-    def make_time_list(self):
-        # Convert in timedelta
-        time_list = []
-        last_time = datetime.strptime(self.time_to_display[0], '%H:%M')
-        last_time = timedelta(hours=last_time.hour, minutes=last_time.minute)
-        for time_index, time in enumerate(self.time_to_display[1:]):
-            time = datetime.strptime(time, '%H:%M')
-            time = timedelta(hours=time.hour, minutes=time.minute)
+        :return: raid time leaving in human format
+        """
+        return self.time_leaving.strftime('%H:%M')
 
-            if time < last_time:
-                for next_day_time in self.time_to_display[time_index + 1:]:
-                    some_time = datetime.strptime(next_day_time, '%H:%M')
-                    some_time = timedelta(hours=some_time.hour, minutes=some_time.minute)
-                    time_list.append(some_time + timedelta(days=1))
-                break
-            else:
-                time_list.append(time)
+    @property
+    def normal_time_reservation_open(self) -> str:
+        """
+        Gets raid time reservation open in human format, e.g. 19:00
 
-            last_time = time
-        return time_list
+        :return: raid time leaving in human format
+        """
+        return self.time_reservation_open.strftime('%H:%M')
 
-    def validate_time(self):
-        # Convert in timedelta
-        time_list = self.make_time_list()
+    @property
+    def normal_next_display_time(self) -> str:
+        """
+        Returns next time to display in human format
 
-        current_datetime = datetime.now()
-        current_time = timedelta(hours=current_datetime.hour, minutes=current_datetime.minute)
+        :return: raid time leaving in human format
+        """
+        if self.secs_to_display_list:
+            return (datetime.now() + timedelta(seconds=self.secs_to_display_list[-1])).strftime('%H:%M')
+        return self.kebab_time_leaving
 
-        if current_time < timedelta(hours=self._time_reservation_open.hour, minutes=self._time_reservation_open.minute):
-            current_time += timedelta(days=1)
+    @property
+    def normal_time_channel_deleting(self) -> str:
+        """
+        Returns time when raid channel will be deleted in human format
 
-        for time_index, time in enumerate(time_list):
-            if current_time < time:
-                self.time_to_display = self.time_to_display[time_index:]
-                return
+        :return: time when raid channel will be deleted in human format
+        """
+        return (self.time_leaving + self.__time_to_wait_after_leaving).strftime('%H:%M')
 
-    def _set_intervals(self):
-        display_frequency = self.DISPLAY_FREQUENCY
+    @property
+    def secs_before_collection(self) -> int:
+        """
+        Returns seconds before raid start collection
 
-        # Correct the time if the time leaving is the next day
-        if self._time_reservation_open > self._time_leaving:
-            interval = self._time_leaving + timedelta(days=1) - self._time_reservation_open
+        :return: seconds before collection
+        """
+        return int((self.time_reservation_open - datetime.now()).total_seconds())
+
+    @property
+    def secs_after_leaving(self) -> int:
+        """
+        Returns seconds after raid left
+
+        :return: seconds after raid left
+        """
+        return int(self.__time_to_wait_after_leaving.total_seconds())
+
+    @property
+    def time_to_notify(self) -> datetime:
+        """
+        Return time where raid members should be notified
+        """
+        return self.time_leaving - self.__time_to_notify_before_leaving
+
+    @property
+    def secs_before_notification(self) -> float:
+        """
+        Return seconds before time raid members notification
+        """
+        return (self.time_to_notify - datetime.now()).total_seconds()
+
+    def get_secs_to_display_generator(self) -> int:
+        """
+        Returns generator that returns seconds to next display
+
+        :return: seconds to next display
+        """
+        for _ in range(len(self.secs_to_display_list)):
+            yield self.secs_to_display_list[-1]
+            self.secs_to_display_list.pop()
+
+    def __set_secs_list_before_display(self) -> List[int]:
+        """
+        Gets list of seconds before display
+
+        Gets list of seconds before 1, 5, 15, 30, 60 and 1 hours before display
+        """
+        secs_to_display_list = []
+        time_difference = self.time_leaving - datetime.now()
+        if time_difference.total_seconds() < 0:
+            return secs_to_display_list
+        time_difference_seconds = time_difference.total_seconds()
+
+        # If difference is greater then a minute display at 1 minute before leaving and moment of leaving
+        if time_difference_seconds > 60:
+            secs_to_display_list.append(60)
+            time_difference_seconds -= 60
+        # If difference is less then a minute then just wait it
         else:
-            interval = self._time_leaving - self._time_reservation_open
-
-        # Reduce the frequency of display if the interval is not enough
-        if interval < self.MIN_TIME_DISPLAY * display_frequency:
-            display_frequency = interval // self.MIN_TIME_DISPLAY // 2
-
-        interval_part = interval / display_frequency if display_frequency else interval
-        # Take time for a specific display
-        additional_list = self._clear_additional_time(self._additional_time, interval_part)
-
-        # Calculate min_interval
-        # 1 minute for compensate the time spent on computing
-        min_interval = self.MIN_TIME_DISPLAY * display_frequency + timedelta(minutes=1)
-
-        for display_time in additional_list:
-            min_interval += display_time
-
-        # do not display if the interval is small
-        if interval > min_interval and additional_list and interval_part > max(additional_list):
-            can_additionally_display = True
-            interval -= max(additional_list)
-        else:
-            can_additionally_display = False
-
-        interval_part = interval / display_frequency if display_frequency else interval
-
-        # Structure of all time interval like this
-        # [__.__, __.__, __.__, __.__, *additional_time, _time_leaving]
-        # where . is time to display
-
-        self.secs_to_display.append((interval_part // 2).total_seconds())
-        for part in range(display_frequency - 1):
-            self.secs_to_display.append(interval_part.total_seconds())
-        self.secs_to_display.append((interval_part // 2).total_seconds())
-
-        time_to_display = self._time_reservation_open
-        for interval_part_secs in self.secs_to_display:
-            time_to_display += timedelta(seconds=interval_part_secs)
-            str_time = time_to_display.strftime('%H:%M')
-            self.time_to_display.append(str_time)
-
-        # Add additional time to display
-        if can_additionally_display:
-            for additional_time in additional_list:
-                time_to_display = self._time_leaving - additional_time
-                str_time = time_to_display.strftime('%H:%M')
-                self.time_to_display.append(str_time)
-                self.secs_to_display.append(additional_time.total_seconds())
-
-        # Add display at time leaving
-        self.time_to_display.append(self._time_leaving.strftime('%H:%M'))
-        # Remove duplicate items from list
-        self.time_to_display = list(dict.fromkeys(self.time_to_display))
-
-    def secs_to_notify(self) -> float or None:
-        if not self.is_notified:
-            time_leaving = timedelta(hours=self._time_leaving.hour, minutes=self._time_leaving.minute)
-            current_time = datetime.now()
-            current_time = timedelta(hours=current_time.hour, minutes=current_time.minute)
-            if current_time > time_leaving:
-                time_leaving += timedelta(days=1)
-            secs_left_to_notify = (time_leaving - current_time - self.NOTIFY_BEFORE_LEAVING).total_seconds()
-            if secs_left_to_notify < 0:
-                return
-            else:
-                return secs_left_to_notify
+            secs_to_display_list.append(time_difference_seconds)
+        # If difference is greater then a 5 minutes display at 5 minutes before leaving
+        if time_difference_seconds > 300:
+            secs_to_display_list.append(300)
+            time_difference_seconds -= 300
+        # If difference is greater then a 15 minutes display at 15 minutes before leaving
+        if time_difference_seconds > 600:
+            secs_to_display_list.append(600)
+            time_difference_seconds -= 600
+        # If difference is greater then a 30 minutes display at 30 minutes before leaving
+        if time_difference_seconds > 900:
+            secs_to_display_list.append(900)
+            time_difference_seconds -= 900
+        # If difference is greater then a 60 minutes display at 60 minutes before leaving
+        if time_difference_seconds > 1800:
+            secs_to_display_list.append(1800)
+            time_difference_seconds -= 1800
+        hours_left_to_display = int(time_difference_seconds // 3600)
+        if hours_left_to_display:
+            for _ in range(hours_left_to_display):
+                secs_to_display_list.append(3600)
+            time_difference_seconds -= hours_left_to_display * 3600
+        secs_to_display_list[-1] += time_difference_seconds
+        return secs_to_display_list

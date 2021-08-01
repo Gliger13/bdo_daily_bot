@@ -3,7 +3,7 @@ import random
 
 import cv2
 import numpy as np
-from PIL import ImageFont, ImageDraw, Image
+from PIL import Image, ImageDraw, ImageFont
 
 from settings.settings import BOT_DATA_PATH
 
@@ -38,15 +38,15 @@ class RaidTable:
 
     def __init__(self, raid):
         self.raid = raid
-        self.old_member_dict = self.raid.member_dict.copy()
+        self.old_member_dict = self.raid.members.copy()
         self.old_reservation_count = self.raid.reservation_count
-        self.title = f"{self.raid.captain_name} {self.raid.server} {self.raid.raid_time.time_leaving}"
+        self.title = f"{self.raid.captain.nickname} {self.raid.bdo_server} {self.raid.time.kebab_time_leaving}"
         self.table_path = None
 
     def get_width(self):
         title_width = RaidTable.FONT.getsize(self.title)[0]
-        if self.raid.member_dict:
-            max_name = max(self.raid.member_dict)
+        if self.raid.members:
+            max_name = max([member.nickname for member in self.raid.members])
             max_name_row_width = RaidTable.NUMBER_SIZE_WIDTH + RaidTable.FONT.getsize(max_name)[0]
             # 15 - 15px - offset the indent
             return max(title_width, max_name_row_width) + 15
@@ -109,7 +109,8 @@ class RaidTable:
         draw = ImageDraw.Draw(img_pil)
         # Fill table by members list
         name_number = 0
-        for name in self.raid.member_dict:
+        members_nicknames = [member.nickname for member in self.raid.members]
+        for name in members_nicknames:
             # Set coordinate of text message
             point_name = 35, (RaidTable.HEIGHT // RaidTable.COLUMNS * (name_number + 1))
             draw.text(point_name, name, font=RaidTable.FONT, fill=(0, 0, 0, 0))
@@ -125,9 +126,9 @@ class RaidTable:
         return self.table_path
 
     def update_table(self, raid):
-        if not self.old_member_dict == raid.member_dict or not self.old_reservation_count == raid.reservation_count:
+        if not self.old_member_dict == raid.members or not self.old_reservation_count == raid.reservation_count:
             self.__init__(raid)
-            self.old_member_dict = raid.member_dict.copy()
+            self.old_member_dict = raid.members.copy()
             self.old_reservation_count = raid.reservation_count
             self.create_table()
         else:
@@ -141,11 +142,12 @@ class RaidTable:
             os.mkdir(self.table_path)
 
         self.table_path = os.path.join(self.table_path,
-                                       self.raid.captain_name + '_' + str(self.raid.raid_time.time_leaving) + ".png")
+                                       self.raid.captain.nickname + '_' + str(self.raid.time.kebab_time_leaving) + ".png")
         cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):
         table = f"{self.title}\n"
-        for name in self.raid.member_dict:
+        members_nicknames = [member.nickname for member in self.raid.members]
+        for name in members_nicknames:
             table += f"**{name}**\n"
         return table

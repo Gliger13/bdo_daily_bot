@@ -117,3 +117,11 @@ errors_name = {
     errors.BotMissingPermissions: 'У бота нету необходимых прав',
     errors.UserInputError: 'Проблема пользовательского ввода',
 }
+
+# ===========================================================================
+
+wrong_input_log_message_start = "Пользователь {user} неправильно ввёл параметры команды {command_name}:"
+wrong_input_log_message_template = "Неправильный {input_name}, получил {actual_value}"
+
+empty_input_message_start = "Пользователь {user} не указал необходимые параметры для команды {command_name}:"
+empty_input_message_template = "Пустой параметр {input_name}"

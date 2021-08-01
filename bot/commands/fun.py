@@ -1,9 +1,7 @@
 import asyncio
-import logging
 import random
 import re
 
-from discord import File
 from discord.ext import commands
 from discord.ext.commands import Context
 
@@ -13,7 +11,7 @@ from core.database.manager import DatabaseManager
 from core.logger import log_template
 from messages import command_names, help_text, messages
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class Fun(commands.Cog):

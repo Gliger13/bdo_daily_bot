@@ -6,7 +6,7 @@ from settings import secrets
 
 
 # Chose run mode. If False run production mode
-DEBUG = False
+DEBUG = True
 
 
 # ====================================================================================================
@@ -27,9 +27,9 @@ LANGUAGE = 'ru'
 
 # Cluster name
 
-CLUSTER_NAME = 'discord'
+# CLUSTER_NAME = 'discord'
 # For tests purpose
-# CLUSTER_NAME = 'test_discord'
+CLUSTER_NAME = 'test_discord'
 
 # Collection names
 
@@ -73,6 +73,9 @@ SETTINGS_COLLECTION = 'settings'
 #         "channel_id": "channel_name",  # str: str
 #     }
 # }
+
+RAID_COLLECTION = 'raid'
+RAID_ARCHIVE_COLLECTION = 'raid_archive'
 
 # ====================================================================================================
 

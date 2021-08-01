@@ -13,7 +13,7 @@ async def test_not_notify_status(user_collection: UserCollection, test_data: dic
     Test the correctness of obtaining the not notify status.
 
     :param user_collection: Database user collection.
-    :type user_collection: UserCollection
+    :input_type user_collection: UserCollection
     :param test_data: User collection test data.
     :type test_data: dict
     """

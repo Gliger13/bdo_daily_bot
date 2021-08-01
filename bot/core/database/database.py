@@ -3,10 +3,10 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
-from core.tools.tools import MetaSingleton
+from core.tools.common import MetaSingleton
 from settings import settings
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class Database(metaclass=MetaSingleton):
@@ -25,12 +25,12 @@ class Database(metaclass=MetaSingleton):
         If the database does not exist, then it is connect and provide.
 
         :return: Mongo database.
-        :rtype: AsyncIOMotorDatabase
+        :rinput_type: AsyncIOMotorDatabase
         """
         if not self._cluster:
-            module_logger.debug('Initialisation database.')
+            logging.debug('Initialisation database.')
             self._cluster = AsyncIOMotorClient(settings.BD_STRING)[settings.CLUSTER_NAME]
-            module_logger.debug('Database connected.')
+            logging.debug('Database connected.')
         return self._cluster
 
     @property
@@ -39,6 +39,6 @@ class Database(metaclass=MetaSingleton):
         Mongo database.
 
         :return: Mongo database.
-        :rtype: AsyncIOMotorDatabase
+        :rinput_type: AsyncIOMotorDatabase
         """
         return self._connect()

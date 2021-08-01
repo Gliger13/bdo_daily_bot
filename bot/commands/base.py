@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 
 import discord
@@ -13,7 +12,7 @@ from core.tools.path_factory import ProjectPathFactory
 from messages import command_names, help_text, messages
 from settings import settings
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class Base(commands.Cog):

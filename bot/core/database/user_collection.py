@@ -5,10 +5,10 @@ from typing import List, Dict, Any
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from core.database.database import Database
-from core.tools.tools import MetaSingleton
+from core.tools.common import MetaSingleton
 from settings import settings
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class UserExists(Exception):
@@ -20,7 +20,7 @@ class UserExists(Exception):
         :type discord_id: int
         """
         error_msg = f"A user with discord id - {discord_id} already exists in user database collection."
-        module_logger.error(error_msg)
+        logging.error(error_msg)
         super().__init__(error_msg)
 
 
@@ -33,7 +33,7 @@ class UserNotExists(Exception):
         :type discord_id: int
         """
         error_msg = f"User with discord id - {discord_id} not exists in the user database collection."
-        module_logger.error(error_msg)
+        logging.error(error_msg)
         super().__init__(error_msg)
 
 
@@ -54,7 +54,7 @@ class UserCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.USER_COLLECTION]
-            module_logger.debug(f"Collection {settings.USER_COLLECTION} connected.")
+            logging.debug(f"Collection {settings.USER_COLLECTION} connected.")
         return self._collection
 
     async def is_user_exist(self, discord_id: int) -> bool:
@@ -247,18 +247,11 @@ class UserCollection(metaclass=MetaSingleton):
         """
         Returns a list of users documents based on their game nicknames.
 
-        :param nicknames_list: Users game nicknames.
-        :type nicknames_list: List[str]
-        :return: Users documents.
-        :rtype: List[Dict[str, Any]]:
+        :param nicknames_list: users game nicknames
+        :return: users documents
         """
-        users_documents_cursor = await self.collection.find(
+        users_documents_cursor = self.collection.find(
             {'nickname': {'$in': nicknames_list}},
-            {
-                'discord_id': 1,
-                'not_notify': 1,
-                'first_notification': 1,
-                '_id': 0,
-            }
+            {'discord_id': 1, 'not_notify': 1, 'first_notification': 1, '_id': 0}
         )
-        return list(users_documents_cursor)
+        return [document async for document in users_documents_cursor]

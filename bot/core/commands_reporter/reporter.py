@@ -8,11 +8,11 @@ from messages import logger_msgs, messages
 
 class Reporter:
     @staticmethod
-    async def __discord_user_success_command_report(message: Message):
+    async def set_success_command_reaction(message: Message):
         await message.add_reaction('✔')
 
     @staticmethod
-    async def __discord_user_unsuccessful_command_reaction_report(message: Message):
+    async def set_fail_command_reaction(message: Message):
         await message.add_reaction('❌')
 
     @staticmethod
@@ -26,7 +26,7 @@ class Reporter:
 
     async def report_success_command(self, ctx: Context):
         log_template.command_success(ctx)
-        await self.__discord_user_success_command_report(ctx.message)
+        await self.set_success_command_reaction(ctx.message)
 
     async def report_unsuccessful_command(
             self, ctx: Context, failure_reason: CommandFailureReasons, failure_data: dict = None
@@ -34,7 +34,7 @@ class Reporter:
         logs_report_message = await self.__get_failure_report_message(logger_msgs, failure_reason, failure_data)
         log_template.command_fail(ctx, logs_report_message)
 
-        await self.__discord_user_unsuccessful_command_reaction_report(ctx.message)
+        await self.set_fail_command_reaction(ctx.message)
 
         user_report_message = await self.__get_failure_report_message(messages, failure_reason, failure_data)
         await self.__discord_user_unsuccessful_command_message_report(ctx.author, user_report_message)

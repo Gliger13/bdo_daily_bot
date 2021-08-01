@@ -1,14 +1,14 @@
 """Contains the class for working with the settings database collection."""
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional, List
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from core.database.database import Database
-from core.tools.tools import MetaSingleton
+from core.tools.common import MetaSingleton
 from settings import settings
 
-module_logger = logging.getLogger('my_bot')
+l = 0
 
 
 class SettingsCollection(metaclass=MetaSingleton):
@@ -24,11 +24,11 @@ class SettingsCollection(metaclass=MetaSingleton):
         If the collection does not exist, then it is create and provide.
 
         :return: Settings database collection.
-        :rtype: AsyncIOMotorCollection
+        :rinput_type: AsyncIOMotorCollection
         """
         if not self._collection:
             self._collection = Database().database[settings.SETTINGS_COLLECTION]
-            module_logger.debug(f'Collection {settings.SETTINGS_COLLECTION} connected.')
+            logging.debug(f'Collection {settings.SETTINGS_COLLECTION} connected.')
         return self._collection
 
     async def find_settings_post(self, guild_id: int) -> Dict[str, Any] or None:
@@ -36,9 +36,9 @@ class SettingsCollection(metaclass=MetaSingleton):
         Returns settings document by the discord guild id.
 
         :param guild_id: Discord guild id.
-        :type guild_id: int
+        :input_type guild_id: int
         :return: Settings document or None.
-        :rtype: Dict[str, Any] or None
+        :rinput_type: Dict[str, Any] or None
         """
         return await self.collection.find_one({'guild_id': guild_id})
 
@@ -111,6 +111,28 @@ class SettingsCollection(metaclass=MetaSingleton):
         settings_post = await self.find_settings_post(guild_id)
         channels = settings_post.get('can_remove_in_channels') if settings_post else None
         return True if channels and str(channel_id) in channels else False
+
+    async def get_category_channel_id_by_guild_id(self, guild_id: int, guild_name: str) -> Optional[int]:
+        settings_post = await self.find_or_new(guild_id, guild_name)
+        return settings_post.get('category_channel_id')
+
+    async def set_category_channel_id(self, guild_id: int, guild_name: str, category_channel_id: int):
+        settings_document = await self.find_or_new(guild_id, guild_name)
+        post_to_update = {"$set": {
+            "category_channel_id": category_channel_id
+        }}
+        await self.collection.find_one_and_update(settings_document, post_to_update)
+
+    async def get_information_channel_id_by_guild_id(self, guild_id: int) -> Optional[int]:
+        settings_post = await self.find_settings_post(guild_id)
+        return settings_post.get('information_channel_id')
+
+    async def set_information_channel_id(self, guild_id: int, guild_name: str, information_channel_id: int):
+        settings_document = await self.find_or_new(guild_id, guild_name)
+        post_to_update = {"$set": {
+            "information_channel_id": information_channel_id
+        }}
+        await self.collection.find_one_and_update(settings_document, post_to_update)
 
     async def not_delete_there(self, guild_id: int, channel_id: int):
         """
@@ -212,3 +234,41 @@ class SettingsCollection(metaclass=MetaSingleton):
             update_post
         )
         return True
+
+    async def set_raids_enabled(self, guild_name: str, guild_id: id):
+        settings_document = await self.find_or_new(guild_id, guild_name)
+        settings_document["is_raids_enabled"] = True
+        updated_document = {"$set": settings_document}
+        await self.collection.find_one_and_update({"guild_id": guild_id}, updated_document)
+
+    async def get_guilds_ids_with_enabled_raids(self) -> List[Optional[int]]:
+        settings_documents = self.collection.find_many({"is_raids_enabled": True})
+        return [settings_document.get("guild_id") for settings_document in settings_documents]
+
+    async def get_information_channel_attributes(self, guild_id: int) -> Optional[Dict[str, str]]:
+        """
+        Gets raid information channel attributes for given guild id
+
+        :param guild_id: guild id where is raid information channel
+        """
+        if settings_document := await self.find_settings_post(guild_id):
+            return settings_document.get('information_channel')
+
+    async def set_information_channel_attributes(self, guild_id: int, guild_name: str, channel_id: int,
+                                                 active_raids_message_id: int, yesterday_raids_message_id: int):
+        """
+        Save raids information channel attributes
+
+        :param guild_id: discord guild id
+        :param guild_name: discord guild name
+        :param channel_id: discord raids information channel id
+        :param active_raids_message_id: discord active raids message id
+        :param yesterday_raids_message_id: discord yesterday raids message id
+        """
+        attributes = {"information_channel": {
+            "channel_id": channel_id,
+            "active_raids_message_id": active_raids_message_id,
+            "yesterday_raids_message_id": yesterday_raids_message_id,
+        }}
+        await self.find_or_new(guild_id, guild_name)
+        await self.collection.find_one_and_update({"guild_id": guild_id}, {"$set": attributes})
