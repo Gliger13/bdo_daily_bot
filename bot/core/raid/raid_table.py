@@ -1,3 +1,6 @@
+"""
+Contain class for producing raid table image
+"""
 import os
 import random
 
@@ -9,6 +12,9 @@ from settings.settings import BOT_DATA_PATH
 
 
 class RaidTable:
+    """
+    Class for producing raid table images
+    """
     # Text settings
 
     # Size
@@ -141,8 +147,8 @@ class RaidTable:
         if not os.path.isdir(self.table_path):
             os.mkdir(self.table_path)
 
-        self.table_path = os.path.join(self.table_path,
-                                       self.raid.captain.nickname + '_' + str(self.raid.time.kebab_time_leaving) + ".png")
+        file_name = self.raid.captain.nickname + '_' + str(self.raid.time.kebab_time_leaving) + ".png"
+        self.table_path = os.path.join(self.table_path, file_name)
         cv2.imwrite(self.table_path, img)
 
     def create_text_table(self):

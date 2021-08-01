@@ -1,3 +1,6 @@
+"""
+Module contain class for reporting command successful or unsuccessful result
+"""
 from discord import Message, User
 from discord.ext.commands import Context
 

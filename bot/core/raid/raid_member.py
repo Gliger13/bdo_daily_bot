@@ -1,3 +1,6 @@
+"""
+Module contain class for describing raid member
+"""
 from typing import Dict, List, Optional, Union
 
 from discord import User

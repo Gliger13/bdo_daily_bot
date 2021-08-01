@@ -1,3 +1,6 @@
+"""
+Contain general settings for the bot
+"""
 import os
 
 from settings import secrets

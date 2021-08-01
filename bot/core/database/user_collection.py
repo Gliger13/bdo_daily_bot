@@ -1,14 +1,12 @@
 """Contains the class for working with the user database collection."""
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from core.database.database import Database
 from core.tools.common import MetaSingleton
 from settings import settings
-
-l = 0
 
 
 class UserExists(Exception):
@@ -54,7 +52,7 @@ class UserCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.USER_COLLECTION]
-            logging.debug(f"Collection {settings.USER_COLLECTION} connected.")
+            logging.debug("Collection {} connected".format(settings.USER_COLLECTION))
         return self._collection
 
     async def is_user_exist(self, discord_id: int) -> bool:

@@ -230,4 +230,3 @@ class ChannelsSender:
         """
         message = messages.raid_created.format(time_reservation_open=raid.time.normal_time_reservation_open)
         await cls.send(channel, message)
-

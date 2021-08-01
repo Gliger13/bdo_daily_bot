@@ -8,7 +8,7 @@ from core.database.database import Database
 from core.tools.common import MetaSingleton
 from settings import settings
 
-l = 0
+
 
 
 class SettingsCollection(metaclass=MetaSingleton):
@@ -28,7 +28,7 @@ class SettingsCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.SETTINGS_COLLECTION]
-            logging.debug(f'Collection {settings.SETTINGS_COLLECTION} connected.')
+            logging.debug('Collection {} connected'.format(settings.SETTINGS_COLLECTION))
         return self._collection
 
     async def find_settings_post(self, guild_id: int) -> Dict[str, Any] or None:
