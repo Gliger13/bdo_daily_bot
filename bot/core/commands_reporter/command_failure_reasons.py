@@ -1,3 +1,6 @@
+"""
+Contains variable with commands fails reasons
+"""
 from enum import Enum
 
 

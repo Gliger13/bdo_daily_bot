@@ -1,10 +1,11 @@
 """
-Contain user commands for creating and deleting raids
+Module contain discord cog with name `RaidCreation`. Provide commands to
+create and delete raids
 """
 import asyncio
 
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Bot, Context
 
 from core.commands.raid.builder import RaidBuilder
 from core.logger import log_template
@@ -17,9 +18,16 @@ class RaidCreation(commands.Cog):
     Cog that response for creating and removing raids
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
+        """
+        :param bot: discord bot for executing the cog commands
+        """
         self.bot = bot
 
+    # Arguments are used in parsing
+    # pylint: disable=unused-argument
+    # For correct raid creation it is impossible to use less arguments
+    # pylint: disable=too-many-arguments
     @commands.command(name=command_names.function_command.captain, help=help_text.captain)
     @commands.guild_only()
     @commands.has_role('Капитан')
@@ -73,6 +81,11 @@ class RaidCreation(commands.Cog):
             await RaidBuilder.destroy(ctx, captain_name, time_leaving)
 
 
-def setup(bot):
+def setup(bot: Bot):
+    """
+    Function to add raid creation cog to the given bot
+
+    :param bot: discord bot to add the cog
+    """
     bot.add_cog(RaidCreation(bot))
     log_template.cog_launched('RaidCreation')

@@ -10,8 +10,6 @@ from core.tools import tools
 from core.tools.common import MetaSingleton
 from settings import settings
 
-l = 0
-
 
 class CaptainCollection(metaclass=MetaSingleton):
     """Responsible for working with the captain MongoDB collection."""
@@ -30,7 +28,7 @@ class CaptainCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.CAPTAIN_COLLECTION]
-            logging.debug(f'Collection {settings.CAPTAIN_COLLECTION} connected.')
+            logging.debug('Collection {} connected.'.format(settings.CAPTAIN_COLLECTION))
         return self._collection
 
     async def create_captain(self, discord_id: int) -> Dict[str, Any]:

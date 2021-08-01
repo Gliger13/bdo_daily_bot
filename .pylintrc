@@ -17,6 +17,19 @@ suggestion-mode=yes
 # active Python interpreter and may run arbitrary code.
 unsafe-load-any-extension=no
 
+# To solve E0401: Unable to import update python path
+init-hook= 'import sys; sys.path.extend(["bot", "test_framework"])'
+
+# Add files or directories matching the regex patterns to the blacklist. The
+# regex matches against base names, not paths.
+ignore-patterns= test_framework, tests
+
+# To avoid wrong common warning with line "from bot import BdoDailyBot"
+disable=wrong-import-order
+
+disable=invalid-name
+
+
 [MESSAGES CONTROL]
 
 # Enable the message, report, category or checker with the given id(s). You can

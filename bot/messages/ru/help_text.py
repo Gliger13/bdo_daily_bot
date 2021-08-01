@@ -1,3 +1,10 @@
+"""
+Contain message for help commands
+"""
+
+# Will be moved in yaml like files
+# pylint: disable=invalid-name
+
 from settings.settings import PREFIX
 # ============================== Admin ===============================
 
@@ -292,7 +299,6 @@ author_of_bot = 'Показывает информацию об боте и ав
 
 turn_off_bot = 'Выключение бота. Доступно только для владельца бота.'
 
-help = 'Показывает помощь по всем командам.'
+help_command = 'Показывает помощь по всем командам.'
 
 send_logs = 'Отправляет логи бота.'
-

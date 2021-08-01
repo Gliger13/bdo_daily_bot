@@ -1,4 +1,4 @@
-"""Contain entry point for running bot"""
+"""Contain entry point for run bot"""
 import logging
 
 import discord
@@ -46,7 +46,7 @@ class BdoDailyBot(metaclass=MetaSingleton):
             try:
                 self.bot.load_extension(cog_path)
             except (discord.ClientException, ModuleNotFoundError):
-                logging.critical(f"Cog {cog_path} not loaded")
+                logging.critical("Cog {} not loaded".format(cog_path))
 
 
 if __name__ == "__main__":

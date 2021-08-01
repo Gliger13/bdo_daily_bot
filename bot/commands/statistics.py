@@ -1,6 +1,11 @@
+"""
+Module contain discord cog with name `Statistics`. Provide discord command to get
+user and guild statistics from the database.
+"""
 import discord
+from discord import Embed, User
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Bot, Context
 
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
@@ -10,34 +15,27 @@ from messages import command_names, help_text, messages
 
 class Statistics(commands.Cog):
     """
-    Cog that provides all collected statistics.
+    Cog that provides all collected statistics
     """
     database = DatabaseManager()
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
+        """
+        :param bot: discord bot for executing the cog commands
+        """
         self.bot = bot
         self.reporter = Reporter()
 
     @staticmethod
-    def user_stat_msg(user, user_info: dict, captain_info: dict) -> discord.Embed:
+    def user_stat_msg(user: User, user_info: dict, captain_info: dict) -> Embed:
         """
-        Return all information that bot knows about user to current channel as message.
+        Transform given user information in the discord embed
 
-        Attributes:
-        ----------
-        user: discord.User
-            User for getting information about him
-        user_info: dict
-            All user information collected by bot from database
-        captain_info: dict
-            All user information that drove people collected by bot
-
-        Returns:
-        --------
-        :discord.Embed
-            All information about user as embed
+        :param user: discord user of given information
+        :param user_info: information from the user collection
+        :param captain_info: information from the captain collection
+        :return: discord embed with all user information
         """
-
         text_message = messages.no_data
         if user_info:
             # Choose a title whichever user drove or not people
@@ -83,7 +81,7 @@ class Statistics(commands.Cog):
                     last_created=captain_info.get('last_created')
                 )
 
-        embed = discord.Embed(
+        embed = Embed(
             title=messages.statistics_user_title,
             colour=discord.Colour.blue(),
             description=text_message
@@ -97,16 +95,13 @@ class Statistics(commands.Cog):
         return embed
 
     @commands.command(name=command_names.function_command.user_statistics, help=help_text.user_statistics)
-    async def user_statistics(self, ctx: Context, nickname=''):
+    async def user_statistics(self, ctx: Context, nickname: str = ''):
         """
-        Send all information about the user collected by bot as message in current channel.
+        Command to send user collected information as message in channel from context
 
-        Attributes:
-        ----------
-        nickname: str
-            information about specific user else about author of command
+        :param ctx: discord command context
+        :param nickname: game nickname of the user to provide information
         """
-        user = None
         # Check specific user
         if nickname:
             # Try to find user in db
@@ -116,7 +111,7 @@ class Statistics(commands.Cog):
                 captain_info = await self.database.captain.find_captain_post(user_info['discord_id'])
                 user = self.bot.get_user(user_info['discord_id'])
             else:
-                captain_info = None
+                return
         else:
             # If specific user not exist get current user
             user = ctx.author
@@ -131,7 +126,9 @@ class Statistics(commands.Cog):
     @commands.has_permissions(administrator=True, manage_messages=True)
     async def guild_statistics(self, ctx: Context):
         """
-        Send all information about the current server collected by bot as message in current channel.
+        Command to send guild collected information as message in current channel from context
+
+        :param ctx: discord command context
         """
         guild = ctx.guild
         user = ctx.author
@@ -157,7 +154,7 @@ class Statistics(commands.Cog):
             # Information about ability to remove channels
             if guild_info and guild_info.get('can_remove_in_channels'):
                 text_message += messages.can_remove_msgs_in
-                for channel_id, channel in guild_info.get('can_remove_in_channels').items():
+                for _, channel in guild_info.get('can_remove_in_channels').items():
                     text_message += f" - *#{channel}*\n"
         else:
             text_message = messages.no_data
@@ -177,6 +174,11 @@ class Statistics(commands.Cog):
         await self.reporter.report_success_command(ctx)
 
 
-def setup(bot):
+def setup(bot: Bot):
+    """
+    Function to add statistics cog to the given bot
+
+    :param bot: discord bot to add the cog
+    """
     bot.add_cog(Statistics(bot))
     log_template.cog_launched('Statistics')

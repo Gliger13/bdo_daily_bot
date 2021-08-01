@@ -6,6 +6,9 @@ from settings import settings
 
 
 class BotLogger(logging.Logger):
+    """
+    Custom logger realisation with file and console handlers
+    """
     def __init__(self, name: str):
         super().__init__(name)
         self.__set_handlers()

@@ -1,5 +1,8 @@
+"""
+Module contain discord cog with name `Registration`. Provide discord command user registration.
+"""
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Bot, Context
 
 from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
@@ -9,32 +12,29 @@ from core.logger import log_template
 from core.tools import check_input
 from messages import command_names, help_text
 
-l = 0
-
 
 class RaidRegistration(commands.Cog):
     """
-    Cog that responsible for user registration. After registration user can use reaction.
+    Cog that responsible for user registration
     """
     database = DatabaseManager()
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
+        """
+        :param bot: discord bot for executing the cog commands
+        """
         self.bot = bot
         self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.reg, help=help_text.reg)
     async def reg(self, ctx: Context, name: str):
         """
-        Register game nickname in bot database.
+        Command to register given game nickname of the context user in the database
 
-        Attributes:
-        ----------
-        name: str
-            Game user nickname.
+        :param ctx: discord command context
+        :param name: user game nickname
         """
-        # Checking correct input
         await check_input.validation(**locals())
-
         try:
             await self.database.user.register_user(ctx.author.id, str(ctx.author), name)
             await self.reporter.report_success_command(ctx)
@@ -44,21 +44,21 @@ class RaidRegistration(commands.Cog):
     @commands.command(name=command_names.function_command.rereg, help=help_text.rereg)
     async def rereg(self, ctx: Context, name: str):
         """
-        Re-register game nickname in bot database.
+        Command to reregister given game nickname of the context user in the database
 
-        Attributes:
-        ----------
-        name: str
-            Game user nickname.
+        :param ctx: discord command context
+        :param name: user game nickname
         """
-        # Checking correct input
         await check_input.validation(**locals())
-
         await self.database.user.re_register_user(ctx.author.id, str(ctx.author), name)
-
         await self.reporter.report_success_command(ctx)
 
 
-def setup(bot):
+def setup(bot: Bot):
+    """
+    Function to add registration cog to the given bot
+
+    :param bot: discord bot to add the cog
+    """
     bot.add_cog(RaidRegistration(bot))
     log_template.cog_launched('RaidRegistration')

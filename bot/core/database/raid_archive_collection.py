@@ -1,7 +1,10 @@
+"""
+Module contain collection for archive old raids
+"""
 import dataclasses
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 

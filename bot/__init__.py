@@ -1,12 +1,6 @@
-from settings import settings
-
-if settings.LANGUAGE == 'ru':
-    from messages.ru import (
-        help_text, command_names, messages, regex, logger_msgs
-    )
-elif settings.LANGUAGE == 'eu':
-    from messages.eu import (
-        help_text, command_names, messages, regex, logger_msgs
-    )
-else:
-    raise ImportError('Language in settings are not supported')
+"""
+Contain import for avoiding incorrect import visibility when trying
+to import class from the package instead of the module.
+"""
+# pylint: disable=import-self
+from bot import BdoDailyBot

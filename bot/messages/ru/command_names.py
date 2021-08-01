@@ -1,8 +1,14 @@
-# matches function name and its command for discord
+"""
+Contain all bot commands names
+"""
+
 from collections import UserDict
 
 
 class FunctionCommand(UserDict):
+    """
+    Class for matching function name and it's discord command name
+    """
     def __missing__(self, key):
         raise ImportError(f"Function {key} is not a registered command")
 
@@ -41,7 +47,7 @@ function_command = FunctionCommand({
     'not_remove_there': 'не_удалять',
     # commands.base
     'test': 'тест',
-    'help': 'help',
+    'help_command': 'help_command',
     'turn_off_bot': 'заверши_работу',
     'author_of_bot': 'автор',
     'send_logs': 'логи',

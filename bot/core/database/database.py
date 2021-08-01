@@ -1,12 +1,10 @@
-"""Contain class which is a MongoDB wrapper."""
+"""Module contain class to wrap MongoDB"""
 import logging
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from core.tools.common import MetaSingleton
 from settings import settings
-
-l = 0
 
 
 class Database(metaclass=MetaSingleton):

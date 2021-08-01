@@ -48,10 +48,9 @@ class RaidBuilder:
 
         :param ctx: discord command context
         """
-        if captain_post := cls.__database.captain.find_captain_post(ctx.author.id):
+        if cls.__database.captain.find_captain_post(ctx.author.id):
             pass
-        raise NotImplemented
-        # Will be implemented after implementing archiving old raids
+        raise NotImplementedError
 
     @classmethod
     async def destroy(cls, ctx: Context, captain_name: str, time_leaving: Optional[datetime]):

@@ -1,9 +1,13 @@
+"""
+Module contain discord cog with name `Base`. Provide base discord commands for
+debugging or providing bot information
+"""
 import asyncio
 import os
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Bot, Context
 
 from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
@@ -12,15 +16,16 @@ from core.tools.path_factory import ProjectPathFactory
 from messages import command_names, help_text, messages
 from settings import settings
 
-l = 0
-
 
 class Base(commands.Cog):
     """
     Cog that responsible for basic bot commands.
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
+        """
+        :param bot: discord bot for executing the cog commands
+        """
         self.bot = bot
         self.reporter = Reporter()
         self.bot.remove_command('help')  # Remove command to create custom help
@@ -28,19 +33,18 @@ class Base(commands.Cog):
     @commands.command(name=command_names.function_command.test, help=help_text.test)
     async def test(self, ctx: Context):
         """
-        Command witch does nothing. For developer and debugging.
+        Command witch does nothing. For developing and debugging
+
+        :param ctx: discord command context
         """
         await self.reporter.report_success_command(ctx)
-        await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.RAID_NOT_FOUND)
 
-    async def help_command(self, ctx: Context, command):
+    async def help_command(self, ctx: Context, command: str):
         """
-        Send command description as message in channel.
+        Send command detailed description as message in channel of the given context
 
-        Attributes
-        ----------
-        command: str
-            The name of command for getting the description
+        :param ctx: discord command context
+        :param command: discord command name to get information
         """
         # Get command obj from the name
         command = self.bot.get_command(command)
@@ -49,7 +53,7 @@ class Base(commands.Cog):
             embed = discord.Embed(
                 title=command.name,
                 colour=discord.Colour.blue(),
-                description=command.help,
+                description=command.help_command,
             )
 
             bot_as_user = self.bot.get_user(settings.BOT_ID)
@@ -67,7 +71,9 @@ class Base(commands.Cog):
     @commands.is_owner()
     async def send_logs(self, ctx: Context):
         """
-        Command for admins and developers. Send the bot logs as message with attachment to a channel.
+        Command for admins and developers. Send the bot logs as message with attachment to a channel
+
+        :param ctx: discord command context
         """
         path_to_logs = ProjectPathFactory.get_logs_path()
         if os.path.exists(path_to_logs):
@@ -76,15 +82,13 @@ class Base(commands.Cog):
         else:
             await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.LOGS_NOT_FOUND)
 
-    @commands.command(name=command_names.function_command.help, help=help_text.help)
+    @commands.command(name=command_names.function_command.help, help=help_text.help_command)
     async def help(self, ctx: Context, command=''):
         """
-        Custom help command.
+        Command to send help of the all bot commands as embed
 
-        Attributes
-        ----------
-        command: str
-            The name of command for getting the description
+        :param ctx: discord command context
+        :param command: discord command name to get information
         """
         # If user enter name of command to get description
         if command:
@@ -92,7 +96,7 @@ class Base(commands.Cog):
             return
 
         # Dict of emoji for control custom help
-        HELP_EMODJI = ['🔼', '1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣', '9️⃣']
+        help_emojis = ['🔼', '1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣', '9️⃣']
         pages = {}
         # Cogs witch should not be shown in help
         not_help_cogs = ['Base', 'Events']
@@ -115,12 +119,12 @@ class Base(commands.Cog):
         )
 
         # Generate pages of cogs with description of all commands in cog
-        section_help = messages.section_help.format(emoji=HELP_EMODJI[0])
+        section_help = messages.section_help.format(emoji=help_emojis[0])
         for index, (cog_name, bot_commands) in enumerate(cogs_commands.items()):
-            section_help += f"**{HELP_EMODJI[1:][index]}  -  {cog_name}**\n"
+            section_help += f"**{help_emojis[1:][index]}  -  {cog_name}**\n"
             page = f"**{cog_name}**:\n"
-            for command in bot_commands:
-                page += f"**`{settings.PREFIX}{command.name}` - {command.short_doc}**\n"
+            for bot_command in bot_commands:
+                page += f"**`{settings.PREFIX}{bot_command.name}` - {bot_command.short_doc}**\n"
 
             embed_page = discord.Embed(
                 title=messages.help_title,
@@ -133,7 +137,7 @@ class Base(commands.Cog):
                 icon_url=bot_as_user.avatar_url,
             )
 
-            pages[HELP_EMODJI[1:][index]] = embed_page
+            pages[help_emojis[1:][index]] = embed_page
 
         main_embed.add_field(
             name=messages.section_title,
@@ -160,14 +164,14 @@ class Base(commands.Cog):
         )
 
         # Set home page
-        pages[HELP_EMODJI[0]] = main_embed
+        pages[help_emojis[0]] = main_embed
 
         help_msg = await ctx.send(embed=main_embed)
 
         await self.reporter.report_success_command(ctx)
 
         # Add control emoji for message
-        for emoji in HELP_EMODJI:
+        for emoji in help_emojis:
             await help_msg.add_reaction(emoji)
 
         def check(reaction, user):
@@ -176,13 +180,13 @@ class Base(commands.Cog):
             """
             return (
                     user == ctx.message.author and
-                    str(reaction.emoji) in HELP_EMODJI
+                    str(reaction.emoji) in help_emojis
             )
 
         while True:
             try:
                 # Waiting for a click reaction from the user
-                reaction, user = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
+                reaction, _ = await self.bot.wait_for('reaction_add', timeout=600.0, check=check)
             except asyncio.TimeoutError:
                 return
 
@@ -197,7 +201,9 @@ class Base(commands.Cog):
     @commands.is_owner()
     async def turn_off_bot(self, ctx: Context):
         """
-        Disables the bot. Available only to the bot creator.
+        Command to logout the bot
+
+        :param ctx: discord command context
         """
         await self.reporter.report_success_command(ctx)
         await self.bot.logout()
@@ -205,7 +211,9 @@ class Base(commands.Cog):
     @commands.command(name=command_names.function_command.author_of_bot, help=help_text.author_of_bot)
     async def author_of_bot(self, ctx: Context):
         """
-        Send information about creator and bot as message in current channel.
+        Command to send information about creator and bot as message in current channel
+
+        :param ctx: discord command context
         """
         embed = discord.Embed(
             title=messages.author_title,
@@ -216,6 +224,11 @@ class Base(commands.Cog):
         await self.reporter.report_success_command(ctx)
 
 
-def setup(bot):
+def setup(bot: Bot):
+    """
+    Function to add base cog to the given bot
+
+    :param bot: discord bot to add the cog
+    """
     bot.add_cog(Base(bot))
     log_template.cog_launched('Base')

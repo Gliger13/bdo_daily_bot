@@ -76,6 +76,9 @@ class RaidFlow:
             self.raid.captain.nickname, self.raid.time.kebab_time_leaving))
 
     async def update(self):
+        """
+        Update raid collection and information messages
+        """
         await self.update_collection_messages()
         await self.update_raids_information_channels()
 

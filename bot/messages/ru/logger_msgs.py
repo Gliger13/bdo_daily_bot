@@ -1,3 +1,10 @@
+"""
+Module contain logger messages
+"""
+
+# Will be moved in yaml like files
+# pylint: disable=invalid-name
+
 # ============================== log_template ===============================
 from discord.ext.commands import errors
 

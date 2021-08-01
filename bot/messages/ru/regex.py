@@ -1,3 +1,7 @@
+"""
+Module contain regex templates
+"""
+
 import re
 
 # Different regex constructions for checking correct input

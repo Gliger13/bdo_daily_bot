@@ -1,3 +1,8 @@
+"""
+Contain common classes
+"""
+
+
 class MetaSingleton(type):
     """
     Realize pattern Singleton

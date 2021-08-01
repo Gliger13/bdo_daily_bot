@@ -1,3 +1,6 @@
+"""
+Module contain function to producing different common logs messages
+"""
 import logging
 import traceback
 
@@ -5,8 +8,6 @@ from discord import DMChannel
 from discord.ext.commands import Context
 
 from messages import logger_msgs
-
-l = 0
 
 
 def _guild_channel_msg(ctx: Context):

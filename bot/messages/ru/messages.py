@@ -1,3 +1,10 @@
+"""
+Module contain user messages
+"""
+
+# Will be moved in yaml like files
+# pylint: disable=invalid-name
+
 from settings.settings import PREFIX
 
 # ============================== commands.raid_manager.creation ===============================
@@ -175,7 +182,6 @@ help_title = 'Команды бота'
 section_help = '**{emoji}  -  описание разделов**\n'
 
 section_title = 'Разделы команд'
-
 
 about_author = """
 Бот был сделан **Gliger#7748** (Андрей).
@@ -390,10 +396,9 @@ active_raids_message_title = "Активные рейды"
 active_raids_message_description = "Рейды которые будут отплывать сегодня или завтра"
 active_raids_message_name = "{captain_name} в {time_leaving}"
 active_raids_message = "Капитан {discord_username} с фамилией **{captain_name}** отплывает в **{time_leaving}** " \
-                      "на сервере **{server}**. Свободно **{places_left}/{max_places}** мест. " \
-                      "Записаться тут {channel_name}."
+                       "на сервере **{server}**. Свободно **{places_left}/{max_places}** мест. " \
+                       "Записаться тут {channel_name}."
 active_raids_message_footer = "Во время ежей уходи в АФК - кандидумы любят таких."
-
 
 yesterday_raids_message_title = "Прошедшие рейды"
 yesterday_raids_message_description = "Рейды которые были вчера или уже отплыли сегодня"
