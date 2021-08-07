@@ -47,6 +47,8 @@ function_command = FunctionCommand({
     'not_remove_there': 'не_удалять',
     'set_raids_enabled': 'можно_рейды',
     'set_raids_disabled': 'нельзя_рейды',
+    'set_notification_role': 'пингай_между',
+    'remove_notification_role': 'убери_пинг',
     # commands.base
     'test': 'тест',
     'help_command': 'help_command',

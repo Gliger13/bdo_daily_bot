@@ -2,9 +2,10 @@
 Contain users manager class for users communications
 """
 import logging
+from datetime import time
 from typing import Optional
 
-from discord import User, Forbidden, HTTPException, TextChannel, Message
+from discord import Forbidden, HTTPException, Message, TextChannel, User
 
 from core.raid.raid import Raid
 from core.raid.raid_item import RaidItem
@@ -15,6 +16,7 @@ class UsersSender:
     """
     Response for users communications
     """
+
     @classmethod
     async def send_to_user(cls, user: User, message: str) -> Optional[Message]:
         """
@@ -218,11 +220,40 @@ class UsersSender:
         message = messages.user_disable_raids_in_guild.format(guild=guild_name)
         await cls.send_to_user(user, message)
 
+    @classmethod
+    async def send_user_set_notification_role(cls, user: User, guild_name: str, role_name: str,
+                                              time_start_at: time, time_end_at: time):
+        """
+        Send message that set notification role in the current guild
+
+        :param user: discord user for message sending
+        :param guild_name: discord guild name where the user set notification role
+        :param role_name: discord role name for mentions
+        :param time_start_at: start time where should ping given role
+        :param time_end_at: end time where not need ping given role
+        """
+        message = messages.user_set_notification_role.format(guild=guild_name, role=role_name,
+                                                             time_start_at=time_start_at, time_end_at=time_end_at)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_remove_notification_role(cls, user: User, guild_name: str, role_name: str):
+        """
+        Send message in channel that captain created new raid
+
+        :param user: discord user for message sending
+        :param guild_name: discord guild name where the user remove notification role
+        :param role_name: discord role name for mentions
+        """
+        message = messages.user_remove_notification_role.format(guild=guild_name, role=role_name)
+        await cls.send_to_user(user, message)
+
 
 class ChannelsSender:
     """
     Response for channels communications
     """
+
     @classmethod
     async def send(cls, channel: TextChannel, message: str) -> Message:
         """

@@ -9,6 +9,7 @@ from discord import Forbidden, HTTPException, NotFound, TextChannel
 
 from bot import BdoDailyBot
 from core.raid.raid import Raid
+from core.raid.raid_notifier import RaidNotifier
 from messages import messages
 
 
@@ -29,7 +30,7 @@ class RaidMessage(ABC):
 
     @property
     @abstractmethod
-    def text(self) -> str:
+    async def text(self) -> str:
         """
         Content of message to send
 
@@ -41,7 +42,7 @@ class RaidMessage(ABC):
         Send discord message
         """
         try:
-            self.message = await self.channel.send(self.text)
+            self.message = await self.channel.send(await self.text)
         except Forbidden:
             logging.warning("Failed to send {} message due to permission to channel with name {} to guild {}".
                             format(self.type, self.channel.name, self.channel.guild.name))
@@ -77,7 +78,7 @@ class RaidMessage(ABC):
         """
         if self.message:
             try:
-                await self.message.edit(content=self.text)
+                await self.message.edit(content=await self.text)
                 logging.info("Message with type {} was edited in guild {} and channel {}".
                              format(self.type, self.channel.guild.name, self.channel.name))
             except NotFound:
@@ -123,7 +124,7 @@ class RaidReservationMessage(RaidMessage):
         self.type = "reservation"
 
     @property
-    def text(self) -> str:
+    async def text(self) -> str:
         """
         Content of the raid collection message to send
         """
@@ -147,17 +148,21 @@ class RaidCollectionMessage(RaidMessage):
         self.type = "collection"
 
     @property
-    def text(self) -> str:
+    async def text(self) -> str:
         """
         Content of the raid collection message to send
 
         :return: filled raid collection message content
         """
-        return messages.collection_start.format(
+        message = messages.collection_start.format(
             captain=self.raid.captain.user.mention, captain_name=self.raid.captain.nickname,
             time_leaving=self.raid.time.normal_time_leaving,
             server=self.raid.bdo_server, places_left=self.raid.places_left,
-            display_table_time=self.raid.time.normal_next_display_time)
+            display_table_time=self.raid.time.normal_next_display_time,
+        )
+        if mentions_string := await RaidNotifier.role_mentions_string(self.channel.guild, self.raid.time.time_leaving):
+            return "".join([message, mentions_string])
+        return message
 
     async def send(self):
         """
@@ -181,7 +186,7 @@ class RaidTableMessage(RaidMessage):
         self.type = "table"
 
     @property
-    def text(self):
+    async def text(self):
         """
         Plug. Table message not contain any text content
         """
@@ -216,7 +221,7 @@ class RaidLeaveMessage(RaidMessage):
         self.type = "leave"
 
     @property
-    def text(self) -> str:
+    async def text(self) -> str:
         """
         Content of the raid collection message to send
         """

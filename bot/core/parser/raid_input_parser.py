@@ -5,16 +5,16 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, time
 from enum import Enum
-from typing import List, Match, Optional, Dict, Any, Union
+from typing import Any, Dict, List, Match, Optional, Union
 
 from discord.ext.commands import Context
 
 from core.database.manager import DatabaseManager
 from core.raid.raid_item import RaidItem
 from core.users_interactor.senders import UsersSender
-from messages import regex, messages, logger_msgs
+from messages import logger_msgs, messages, regex
 
 
 class RaidInputTypes(Enum):
@@ -111,6 +111,12 @@ class RaidInputParameter:
         if isinstance(search_result, Match):
             return search_result.group(self.attribute.type)
         return self.value
+
+    @classmethod
+    def parse_str_time(cls, str_time: str) -> Optional[time]:
+        if search_result := re.search(RaidInputTypes.TIME.template, str_time):
+            return time(hour=int(search_result.group("hours")), minute=int(search_result.group("minutes")))
+        return
 
     @classmethod
     def parse_time(cls, time_search_result: Match) -> datetime:

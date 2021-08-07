@@ -3,15 +3,17 @@ Contain class for notifying raid users
 """
 import asyncio
 import logging
-from typing import Dict, Generator, List, Tuple
+from datetime import datetime, time
+from typing import Dict, Generator, List, Optional, Tuple
 
-from discord import User
+from discord import Guild, Role, User, utils
 
 from bot import BdoDailyBot
 from core.database.manager import DatabaseManager
 from core.raid.raid import Raid
 from core.users_interactor.message_reaction_interactor import MessageReactionInteractor
 from core.users_interactor.senders import UsersSender
+from messages import messages
 
 
 class RaidNotifier:
@@ -123,3 +125,50 @@ class RaidNotifier:
             else:
                 logging.warning("User document don't contain user id. "
                                 "Document content:\n{}".format(user_document))
+
+    @classmethod
+    def __is_time_in_range(cls, time_to_check: datetime, start_time: time, end_time: time) -> bool:
+        """
+        Check if the given time in the given time range
+
+        :param time_to_check: time to check
+        :param start_time: hours and minutes of range start
+        :param end_time: hours and minutes of range end
+        :return: True if the given time in the time range else False
+        """
+        check_time = time(hour=time_to_check.hour, minute=time_to_check.minute)
+        if start_time < end_time:
+            return start_time <= check_time <= end_time
+        else:  # crosses midnight
+            return check_time >= start_time or check_time <= end_time
+
+    @classmethod
+    async def get_roles_to_notify(cls, guild: Guild, time_leaving: datetime) -> Optional[List[Role]]:
+        """
+        Get roles to notify by raid time leaving from the database
+
+        :param guild: discord guild with roles to notify
+        :param time_leaving: raid time leaving to search notification roles
+        :return: list of the roles to notify
+        """
+        roles_to_notify = []
+        if notification_roles := await cls.__database.settings.get_notification_roles(guild.id):
+            for notification_role in notification_roles:
+                start_in, end_in = notification_role.get("start_time"), notification_role.get("end_time")
+                if cls.__is_time_in_range(time_leaving, start_in, end_in):
+                    roles_to_notify.append(utils.get(guild.roles, id=notification_role.get("role_id")))
+        return roles_to_notify
+
+    @classmethod
+    async def role_mentions_string(cls, guild: Guild, time_leaving: datetime) -> Optional[str]:
+        """
+        Get string with role mentions by the given time
+
+        :param guild: discord guild with roles to notify
+        :param time_leaving: raid time leaving to search notification roles
+        :return: string with role mentions
+        """
+        if roles_to_notify := await cls.get_roles_to_notify(guild, time_leaving):
+            role_mentions = [role.mention for role in roles_to_notify]
+            return messages.role_mentions_line.format(role_mentions=f"{','.join(role_mentions)}")
+        return

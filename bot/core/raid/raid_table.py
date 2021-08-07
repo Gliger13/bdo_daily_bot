@@ -46,7 +46,7 @@ class RaidTable:
         self.raid = raid
         self.old_member_dict = self.raid.members.copy()
         self.old_reservation_count = self.raid.reservation_count
-        self.title = f"{self.raid.captain.nickname} {self.raid.bdo_server} {self.raid.time.kebab_time_leaving}"
+        self.title = f"{self.raid.captain.nickname} {self.raid.bdo_server} {self.raid.time.normal_time_leaving}"
         self.table_path = None
 
     def get_width(self):

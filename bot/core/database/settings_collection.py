@@ -1,5 +1,6 @@
 """Contains the class for working with the settings database collection."""
 import logging
+from datetime import time
 from typing import Any, Dict, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
@@ -294,3 +295,58 @@ class SettingsCollection(metaclass=MetaSingleton):
         }}
         await self.find_or_new(guild_id, guild_name)
         await self.collection.find_one_and_update({"guild_id": guild_id}, {"$set": attributes})
+
+    async def set_notification_role(self, guild_name: str, guild_id: int, *,
+                                    role_name: str, role_id: int,
+                                    start_time: time, end_time: time):
+        """
+        Set role attributes which used for time notification
+
+        :param guild_name: discord guild name of the settings document
+        :param guild_id: discord guild id of the settings document
+        :param role_name: discord role name for mention
+        :type role_id: discord role id for mention
+        :param start_time: beginning of the time when this role can be used for notification
+        :param end_time: ending of the time when this role can be used for notification
+        """
+        settings_document = await self.find_or_new(guild_id, guild_name)
+        notification_roles = settings_document.get("notification_roles", [])
+        notification_roles.append({
+            "role_id": role_id,
+            "role_name": role_name,
+            "start_time": (start_time.hour, start_time.minute),
+            "end_time": (end_time.hour, end_time.minute),
+        })
+        query_to_update = {"$set": {"notification_roles": notification_roles}}
+        await self.collection.find_one_and_update({"guild_id": guild_id}, query_to_update)
+
+    async def remove_notification_role(self, guild_id: int, guild_name: str, role_id: int):
+        """
+        Set role attributes which used for time notification
+
+        :param guild_id: discord guild id of the settings document
+        :param guild_name: discord guild name of the settings document
+        :type role_id: discord role id to remove from mention
+        """
+        settings_document = await self.find_or_new(guild_id, guild_name)
+        notification_roles = settings_document.get("notification_roles", [])
+        updated_roles = filter(lambda role: role.get("role_id") != role_id, notification_roles)
+        settings_document["notification_roles"] = updated_roles
+        await self.collection.find_one_and_update({"guild_id": guild_id}, {"$set": settings_document})
+
+    async def get_notification_roles(self, guild_id: int) -> Optional[List[dict]]:
+        """
+        Get notification roles by the given time
+
+        :param guild_id: discord guild id of the settings document
+        :return: list of notification role ids
+        """
+        notification_roles = []
+        settings_document = await self.collection.find_one({"guild_id": guild_id}, {"notification_roles": 1})
+        for notification_role in settings_document.get("notification_roles", []):
+            start_hour, start_minutes = notification_role.get("start_time")
+            notification_role["start_time"] = time(hour=start_hour, minute=start_minutes)
+            end_hour, end_minutes = notification_role.get("end_time")
+            notification_role["end_time"] = time(hour=end_hour, minute=end_minutes)
+            notification_roles.append(notification_role)
+        return notification_roles
