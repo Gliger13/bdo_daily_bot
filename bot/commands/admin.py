@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
+from core.commands.admin import set_raids_disabled, set_raids_enabled
 from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
@@ -165,6 +166,28 @@ class Admin(commands.Cog):
             await ChannelsSender.send(ctx.channel, f"Пользователь с ником '{user_to_ban.name}' был забанен")
         else:
             await ChannelsSender.send(ctx.channel, "Не смог найти такого пользователя")
+
+    @commands.command(name=command_names.function_command.set_raids_enabled, help=help_text.set_raids_enabled)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def set_raids_enabled(self, ctx: Context):
+        """
+        Command to enable raids in the current guild
+
+        :param ctx: discord command context
+        """
+        await set_raids_enabled(ctx)
+
+    @commands.command(name=command_names.function_command.set_raids_disabled, help=help_text.set_raids_disabled)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def set_raids_disabled(self, ctx: Context):
+        """
+        Command to disable raids in the current guild
+
+        :param ctx: discord command context
+        """
+        await set_raids_disabled(ctx)
 
 
 def setup(bot: Bot):

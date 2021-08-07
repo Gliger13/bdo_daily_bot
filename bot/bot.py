@@ -6,8 +6,8 @@ from discord.ext.commands import Bot
 from discord_slash import SlashCommand
 
 from core.logger.logger import BotLogger
-from core.tools.path_factory import ProjectPathFactory
 from core.tools.common import MetaSingleton
+from core.tools.path_factory import ProjectPathFactory
 from settings import settings
 
 
@@ -15,6 +15,7 @@ class BdoDailyBot(metaclass=MetaSingleton):
     """
     Discord Black Desert Online Daily bot. Contain methods to initialize and run bot.
     """
+    bot: Bot
 
     def __init__(self):
         self.bot = self.__initialize_bot()

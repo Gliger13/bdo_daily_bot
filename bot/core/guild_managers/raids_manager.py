@@ -42,6 +42,7 @@ class RaidsGuildManager:
         """
         await self.__set_raids_category_channel()
         await self.__set_raids_information_channel()
+        logging.info("Guild manager for guild `{}` was initialized".format(self.guild.name))
 
     async def create_raid(self, raid_to_create: Raid) -> Raid:
         """

@@ -5,6 +5,8 @@ import logging
 from datetime import datetime
 from typing import Optional
 
+from discord import Guild, TextChannel
+
 from core.database.manager import DatabaseManager
 from core.raid.raid_item import RaidItem
 from core.raid.raid_member import RaidMember
@@ -100,34 +102,71 @@ class Raid:
         Check if member in current raid
 
         :param member: raid member
-        :return:
+        :return: True if member in current raid else False
         """
         return bool(self.get_member(member))
 
     async def add_new_member(self, member: RaidMember):
+        """
+        Add the given member to the raid members list
+
+        :param member: member to add
+        """
         self.members.append(member)
         await self.flow.update()
         await self.save()
 
-    async def remove_member(self, member_to_remove: RaidMember):
-        raid_member = self.get_member(member_to_remove)
+    async def remove_member(self, member: RaidMember):
+        """
+        Remove the given member from the raid members list
+
+        :param member: member to remove
+        """
+        raid_member = self.get_member(member)
         self.members.remove(raid_member)
         await self.flow.update()
         await self.save()
 
     async def save(self):
+        """
+        Save current raid state in the database
+        """
         await DatabaseManager().raid.update(self.raid_item)
         logging.info("Raid with captain '{}' and time leaving '{}' was saved".
                      format(self.captain.nickname, self.time.normal_time_leaving))
 
     def has_collection_message_with_id(self, collection_message_id: int) -> bool:
+        """
+        Check if raid has collection message with given discord message id
+
+        :param collection_message_id: discord message for raid collection
+        :return: True if given discord collection message is from the current raid else False
+        """
         for channel in self.channels:
             if channel.collection_message.message.id == collection_message_id:
                 return True
         return False
 
     def get_member(self, member: RaidMember) -> Optional[RaidMember]:
+        """
+        Gets raid member by the specific member
+
+        :param member: raid member to search
+        :return: raid member
+        """
         for raid_member in self.members:
             if raid_member.nickname == member.nickname:
                 return raid_member
+        return
+
+    def get_channel(self, guild: Guild) -> Optional[TextChannel]:
+        """
+        Gets raid channel for the given guild
+
+        :param guild: discord guild with raid channel
+        :return: discord text channel with raid collection
+        """
+        for channel in self.channels:
+            if channel.guild == guild:
+                return channel.channel
         return

@@ -45,6 +45,8 @@ function_command = FunctionCommand({
     'remove_there': 'удалять_тут',
     'remove_msgs': 'очисти_чат',
     'not_remove_there': 'не_удалять',
+    'set_raids_enabled': 'можно_рейды',
+    'set_raids_disabled': 'нельзя_рейды',
     # commands.base
     'test': 'тест',
     'help_command': 'help_command',

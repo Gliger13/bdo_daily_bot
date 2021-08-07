@@ -187,13 +187,36 @@ class UsersSender:
         return await cls.send_to_user(user, messages.captain_notification)
 
     @classmethod
-    async def send_user_try_action_with_not_exist_raid(cls, user: User):
+    async def send_user_try_action_with_not_exist_raid(cls, user: User) -> Optional[Message]:
         """
         Send message that user try interrupt with not exist raid
 
         :param user: discord user for message sending
+        :return: sent message
         """
         return await cls.send_to_user(user, messages.user_try_action_with_not_exist_raid)
+
+    @classmethod
+    async def send_user_enable_raids_in_guild(cls, user: User, guild_name: str):
+        """
+        Send message that user enable raids in the current guild
+
+        :param user: discord user for message sending
+        :param guild_name: discord guild name where the user enable raids
+        """
+        message = messages.user_enable_raids_in_guild.format(guild=guild_name)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_disable_raids_in_guild(cls, user: User, guild_name: str):
+        """
+        Send message that user enable raids in the current guild
+
+        :param user: discord user for message sending
+        :param guild_name: discord guild name where the user enable raids
+        """
+        message = messages.user_disable_raids_in_guild.format(guild=guild_name)
+        await cls.send_to_user(user, message)
 
 
 class ChannelsSender:
@@ -201,32 +224,34 @@ class ChannelsSender:
     Response for channels communications
     """
     @classmethod
-    async def send(cls, channel: TextChannel, message: str):
+    async def send(cls, channel: TextChannel, message: str) -> Message:
         """
         General method for sending messages to channel
 
         :param channel: discord channel for message sending
         :param message: message to be sending
+        :return: message that was sent
         """
         try:
-            await channel.send(message)
+            message = await channel.send(message)
+            logging.info("Message to channel '{}', guild '{}' was send. Content: {}\n".
+                         format(channel.name, channel.guild.name, message.content))
+            return message
         except Forbidden as error:
             logging.warning("Failed to send message due to permission to channel '{}', guild '{}' and content:\n{}\n"
                             "Error: {}".format(channel.name, channel.guild.name, message, error))
         except HTTPException as error:
             logging.warning("Failed to send message due to HTTPError to channel '{}', guild '{}' and content:\n{}\n"
                             "Error: {}".format(channel.name, channel.guild.name, message, error))
-        else:
-            logging.info("Message to channel '{}', guild '{}' was send. Content: {}\n".
-                         format(channel.name, channel.guild.name, message))
 
     @classmethod
-    async def send_captain_created_raid(cls, channel: TextChannel, raid: Raid):
+    async def send_captain_created_raid(cls, channel: TextChannel, raid: Raid) -> Message:
         """
         Send message in channel that captain created new raid
 
         :param channel: discord channel for message sending
         :param raid: raid that user created
+        :return: message that was sent
         """
-        message = messages.raid_created.format(time_reservation_open=raid.time.normal_time_reservation_open)
-        await cls.send(channel, message)
+        message = messages.raid_created.format(channel=raid.get_channel(channel.guild).mention)
+        return await cls.send(channel, message)

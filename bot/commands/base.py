@@ -82,7 +82,7 @@ class Base(commands.Cog):
         else:
             await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.LOGS_NOT_FOUND)
 
-    @commands.command(name=command_names.function_command.help, help=help_text.help_command)
+    @commands.command(name=command_names.function_command.help_command, help=help_text.help_command)
     async def help(self, ctx: Context, command=''):
         """
         Command to send help of the all bot commands as embed

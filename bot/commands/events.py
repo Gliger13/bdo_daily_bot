@@ -68,6 +68,7 @@ class Events(commands.Cog):
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
 
         BdoDailyBot.bot = self.bot
+        await ManagersController.load_managers()
         await ManagersController.load_raids()
 
     @commands.Cog.listener()

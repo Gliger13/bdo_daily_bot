@@ -14,7 +14,8 @@ from core.guild_managers.raids_keeper import RaidsKeeper
 from core.raid.raid import Raid
 from core.raid.raid_item import RaidItem
 from core.raid.raid_member import RaidMemberBuilder
-from core.users_interactor.senders import UsersSender
+from core.users_interactor.common import delete_message_after_some_time
+from core.users_interactor.senders import ChannelsSender, UsersSender
 
 
 class RaidBuilder:
@@ -33,10 +34,14 @@ class RaidBuilder:
         """
         captain = await RaidMemberBuilder.build_by_discord_user(ctx.author)
         if await RaidGate.can_user_create_raid(captain, raid_item):
-            await ManagersController.create_raid(ctx.guild, raid_item)
+            created_raid = await ManagersController.create_raid(ctx.guild, raid_item)
             await Reporter().set_success_command_reaction(ctx.message)
+            message = await ChannelsSender.send_captain_created_raid(ctx.channel, created_raid)
+            await delete_message_after_some_time(ctx.message)
+            await delete_message_after_some_time(message)
         else:
             await Reporter().set_fail_command_reaction(ctx.message)
+            await delete_message_after_some_time(ctx.message)
 
     @classmethod
     async def build_by_ctx(cls, ctx: Context):

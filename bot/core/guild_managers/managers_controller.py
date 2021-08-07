@@ -8,6 +8,7 @@ from typing import Optional
 
 from discord import Guild
 
+from bot import BdoDailyBot
 from core.database.manager import DatabaseManager
 from core.guild_managers.raids_manager import RaidsGuildManager
 from core.raid.raid import Raid
@@ -58,7 +59,18 @@ class ManagersController:
         return cls.get(guild) or await cls.create(guild)
 
     @classmethod
-    async def create_raid(cls, guild: Guild, raid_item: RaidItem):
+    async def load_managers(cls):
+        """
+        Load managers for guilds from the database where raids enables
+        """
+        logging.info("Loading managers for guilds")
+        guild_ids = await cls.__database.settings.get_guilds_ids_with_enabled_raids()
+        for guild_id in guild_ids:
+            guild = BdoDailyBot.bot.get_guild(guild_id)
+            await cls.get_or_create(guild)
+
+    @classmethod
+    async def create_raid(cls, guild: Guild, raid_item: RaidItem) -> Raid:
         """
         Gets raids guild manager for given guild and tells him to create raid
 
@@ -68,10 +80,12 @@ class ManagersController:
 
         :param guild: discord guild where raid should be created
         :param raid_item: raid item to create raid
+        :return: created raid
         """
         manager = await cls.get_or_create(guild)
         raid_to_create = await manager.create_raid(await RaidItemFactory.get_raid(raid_item))
         asyncio.ensure_future(cls.__start_raid_flow(raid_to_create))
+        return raid_to_create
 
     @classmethod
     async def load_raids(cls):
