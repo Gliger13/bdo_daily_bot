@@ -60,20 +60,24 @@ class RaidFlow:
         await self.__sleep_after_leaving()
         await self.end()
 
-    async def end(self):
+    async def end(self, *, archive: bool = True):
         """
         End raid flow
 
         Cancel all active tasks, remove raid channels, remove raid from keeper and database
+
+        :param archive: archive or not raid in the database raid archive
         """
         self.raid.flow = None
         self.__cancel_all_tasks()
         await self.__remove_all_channels()
         RaidsKeeper.remove_raid(self.raid)
         await DatabaseManager().raid.delete(self.raid.raid_item)
-        await DatabaseManager().raid_archive.archive(self.raid.raid_item)
+        if archive:
+            await DatabaseManager().raid_archive.archive(self.raid.raid_item)
         logging.debug("Raid with captain {} and time leaving {} completely removed".format(
             self.raid.captain.nickname, self.raid.time.kebab_time_leaving))
+        await self.update_raids_information_channels()
 
     async def update(self):
         """
@@ -94,7 +98,7 @@ class RaidFlow:
         Update all information channels with specific raid
         """
         for information_channel in self.raid.information_channels:
-            await information_channel.update_active_raids_message()
+            await information_channel.update()
 
     async def __notify_raid_members(self):
         """

@@ -92,7 +92,7 @@ class RaidBuilder:
         :param ctx: discord context
         :param raid_to_remove: raid to remove
         """
-        await raid_to_remove.flow.end()
+        await raid_to_remove.flow.end(archive=False)
         await UsersSender.send_raid_was_removed(ctx.author, raid_to_remove.captain.nickname,
                                                 raid_to_remove.time.normal_time_leaving)
         await Reporter().report_success_command(ctx)

@@ -32,6 +32,8 @@ class RaidMessage(ABC):
     def text(self) -> str:
         """
         Content of message to send
+
+        :return: filled message content
         """
 
     async def send(self):
@@ -148,9 +150,12 @@ class RaidCollectionMessage(RaidMessage):
     def text(self) -> str:
         """
         Content of the raid collection message to send
+
+        :return: filled raid collection message content
         """
         return messages.collection_start.format(
-            captain_name=self.raid.captain.nickname, time_leaving=self.raid.time.kebab_time_leaving,
+            captain=self.raid.captain.user.mention, captain_name=self.raid.captain.nickname,
+            time_leaving=self.raid.time.normal_time_leaving,
             server=self.raid.bdo_server, places_left=self.raid.places_left,
             display_table_time=self.raid.time.normal_next_display_time)
 

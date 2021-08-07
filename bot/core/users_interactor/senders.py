@@ -253,5 +253,6 @@ class ChannelsSender:
         :param raid: raid that user created
         :return: message that was sent
         """
-        message = messages.raid_created.format(channel=raid.get_channel(channel.guild).mention)
+        message = messages.raid_created.format(channel=raid.get_channel(channel.guild).mention,
+                                               time_reservation_open=raid.time.normal_time_reservation_open)
         return await cls.send(channel, message)

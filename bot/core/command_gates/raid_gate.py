@@ -128,7 +128,7 @@ class RaidGate:
         :param raid_item: user raid item to create raid
         :return: True if user don't have any raid else False
         """
-        return not RaidsKeeper.has_raid_with_raid_item(raid_item)
+        return not RaidsKeeper.get_raids_by_captain_name(raid_item.captain_name)
 
     @classmethod
     async def check_user_want_create_another_raid(cls, user: RaidMember, raid_item: RaidItem) -> bool:
