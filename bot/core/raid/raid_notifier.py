@@ -31,15 +31,14 @@ class RaidNotifier:
         """
         secs_before_notification = raid.time.secs_before_notification
         if secs_before_notification < 0:
-            logging.info("Members of the raid with captain name '{}' and time leaving '{}' "
-                         "will not be notified. Little time left before raid leaving".
+            logging.info("Raid {}/{}: Members will not be notified. Little time left before raid left".
                          format(raid.captain.nickname, raid.time.normal_time_leaving))
             return
         await cls.__wait_until_notification_time(raid.time.secs_before_notification)
         await cls.__notify_users(raid)
         if raid.captain.nickname not in raid.members:
             await cls.__notify_captain_about_leaving(raid.captain.nickname)
-        logging.info("Raid members with captain '{}' and time leaving '{}' was notified about leaving".
+        logging.info("Raid {}/{}: Members was notified about leaving".
                      format(raid.captain.nickname, raid.time.normal_time_leaving))
 
     @classmethod
@@ -51,12 +50,12 @@ class RaidNotifier:
         """
         captain_document = await cls.__database.user.find_user_by_nickname(captain_name)
         if not captain_document:
-            logging.warning("Can't send notification message to captain with nickname '{}'. "
+            logging.warning("Raid {}/_: Can't send notification message to captain. "
                             "Captain document not found in the database".format(captain_name))
             return
         if not (user_id := captain_document.get('discord_id')):
-            logging.warning("Can't send notification message to captain with nickname '{}'. "
-                            "Captain document not contain discord user id".format(captain_name))
+            logging.warning("Raid {}/_: Can't send notification message to captain. "
+                            "Captain document don't contain discord user id".format(captain_name))
             return
 
         user = BdoDailyBot.bot.get_user(user_id)
@@ -94,7 +93,7 @@ class RaidNotifier:
         message = await UsersSender.send_first_notification_message(user)
         await cls.__database.user.set_first_notification(user.id)
         await MessageReactionInteractor.set_notification_controller(message)
-        logging.info("First notification message was sent to user '{}'".format(user.name))
+        logging.info("Private/{}: First notification message was sent".format(user.name))
 
     @classmethod
     async def __wait_until_notification_time(cls, secs_before_notification: int):

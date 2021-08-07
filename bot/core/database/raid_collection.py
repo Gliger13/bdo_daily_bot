@@ -31,7 +31,7 @@ class RaidCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.RAID_COLLECTION]
-            logging.debug('Collection {} connected'.format(settings.RAID_COLLECTION))
+            logging.debug('Bot initialization: Collection {} connected'.format(settings.RAID_COLLECTION))
         return self._collection
 
     async def create_raid(self, raid_item: RaidItem):
@@ -106,5 +106,5 @@ class RaidCollection(metaclass=MetaSingleton):
         expired_raid_items = await self.get_expired_raids_items()
         for raid_item in expired_raid_items:
             await self.delete(raid_item)
-            logging.info("Raid with captain {} and time leaving {} was expired and deleted from database".
+            logging.info("Bot initialization: Raid {}/{} Raid was expired and deleted from the database.".
                          format(raid_item.captain_name, raid_item.time_leaving))

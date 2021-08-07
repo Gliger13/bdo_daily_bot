@@ -3,6 +3,7 @@ Module contain class for asking discord user
 """
 
 import asyncio
+import logging
 from typing import List, Optional
 
 from discord import Message, Reaction, User
@@ -32,6 +33,8 @@ class UsersChoicer:
         :param question: question message
         :return: boolean value of answer: yes = True, no = False
         """
+        logging.info("Private/{}: User was asked with yes or no answer.\nQuestion: {}".
+                     format(user.name, question))
         message = await user.send(question)
         await message.add_reaction(YES_EMOJI)
         await message.add_reaction(NO_EMOJI)
@@ -50,9 +53,13 @@ class UsersChoicer:
             reaction, user = await BdoDailyBot.bot.wait_for('reaction_add', timeout=CHOICE_TIMEOUT,
                                                             check=check_correct_user_and_answer)
         except asyncio.TimeoutError:
-            return False
+            logging.info("Private/{}: User did not answer the question in time.\nQuestion: {}".
+                         format(user.name, question))
         else:
-            return cls.__check_user_yes_or_no_answer(reaction.emoji)
+            boolean_answer = cls.__check_user_yes_or_no_answer(reaction.emoji)
+            logging.info("Private/{}: User answered {} to the question.\nQuestion: {}".
+                         format(user.name, boolean_answer, question))
+            return boolean_answer
 
     @classmethod
     async def ask_with_choices(cls, user: User, question: str, choices: List[str]) -> Optional[int]:
@@ -64,6 +71,8 @@ class UsersChoicer:
         :param choices: list of str choices message to chose
         :return: number of user chose
         """
+        logging.info("Private/{}: User was asked with question with multiply choices.\nQuestion: {}".
+                     format(user.name, question))
         question_with_choices_message = cls.__get_question_with_choices(question, choices)
         message = await user.send(question_with_choices_message)
         await cls.__add_question_message_reactions(message, len(choices))
@@ -82,9 +91,14 @@ class UsersChoicer:
             reaction, user = await BdoDailyBot.bot.wait_for('reaction_add', timeout=CHOICE_TIMEOUT,
                                                             check=check_correct_user_and_answer)
         except asyncio.TimeoutError:
+            logging.info("Private/{}: User did not answer the question in time.\nQuestion: {}".
+                         format(user.name, question))
             return False
         else:
-            return cls.__check_user_choice(reaction.emoji)
+            boolean_answer = cls.__check_user_choice(reaction.emoji)
+            logging.info("Private/{}: User answered {} to the question.\nQuestion: {}".
+                         format(user.name, boolean_answer, question))
+            return boolean_answer
 
     @classmethod
     def __get_question_with_choices(cls, question: str, choices: List[str]) -> str:

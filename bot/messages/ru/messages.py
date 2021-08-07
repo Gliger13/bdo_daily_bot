@@ -38,9 +38,8 @@ collection_start = """
 
 role_mentions_line = "|| Не подсматривать! Магия пингования! {role_mentions}||"
 
-collection_end = """
-Рейд на **{server}** с капитаном **{captain_name}** уже уплыли на ежедневки.
-"""
+collection_end = "Рейд на **{server}** с капитаном **{captain_name}** уже уплыли на ежедневки. " \
+                 "Этот канал будет удалён в {time_to_delete_channel}."
 
 raid_already_exist = """
 **Я не создам такой рейд!**

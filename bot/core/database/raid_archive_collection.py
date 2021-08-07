@@ -32,7 +32,7 @@ class RaidArchiveCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.RAID_ARCHIVE_COLLECTION]
-            logging.debug('Collection {} connected'.format(settings.RAID_ARCHIVE_COLLECTION))
+            logging.debug('Bot initialization: Collection {} connected'.format(settings.RAID_ARCHIVE_COLLECTION))
         return self._collection
 
     async def archive(self, raid_item: RaidItem):

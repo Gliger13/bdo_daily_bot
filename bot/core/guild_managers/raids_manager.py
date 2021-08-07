@@ -6,16 +6,14 @@ import logging
 from bisect import bisect_left
 from typing import Optional
 
-from discord import CategoryChannel, Guild, HTTPException, User, utils
+from discord import CategoryChannel, Guild, HTTPException, utils
 
 from core.database.manager import DatabaseManager
 from core.guild_managers.raids_keeper import RaidsKeeper
 from core.raid.raid import Raid
 from core.raid.raid_channel import RaidChannel
 from core.raid.raid_item import RaidItem
-from core.raid.raid_member import RaidMemberBuilder
 from core.raid.raids_information_channel import RaidsInformationChannel
-from core.users_interactor.senders import UsersSender
 from messages import messages
 
 
@@ -42,7 +40,7 @@ class RaidsGuildManager:
         """
         await self.__set_raids_category_channel()
         await self.__set_raids_information_channel()
-        logging.info("Guild manager for guild `{}` was initialized".format(self.guild.name))
+        logging.info("{}: Guild manager was initialized.".format(self.guild.name))
 
     async def create_raid(self, raid_to_create: Raid) -> Raid:
         """
@@ -84,8 +82,9 @@ class RaidsGuildManager:
         try:
             await raid_channel.create(self.raids_category_channel, new_channel_position)
         except HTTPException as error:
-            logging.error("Can't create channel for raid. Trying reset information and category channel.\n"
-                          "Error: {}".format(error))
+            logging.error("{}: Raid {}/{}: Can't create channel for raid. "
+                          "Trying reset information and category channel.\n"
+                          "Error: {}".format(self.guild, raid.captain.nickname, raid.time.normal_time_leaving, error))
             await self.__set_raids_information_channel()
             await self.__set_raids_category_channel()
             await raid_channel.create(self.raids_category_channel, new_channel_position)
@@ -153,76 +152,6 @@ class RaidsGuildManager:
             await raid_to_remove.flow.end()
         self.remove_raid_from_raids(raid_to_remove)
 
-    async def add_member_to_raid(self, user: User, collection_message_id: int):
-        """
-        Add given member to raid with given collection message id
-
-        1) Try to find raid in manager active raids with given collection message id
-        2) Try to get user nickname from database
-        3) Check that founded raid not has user
-        4) Check that user not joined other raid with same captain name and time leaving
-        5) Check that founded raid is not full
-        If all checks is good then add user nickname as raid member
-        If some of checks are failed - log and notify user via Users Manager
-
-        :param user: discord user to be joined in the manager raid
-        :param collection_message_id: discord collection message id of the raid to join
-        """
-        raid = self.get_raid_by_collection_message_id(collection_message_id)
-        if not raid:
-            logging.debug("{} add collection reaction in {}, but raid not exist".format(user.name, self.guild.name))
-            return
-
-        new_member = await RaidMemberBuilder.build_by_discord_user(user)
-        if not new_member:
-            await UsersSender.send_user_not_registered(user)
-            return
-
-        if raid.has_member(new_member):
-            await UsersSender.send_user_already_in_raid(user, raid)
-            return
-
-        if RaidsKeeper.has_member_on_same_time(new_member, raid.time.time_leaving):
-            await UsersSender.send_user_already_in_same_raid(user, raid)
-            return
-
-        if raid.is_full:
-            await UsersSender.send_raid_is_full(user, raid)
-            return
-
-        await raid.add_new_member(new_member)
-        await UsersSender.send_user_joined_raid(user, raid)
-
-    async def remove_member_from_raid(self, user: User, collection_message_id: int):
-        """
-        Remove given user from manager raid with specific collection message id
-
-        1) Try to find raid in manager active raids with given collection message id
-        2) Try to get user nickname from database
-        3) Check that founded raid has given user nickname
-        If all checks is good then remove user nickname from raid members
-        If some of checks are failed - log and notify user via Users Manager
-
-        :param user: discord user to leave from manager raid with specific collection message id
-        :param collection_message_id: discord collection message id of raid to leave
-        """
-        raid = self.get_raid_by_collection_message_id(collection_message_id)
-        if not raid:
-            logging.debug("{} remove collection reaction in {}, but raid not exist".format(user.name, self.guild.name))
-            return
-
-        member_to_remove = await RaidMemberBuilder.build_by_discord_user(user)
-        if not member_to_remove:
-            await UsersSender.send_user_not_registered(user)
-            return
-
-        if not raid.has_member(member_to_remove):
-            await UsersSender.send_user_not_in_raid(user, raid)
-            return
-
-        await raid.remove_member(member_to_remove)
-        await UsersSender.send_user_left_raid(user, raid)
-
     async def __create_guild_category_channel(self) -> CategoryChannel:
         """
         Create and save raids category channel of manager guild
@@ -232,7 +161,7 @@ class RaidsGuildManager:
         category_channel = await self.guild.create_category_channel(
             name=messages.raid_category_channel_name, reason=messages.raid_category_channel_creation_reason)
         await self.__database.settings.set_category_channel_id(self.guild.id, self.guild.name, category_channel.id)
-        logging.info("Category channel for raids in guild '{}' was created and saved".format(self.guild.name))
+        logging.info("{}: Raids category channel was created and saved".format(self.guild.name))
         return category_channel
 
     async def __set_raids_category_channel(self):

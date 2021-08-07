@@ -27,15 +27,15 @@ class UsersSender:
         """
         try:
             discord_message = await user.send(message)
-        except Forbidden as error:
-            logging.warning("Failed to send message due to permission to user with name '{}' and content:\n{}\n"
-                            "Error: {}".format(user.name, message, error))
-        except HTTPException as error:
-            logging.warning("Failed to send message due to HTTPError to user with name '{}' and content:\n{}\n"
-                            "Error: {}".format(user.name, message, error))
-        else:
-            logging.info("Message to user with name {} was send. Content: {}\n".format(user.name, message))
+            logging.info("Private/{}: Message to user was send. \n"
+                         "Message content: {}".format(user.name, message))
             return discord_message
+        except Forbidden:
+            logging.info("Private/{}: Failed to send message to user. Forbidden.\n"
+                         "Message content: {}\n".format(user.name, message))
+        except HTTPException as error:
+            logging.warning("Private/{}: Failed to send message to user. HTTPException.\n"
+                            "Message content: {}\nError: {}".format(user.name, message, error))
 
     @classmethod
     async def send_user_not_registered(cls, user: User):
@@ -265,15 +265,16 @@ class ChannelsSender:
         """
         try:
             message = await channel.send(message)
-            logging.info("Message to channel '{}', guild '{}' was send. Content: {}\n".
-                         format(channel.name, channel.guild.name, message.content))
+            logging.info("{}/{}: Message to channel was send.\n"
+                         "Message content: {}".format(channel.name, channel.guild.name, message.content))
             return message
-        except Forbidden as error:
-            logging.warning("Failed to send message due to permission to channel '{}', guild '{}' and content:\n{}\n"
-                            "Error: {}".format(channel.name, channel.guild.name, message, error))
+        except Forbidden:
+            logging.info("{}/{}: Failed to send message to channel. Forbidden.\n"
+                         "Message content: {}\n".format(channel.name, channel.guild.name, message))
         except HTTPException as error:
-            logging.warning("Failed to send message due to HTTPError to channel '{}', guild '{}' and content:\n{}\n"
-                            "Error: {}".format(channel.name, channel.guild.name, message, error))
+            logging.warning("{}/{}: Failed to send message to channel. HTTPException.\n"
+                            "Message content: {}\nError: {}"
+                            .format(channel.name, channel.guild.name, message, error))
 
     @classmethod
     async def send_captain_created_raid(cls, channel: TextChannel, raid: Raid) -> Message:

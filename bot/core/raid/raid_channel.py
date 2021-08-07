@@ -56,8 +56,9 @@ class RaidChannel:
         self.channel = await self.guild.create_text_channel(name=self.name, category=raid_category,
                                                             position=position, topic=messages.raid_channel_topic,
                                                             reason=messages.raid_channel_creation_reason)
-        logging.info("Raid channel was created for raid with captain name '{}' and time leaving {} in guild '{}'".
-                     format(self.raid.captain.nickname, self.raid.time.kebab_time_leaving, self.guild.name))
+        logging.info("{}/{}: Raid {}/{}: Raid channel was created".
+                     format(self.guild.name, self.channel.name, self.raid.captain.nickname,
+                            self.raid.time.normal_time_leaving))
 
     async def delete(self):
         """
@@ -65,22 +66,21 @@ class RaidChannel:
         """
         try:
             await self.channel.delete()
+            logging.info("{}/{}: Raid {}/{}: Raid channel was deleted".
+                         format(self.guild.name, self.channel.name, self.raid.captain.nickname,
+                                self.raid.time.normal_time_leaving))
         except NotFound:
-            logging.warning("Failed to delete channel. Channel not exist. For raid with captain name '{}' "
-                            "and time leaving {} in guild '{}'".
-                            format(self.raid.captain.nickname, self.raid.time.kebab_time_leaving, self.guild.name))
+            logging.debug("{}/{}: Raid {}/{}: Failed to delete channel. Channel not found".
+                          format(self.guild.name, self.channel.name, self.raid.captain.nickname,
+                                 self.raid.time.normal_time_leaving))
         except Forbidden:
-            logging.warning("Failed to delete channel. No permissions. For raid with captain name '{}' "
-                            "and time leaving {} in guild '{}'".
-                            format(self.raid.captain.nickname, self.raid.time.kebab_time_leaving, self.guild.name))
+            logging.warning("{}/{}: Raid {}/{}: Failed to delete channel. Forbidden".
+                            format(self.guild.name, self.channel.name, self.raid.captain.nickname,
+                                   self.raid.time.normal_time_leaving))
         except HTTPException as error:
-            logging.warning("Failed to delete channel. HTTPError. For raid with captain name '{}' "
-                            "and time leaving {} in guild '{}'\nError: {}".
-                            format(self.raid.captain.nickname, self.raid.time.kebab_time_leaving, self.guild.name,
-                                   error))
-        else:
-            logging.info("Raid channel was deleted for raid with captain name '{}' and time leaving {} in guild '{}'".
-                         format(self.raid.captain.nickname, self.raid.time.kebab_time_leaving, self.guild.name))
+            logging.warning("{}/{}: Raid {}/{}: Failed to delete channel. HTTPException.\nError: {}".
+                            format(self.guild.name, self.channel.name, self.raid.captain.nickname,
+                                   self.raid.time.normal_time_leaving, error))
 
     async def send_reservation_message(self):
         """
@@ -180,10 +180,11 @@ class RaidChannel:
         """
         try:
             await expired_channel.delete(reason="Рейд уже был отвезён")
-            logging.info("Expired raid channel {} in guild {} was deleted"
-                         .format(expired_channel.name, expired_channel.guild.name))
+            logging.info("{}/{}: Expired raid channel was deleted.".
+                         format(expired_channel.guild.name, expired_channel.name))
         except NotFound:
-            logging.debug("Failed to delete expired raid channel. Expired raid channel {} in guild {} not exist")
+            logging.debug("{}/{}: Failed to delete expired raid channel. Not Found".
+                          format(expired_channel.guild.name, expired_channel.name))
 
     @classmethod
     async def delete_channels_by_channels_info(cls, channels_info: Optional[List[Dict[str, int]]]):
@@ -241,6 +242,13 @@ class RaidChannel:
 
     @classmethod
     def get_channel_by_guild_id(cls, raid_channels: List[RaidChannel], guild_id: int) -> Optional[RaidChannel]:
+        """
+        Get raid channel by the the given discord guild id and the raid channels list
+
+        :param raid_channels: list of the raid channels
+        :param guild_id: discord guild id to find association raid channel
+        :return: raid channel with the given guild id
+        """
         for raid_channel in raid_channels:
             if raid_channel.guild.id == guild_id:
                 return raid_channel

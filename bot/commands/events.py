@@ -56,13 +56,6 @@ class Events(commands.Cog):
         Listener trigger after bot will ready to process commands. Sets bot main configuration such
         as status and current game. Loads still active raids from the database.
         """
-        # Track unplanned bot reboot
-        if not self.is_bot_ready:
-            logging.info(logger_msgs.bot_ready)
-            self.is_bot_ready = True
-        else:
-            log_template.bot_restarted()
-
         # Set custom status
         custom_status = 'Разрушаемся, чтобы стать лучше'
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
@@ -70,6 +63,14 @@ class Events(commands.Cog):
         BdoDailyBot.bot = self.bot
         await ManagersController.load_managers()
         await ManagersController.load_raids()
+        logging.debug("Bot initialization completed.")
+
+        # Track unplanned bot reboot
+        if not self.is_bot_ready:
+            self.is_bot_ready = True
+            logging.info(logger_msgs.bot_ready)
+        else:
+            log_template.bot_restarted()
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: Context, error: DiscordException):

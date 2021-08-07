@@ -158,7 +158,7 @@ class RaidsInformationChannel:
         self.channel = await self.guild.create_text_channel(
             name=messages.raid_info_channel_name, category=self.category_channel,
             position=0, topic=messages.raid_info_channel_topic, reason=messages.raid_info_channel_creation_reason)
-        logging.info("Information channel for raids in guild '{}' was created".format(self.guild.name))
+        logging.info("{}/{}: Raids information channel was created".format(self.guild.name, self.channel.name))
 
     async def __send_active_raids_message(self):
         """

@@ -52,7 +52,7 @@ class UserCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.USER_COLLECTION]
-            logging.debug("Collection {} connected".format(settings.USER_COLLECTION))
+            logging.debug("Bot initialization: Collection {} connected".format(settings.USER_COLLECTION))
         return self._collection
 
     async def is_user_exist(self, discord_id: int) -> bool:

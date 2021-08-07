@@ -26,9 +26,9 @@ class Database(metaclass=MetaSingleton):
         :rinput_type: AsyncIOMotorDatabase
         """
         if not self._cluster:
-            logging.debug('Initialisation database.')
+            logging.debug('Bot initialization: Initialisation database.')
             self._cluster = AsyncIOMotorClient(settings.BD_STRING)[settings.CLUSTER_NAME]
-            logging.debug('Database connected.')
+            logging.debug('Bot initialization: Database connected.')
         return self._cluster
 
     @property

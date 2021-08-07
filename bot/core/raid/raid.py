@@ -132,8 +132,7 @@ class Raid:
         Save current raid state in the database
         """
         await DatabaseManager().raid.update(self.raid_item)
-        logging.info("Raid with captain '{}' and time leaving '{}' was saved".
-                     format(self.captain.nickname, self.time.normal_time_leaving))
+        logging.info("Raid {}/{}: Raid was saved".format(self.captain.nickname, self.time.normal_time_leaving))
 
     def has_collection_message_with_id(self, collection_message_id: int) -> bool:
         """

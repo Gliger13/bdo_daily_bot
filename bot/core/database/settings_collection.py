@@ -26,7 +26,7 @@ class SettingsCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.SETTINGS_COLLECTION]
-            logging.debug('Collection {} connected'.format(settings.SETTINGS_COLLECTION))
+            logging.debug('Bot initialization: Collection {} connected'.format(settings.SETTINGS_COLLECTION))
         return self._collection
 
     async def find_settings_post(self, guild_id: int) -> Dict[str, Any] or None:

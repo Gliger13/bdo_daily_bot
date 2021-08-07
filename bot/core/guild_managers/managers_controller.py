@@ -63,7 +63,7 @@ class ManagersController:
         """
         Load managers for guilds from the database where raids enables
         """
-        logging.info("Loading managers for guilds")
+        logging.info("Bot initialization: Loading managers for guilds")
         guild_ids = await cls.__database.settings.get_guilds_ids_with_enabled_raids()
         for guild_id in guild_ids:
             guild = BdoDailyBot.bot.get_guild(guild_id)
@@ -97,11 +97,11 @@ class ManagersController:
         create them if channels from database was deleted or not existed.
         Then starts raid flow and clear managers raids lists after raids flows was ended.
         """
-        logging.info("Starting loading raids from database")
+        logging.info("Bot initialisation: Starting loading raids from database")
         await cls.__clear_expired_raids()
         all_raid_items = await cls.__database.raid.get_all_raids()
         if not all_raid_items:
-            logging.info("No actual raids was loaded from database")
+            logging.info("Bot initialisation: No actual raids was loaded from database")
             return
 
         raids = [await RaidItemFactory.get_raid(raid_item) for raid_item in all_raid_items]
@@ -111,13 +111,14 @@ class ManagersController:
                     manager = await cls.get_or_create(channel.guild)
                     manager.add_raid(raid)
             else:
-                logging.warning("Channels from database are empty. Can't load raid with captain {} and time leaving {}".
-                                format(raid.captain.nickname, raid.time.kebab_time_leaving))
+                logging.warning("Bot initialisation: Raid {}/{}: Channels from the database are empty. "
+                                "Can't load raid raid. Need to manually remove the defect document.".
+                                format(raid.captain.nickname, raid.time.normal_time_leaving))
                 continue
             asyncio.ensure_future(cls.__start_raid_flow(raid))
-            logging.info("Raid from database with captain name '{}' and time leaving {} was loaded and started".
+            logging.info("Bot initialisation: Raid {}/{}: Raid from the database was loaded and started.".
                          format(raid.captain.nickname, raid.time.kebab_time_leaving))
-        logging.info("Actual raids was loaded from database")
+        logging.info("Bot initialisation: All actual raids was loaded from the database.")
 
     @classmethod
     async def remove_raid_from_managers(cls, raid_to_remove: Raid):
@@ -156,5 +157,5 @@ class ManagersController:
         await raid_to_start.flow.start()
         await cls.remove_raid_from_managers(raid_to_start)
 
-        logging.info("Raid with captain {} and time leaving {} was completely ended"
+        logging.info("Raid {}/{}: Raid was completely ended."
                      .format(raid_to_start.captain.nickname, raid_to_start.time.kebab_time_leaving))

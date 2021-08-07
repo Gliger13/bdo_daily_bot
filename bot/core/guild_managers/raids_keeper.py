@@ -108,7 +108,8 @@ class RaidsKeeper:
         if raid_to_remove in cls.__raids:
             cls.__raids.remove(raid_to_remove)
         else:
-            logging.warning("Trying to remove not existed raid. Ignoring")
+            logging.warning("Raid {}/{}: Trying to remove not existed raid. Ignoring."
+                            .format(raid_to_remove.captain.nickname, raid_to_remove.time.normal_time_leaving))
 
     @classmethod
     def sort_raids_by_time_leaving(cls, raids: List[Raid]) -> List[Raid]:

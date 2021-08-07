@@ -28,7 +28,7 @@ class CaptainCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.CAPTAIN_COLLECTION]
-            logging.debug('Collection {} connected.'.format(settings.CAPTAIN_COLLECTION))
+            logging.debug('Bot initialization: Collection {} connected.'.format(settings.CAPTAIN_COLLECTION))
         return self._collection
 
     async def create_captain(self, discord_id: int) -> Dict[str, Any]:

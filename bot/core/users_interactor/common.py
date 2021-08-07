@@ -21,21 +21,27 @@ async def delete_message(message: Message, delay: Optional[float] = None):
     """
     try:
         await message.delete(delay=delay)
-        logging.info("Message in `{}` guild and `{}` channel by user `{}` was removed.\n"
+        if delay:
+            logging.info("{}/{}: Message by user `{}` will be removed after `{}` seconds.\n"
+                         "Message content: {}".
+                         format(message.guild, message.channel, message.author, delay, message.content))
+        else:
+            logging.info("{}/{}: Message by user `{}` was removed.\n"
+                         "Message content: {}".
+                         format(message.guild, message.channel, message.author, message.content))
+
+    except Forbidden:
+        logging.info("{}/{}: Can't remove message by user `{}`. Forbidden.\n"
                      "Message content: {}".
                      format(message.guild, message.channel, message.author, message.content))
-    except Forbidden:
-        logging.info("Can't remove message in `{}` guild and `{}` channel by user `{}`. "
-                     "Forbidden.\nMessage content: {}".
-                     format(message.guild, message.channel, message.author, message.content))
     except NotFound:
-        logging.info("Can't remove message in `{}` guild and `{}` channel by user `{}`. "
-                     "Message not found.\nMessage content: {}".
-                     format(message.guild, message.channel, message.author, message.content))
+        logging.debug("{}/{}: Can't remove message by user `{}`. Message not found.\n"
+                      "Message content: {}".
+                      format(message.guild, message.channel, message.author, message.content))
     except HTTPException as error:
-        logging.info("Can't remove message in `{}` guild and `{}` channel by user `{}`. "
-                     "HTTPException.\nMessage content: {}\nError: {}".
-                     format(message.guild, message.channel, message.author, message.content, error))
+        logging.warning("{}/{}: Can't remove by user `{}`. HTTPException.\n"
+                        "Message content: {}Error: {}\n".
+                        format(message.guild, message.channel, message.author, message.content, error))
 
 
 async def delete_message_after_some_time(message: Message):
@@ -56,23 +62,23 @@ async def pin_message(message: Message, reason: str = None):
     """
     try:
         await message.pin(reason=reason)
-        logging.info("Message in `{}` guild and `{}` channel by user `{}` was pined\n"
+        logging.info("{}/{}: Message by user `{}` was pined\n"
                      "Message content: {}".
                      format(message.guild, message.channel, message.author, message.content))
         # crutch to delete the message that was sent after pin a message
         await __delete_bot_not_pinned_messages(message.channel)
     except Forbidden:
-        logging.info("Can't pin message in `{}` guild and `{}` channel by user `{}`. "
-                     "Forbidden.\nMessage content: {}".
-                     format(message.guild, message.channel, message.author, message.content))
+        logging.info("{}/{}: Can't pin message by user `{}`. Forbidden.\n"
+                     "Message content: {}".
+                      format(message.guild, message.channel, message.author, message.content))
     except NotFound:
-        logging.info("Can't pin message in `{}` guild and `{}` channel by user `{}`. "
-                     "Message not found.\nMessage content: {}".
-                     format(message.guild, message.channel, message.author, message.content))
+        logging.debug("{}/{}: Can't pin message by user `{}`. Message not found.\n"
+                      "Message content: {}".
+                      format(message.guild, message.channel, message.author, message.content))
     except HTTPException as error:
-        logging.info("Can't pin message in `{}` guild and `{}` channel by user `{}`. "
-                     "HTTPException.\nMessage content: {}\nError: {}".
-                     format(message.guild, message.channel, message.author, message.content, error))
+        logging.warning("{}/{}: Can't pin message by user `{}`. HTTPException\n"
+                        "Message content: {}\nError: {}".
+                        format(message.guild, message.channel, message.author, message.content, error))
 
 
 async def __delete_bot_not_pinned_messages(channel: TextChannel):
