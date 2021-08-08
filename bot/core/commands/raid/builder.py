@@ -13,7 +13,7 @@ from core.guild_managers.managers_controller import ManagersController
 from core.guild_managers.raids_keeper import RaidsKeeper
 from core.raid.raid import Raid
 from core.raid.raid_item import RaidItem
-from core.raid.raid_member import RaidMemberBuilder
+from core.raid.raid_member import RaidMemberFactory
 from core.users_interactor.common import delete_message_after_some_time
 from core.users_interactor.senders import ChannelsSender, UsersSender
 
@@ -32,7 +32,7 @@ class RaidBuilder:
         :param ctx: discord command context
         :param raid_item: parsed command input as raid item
         """
-        captain = await RaidMemberBuilder.build_by_discord_user(ctx.author)
+        captain = await RaidMemberFactory.produce_by_discord_user(ctx.author)
         if await RaidGate.can_user_create_raid(captain, raid_item):
             created_raid = await ManagersController.create_raid(ctx.guild, raid_item)
             await Reporter().set_success_command_reaction(ctx.message)
@@ -70,7 +70,7 @@ class RaidBuilder:
         :param captain_name: captain name of raid to remove
         :param time_leaving: time leaving of raid to remove
         """
-        captain = await RaidMemberBuilder.build_by_discord_user(ctx.author)
+        captain = await RaidMemberFactory.produce_by_discord_user(ctx.author)
         if time_leaving:
             raid_to_remove = RaidsKeeper.get_by_captain_name_and_time_leaving(captain_name, time_leaving)
             if await RaidGate.can_user_remove_raid_by_time(captain, raid_to_remove):

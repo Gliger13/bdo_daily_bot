@@ -5,58 +5,49 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime, time
+from datetime import datetime
 from enum import Enum
+from functools import cached_property
 from typing import Any, Dict, List, Match, Optional, Union
 
 from discord.ext.commands import Context
 
 from core.database.manager import DatabaseManager
+from core.parser.common_parser import CommandInputTypes, CommonCommandInputParser
 from core.raid.raid_item import RaidItem
 from core.users_interactor.senders import UsersSender
-from messages import logger_msgs, messages, regex
-
-
-class RaidInputTypes(Enum):
-    """
-    Contain common input types
-    """
-    SELF = "self"
-    CTX = "ctx"
-    TIME = "time", regex.time
-    NAME = "name", regex.name
-    SERVER = "server", regex.server
-    NUMBER = "number", regex.number
-
-    def __init__(self, name: str, template: str = None):
-        """
-        :param name: input type
-        :param template: input regex template
-        """
-        self.name_ = name
-        self.template = template
+from messages import logger_msgs, messages
 
 
 class RaidInputAttributes(Enum):
     """
     Contain specific raid input attributes properties
     """
-    SELF = "self", "self"
-    CTX = "ctx", "ctx"
-    TIME_LEAVING = "time_leaving", "time", False, regex.time, messages.time_leaving, messages.time_leaving
-    TIME_RESERVATION_OPEN = "time_reservation_open", "time", True, regex.time, messages.time_reservation_open, \
+    SELF = "self", CommandInputTypes.SELF
+    CTX = "ctx", CommandInputTypes.CTX
+    TIME_LEAVING = "time_leaving", CommandInputTypes.TIME, False, messages.time_leaving, messages.time_leaving_example
+    TIME_RESERVATION_OPEN = "time_reservation_open", CommandInputTypes.TIME, True, messages.time_reservation_open, \
                             messages.time_reservation_open_example
-    CAPTAIN_NAME = "captain_name", "name", False, regex.name, messages.captain_name, messages.captain_name_example
-    RESERVATION_AMOUNT = "reservation_amount", "number", True, regex.number, messages.reservation_amount, \
+    CAPTAIN_NAME = "captain_name", CommandInputTypes.NAME, False, messages.captain_name, messages.captain_name_example
+    RESERVATION_AMOUNT = "reservation_amount", CommandInputTypes.NUMBER, True, messages.reservation_amount, \
                          messages.reservation_amount_example
-    GAME_SERVER = "game_server", "server", False, regex.server, messages.game_server, messages.game_server_example
+    GAME_SERVER = "game_server", CommandInputTypes.SERVER, False, messages.game_server, messages.game_server_example
+    START_TIME = "start_time", CommandInputTypes.SIMPLE_TIME, False, messages.time_leaving, \
+                 messages.time_leaving_example
+    END_TIME = "end_time", CommandInputTypes.SIMPLE_TIME, False, messages.time_leaving, messages.time_leaving_example
 
-    def __init__(self, attribute_name: str, input_type: str, can_be_empty: bool = False, template: str = None,
+    def __init__(self, attribute_name: str, input_type: CommandInputTypes, can_be_empty: bool = False,
                  human_type: str = None, human_example: str = None):
+        """
+        :param attribute_name: attribute name in command
+        :param input_type: input type
+        :param can_be_empty: can command work correctly with this attribute
+        :param human_type: message for a human to understand command type
+        :param human_example: attribute example for a human
+        """
         self.attribute_name = attribute_name
-        self.type = input_type
+        self.input_type = input_type
         self.can_be_empty = can_be_empty
-        self.template = template
         self.human_type = human_type
         self.human_example = human_example
 
@@ -74,7 +65,7 @@ class RaidInputAttributes(Enum):
         return None
 
 
-class RaidInputParameter:
+class CommandInputParameter(CommonCommandInputParser):
     """
     Response for parsing any single input
     """
@@ -83,74 +74,47 @@ class RaidInputParameter:
         self.index = index
         self.key = key
         self.value = value
-        self.parsed_value = self.__parse_value()
+        self.parsed_value = self.__get_parsed_value()
 
-    @property
+    @cached_property
     def attribute(self) -> Optional[RaidInputAttributes]:
         """
         Returns input attribute
         """
         return RaidInputAttributes.get_by_name(self.key)
 
-    def __parse_value(self) -> Optional[Union[str, int, datetime]]:
+    def __get_parsed_value(self) -> Optional[Any]:
         """
         Returns parsed input
+
+        :param: parsed input
         """
         if not self.attribute:
-            logging.error("Input attribute type not found for key: '{}', value: '{}'".
+            logging.error("Command input argument not found for key: '{}', value: '{}'".
                           format(self.key, self.value))
             return
         if not self.value:
             return self.value
 
-        search_result = self.search_by_key()
-        if self.attribute.type == RaidInputTypes.TIME.name_:
-            return self.parse_time(search_result)
-        if self.attribute.type == RaidInputTypes.NUMBER.name_:
+        search_result = self.__search_by_key()
+        if self.attribute.input_type == CommandInputTypes.TIME:
+            return self.parse_time_by_match(search_result)
+        if self.attribute.input_type == CommandInputTypes.SIMPLE_TIME:
+            return self.parse_simple_time(search_result)
+        if self.attribute.input_type == CommandInputTypes.NUMBER:
             return self.parse_number(search_result)
         if isinstance(search_result, Match):
-            return search_result.group(self.attribute.type)
+            return search_result.group(self.attribute.input_type.name_)
         return self.value
 
-    @classmethod
-    def parse_str_time(cls, str_time: str) -> Optional[time]:
-        if search_result := re.search(RaidInputTypes.TIME.template, str_time):
-            return time(hour=int(search_result.group("hours")), minute=int(search_result.group("minutes")))
-        return
-
-    @classmethod
-    def parse_time(cls, time_search_result: Match) -> datetime:
-        """
-        Parse input time
-
-        :param time_search_result: input time search result
-        :return: parsed time as datetime
-        """
-        input_hours = int(time_search_result.group("hours"))
-        input_minutes = int(time_search_result.group("minutes"))
-        now = datetime.now()
-        if now.hour >= input_hours and now.minute >= input_minutes:
-            return now.replace(day=now.day + 1, hour=input_hours, minute=input_minutes, second=0, microsecond=0)
-        return now.replace(hour=input_hours, minute=input_minutes, second=0, microsecond=0)
-
-    @classmethod
-    def parse_number(cls, number: str) -> int:
-        """
-        Parse input number
-
-        :param number: input number
-        :return: parsed number
-        """
-        return int(number)
-
-    def search_by_key(self) -> Optional[Union[Match, Any]]:
+    def __search_by_key(self) -> Optional[Union[Match, Any]]:
         """
         Search value by defined input key
 
         :return: search result by input key
         """
         if isinstance(self.value, str):
-            return re.search(self.attribute.template, self.value) if self.attribute else None
+            return re.search(self.attribute.input_type.template, self.value) if self.attribute else None
         return self.value
 
 
@@ -161,7 +125,7 @@ class RaidInputParser:
     __database = DatabaseManager()
 
     @classmethod
-    async def validate_input(cls, **kwargs: Dict[str, Any]) -> Optional[Dict[str, RaidInputParameter]]:
+    async def validate_input(cls, **kwargs: Dict[str, Any]) -> Optional[Dict[str, CommandInputParameter]]:
         """
         Validate input
 
@@ -173,7 +137,7 @@ class RaidInputParser:
         wrong_input_parameters = []
         validated_input_parameters = {}
         for index, (key, value) in enumerate(kwargs.items()):
-            input_parameter = RaidInputParameter(key, value, index)
+            input_parameter = CommandInputParameter(key, value, index)
             parsed_input_value = input_parameter.parsed_value
             if parsed_input_value or not input_parameter.value:
                 validated_input_parameters[input_parameter.key] = input_parameter
@@ -181,13 +145,13 @@ class RaidInputParser:
                 wrong_input_parameters.append(input_parameter)
 
         if wrong_input_parameters:
-            ctx = validated_input_parameters.get(RaidInputAttributes.CTX.type).value
+            ctx = validated_input_parameters.get(RaidInputAttributes.CTX.input_type.name_).value
             await cls.__log_parsing_errors(ctx, wrong_input_parameters)
             return
         return validated_input_parameters
 
     @classmethod
-    async def parse_raid_input(cls, **kwargs: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def parse_input(cls, **kwargs: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
         Parse raid input
 
@@ -207,7 +171,7 @@ class RaidInputParser:
 
     @classmethod
     async def get_raid_item_from_input(cls, **kwargs: Dict[str, Any]) -> Optional[RaidItem]:
-        parsed_input = await cls.parse_raid_input(**kwargs)
+        parsed_input = await cls.parse_input(**kwargs)
         if parsed_input and all(parsed_input.values()):
             return RaidItem(
                 captain_name=parsed_input.get(RaidInputAttributes.CAPTAIN_NAME.attribute_name),
@@ -225,7 +189,7 @@ class RaidInputParser:
         return cls.__transform_to_kwargs(validated_input)
 
     @classmethod
-    async def __log_parsing_errors(cls, ctx: Context, wrong_input_parameters: List[Optional[RaidInputParameter]]):
+    async def __log_parsing_errors(cls, ctx: Context, wrong_input_parameters: List[Optional[CommandInputParameter]]):
         all_wrong_parameters_user_message = messages.wrong_input_message_start
         all_wrong_parameters_log_message = logger_msgs.wrong_input_log_message_start.format(
             user=ctx.author, command_name=ctx.command)
@@ -242,7 +206,7 @@ class RaidInputParser:
         await UsersSender.send_to_user(ctx.author, all_wrong_parameters_user_message)
 
     @classmethod
-    async def __log_empty_values(cls, validated_input: Dict[str, RaidInputParameter]):
+    async def __log_empty_values(cls, validated_input: Dict[str, CommandInputParameter]):
         ctx = validated_input.get(RaidInputAttributes.CTX.attribute_name).value
         all_empty_parameters_user_messages = [messages.empty_input_parameter_message_start]
         all_empty_parameters_log_messages = [logger_msgs.empty_input_message_start.format(
@@ -262,12 +226,12 @@ class RaidInputParser:
         await UsersSender.send_to_user(ctx.author, "\n".join(all_empty_parameters_user_messages))
 
     @classmethod
-    async def __try_fill_missed_raid_input(cls, validated_input: Dict[str, RaidInputParameter]) \
-            -> Dict[str, RaidInputParameter]:
+    async def __try_fill_missed_raid_input(cls, validated_input: Dict[str, CommandInputParameter]) \
+            -> Dict[str, CommandInputParameter]:
         for validated_parameter in validated_input.values():
             if validated_parameter.parsed_value:
                 continue
-            elif validated_parameter.attribute.type == RaidInputTypes.NAME.name_:
+            elif validated_parameter.attribute.input_type == CommandInputTypes.NAME.name_:
                 validated_parameter.parsed_value = await cls.__get_nickname_from_database(validated_input)
             elif validated_parameter.attribute.attribute_name == \
                     RaidInputAttributes.TIME_RESERVATION_OPEN.attribute_name:
@@ -278,7 +242,7 @@ class RaidInputParser:
         return validated_input
 
     @classmethod
-    async def __get_nickname_from_database(cls, validated_input: Dict[str, RaidInputParameter]) -> Optional[str]:
+    async def __get_nickname_from_database(cls, validated_input: Dict[str, CommandInputParameter]) -> Optional[str]:
         ctx = validated_input.get(RaidInputAttributes.CTX.attribute_name).value
         captain_name = validated_input.get(RaidInputAttributes.CAPTAIN_NAME.attribute_name)
         if captain_name.parsed_value:
@@ -295,7 +259,7 @@ class RaidInputParser:
         return now.replace(minute=now.minute + 1, second=0, microsecond=0)
 
     @classmethod
-    def __transform_to_kwargs(cls, validated_input: Dict[str, RaidInputParameter]) -> Dict[str, Any]:
+    def __transform_to_kwargs(cls, validated_input: Dict[str, CommandInputParameter]) -> Dict[str, Any]:
         kwargs = {}
         for validated_parameter in validated_input.values():
             kwargs[validated_parameter.key] = validated_parameter.parsed_value

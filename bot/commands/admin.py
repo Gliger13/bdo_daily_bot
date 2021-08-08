@@ -12,7 +12,8 @@ from core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
-from core.parser.raid_input_parser import RaidInputParameter
+from core.parser.common_parser import CommonCommandInputParser
+from core.parser.raid_input_parser import RaidInputParser
 from core.users_interactor.senders import ChannelsSender
 from messages import command_names, help_text, messages
 
@@ -195,17 +196,17 @@ class Admin(commands.Cog):
                       help=help_text.set_notification_role)
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def set_notification_role(self, ctx: Context, role: Role, start_time_at: str, end_time_at: str):
+    async def set_notification_role(self, ctx: Context, role: Role, start_time: str, end_time: str):
         """
         Command to enable raids in the current guild
 
         :param ctx: discord command context
         :param role: role to add while raid collection
-        :param end_time_at: start time where should ping the given role
-        :param start_time_at: end time where should ping the given role
+        :param start_time: end time where should ping the given role
+        :param end_time: start time where should ping the given role
         """
-        start_time = RaidInputParameter.parse_str_time(start_time_at)
-        end_time = RaidInputParameter.parse_str_time(end_time_at)
+        start_time = CommonCommandInputParser.parse_simple_time(start_time)
+        end_time = CommonCommandInputParser.parse_simple_time(end_time)
         await set_notification_role(ctx, role.name, role.id, start_time, end_time)
 
     @commands.command(name=command_names.function_command.remove_notification_role,

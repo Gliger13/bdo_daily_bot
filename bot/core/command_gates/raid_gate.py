@@ -6,8 +6,8 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 from core.command_gates.gate import CommandsGate
-from core.guild_managers.raids_keeper import RaidsKeeper
 from core.commands.registration_controller import RegistrationController
+from core.guild_managers.raids_keeper import RaidsKeeper
 from core.raid.raid import Raid
 from core.raid.raid_item import RaidItem
 from core.raid.raid_member import RaidMember
@@ -31,7 +31,7 @@ class RaidGate:
         :return: True if user can join given raid else False
         """
         return await CommandsGate.check_user_registered(user) and \
-               await cls.check_raid_exist(user, raid) and \
+               await cls.check_raid_to_join_or_leave_exist(user, raid) and \
                await cls.check_raid_is_full(user, raid) and \
                await cls.check_user_not_in_raid(user, raid) and \
                await cls.check_user_not_in_same_raid(user, raid.time.time_leaving)
@@ -46,7 +46,7 @@ class RaidGate:
         :return: True if user can leave given raid else False
         """
         return await CommandsGate.check_user_registered(user) and \
-               await cls.check_raid_exist(user, raid) and \
+               await cls.check_raid_to_join_or_leave_exist(user, raid) and \
                await cls.check_user_in_raid(user, raid)
 
     @classmethod
@@ -106,6 +106,29 @@ class RaidGate:
                await cls.check_user_want_remove_raid(user, raid)
 
     @classmethod
+    async def can_user_show_raid_table(cls, user_initiator: RaidMember, captain_to_show: RaidMember,
+                                       raids: Optional[List[Raid]],
+                                       raid_time_leaving: Optional[datetime]) -> Optional[Raid]:
+        """
+        Check user can remove raid by given time
+
+        :param user_initiator: user who entered the command
+        :param captain_to_show: captain of the raid to show
+        :param raids: list of raids to check
+        :param raid_time_leaving: time leaving of the raid to show
+        :return: raid if checks passed
+        """
+        return await cls.check_captain_exist(user_initiator, captain_to_show) and \
+               await cls.check_raid_to_show_exist(user_initiator, captain_to_show, raids) and \
+               (len(raids) == 1 and (not raid_time_leaving or
+                                     await cls.check_is_correct_time_leaving_of_raid_to_show(
+                                         user_initiator, captain_to_show, raids[0], raid_time_leaving))
+                and raids[0]) \
+               or raid_time_leaving and await cls.check_raid_with_time_leaving_exist(user_initiator, captain_to_show,
+                                                                                     raids, raid_time_leaving) \
+               or await cls.check_user_what_raid_want_to_show(user_initiator, captain_to_show, raids)
+
+    @classmethod
     async def check_user_same_raid_not_exist(cls, user: RaidMember, raid_item: RaidItem) -> bool:
         """
         Check user don't have raid with given raid attributes
@@ -157,7 +180,7 @@ class RaidGate:
         :return: True if raid exist else False
         """
         if not user_raids:
-            logging.info("User `{}` didn't join raid. Raid not exist".format(user.user.name))
+            logging.info("User `{}` didn't remove raid. Raid not exist".format(user.user.name))
             await UsersSender.send_raid_to_remove_not_exist(user.user)
             return False
         return True
@@ -180,7 +203,7 @@ class RaidGate:
         return await UsersChoicer.ask_yes_or_no(user.user, message)
 
     @classmethod
-    async def check_raid_exist(cls, user: RaidMember, raid: Optional[Raid]) -> bool:
+    async def check_raid_to_join_or_leave_exist(cls, user: RaidMember, raid: Optional[Raid]) -> bool:
         """
         Check raid exist
 
@@ -189,8 +212,25 @@ class RaidGate:
         :return: True if raid exist else False
         """
         if not raid:
-            logging.info("User `{}` didn't join raid. Raid not exist".format(user.user.name))
+            logging.info("User `{}` didn't join or leave raid. Raid not exist".format(user.user.name))
             await UsersSender.send_user_try_action_with_not_exist_raid(user.user)
+            return False
+        return True
+
+    @classmethod
+    async def check_raid_to_show_exist(cls, user_initiator: RaidMember, captain_to_show: RaidMember,
+                                       raid: Optional[List[Raid]]) -> bool:
+        """
+        Check raid to show exist
+
+        :param user_initiator: user who entered the command
+        :param captain_to_show: captain of the raid to show
+        :param raid: raid to check
+        :return: True if raid exist else False
+        """
+        if not raid:
+            logging.info("User `{}` can't show raid. Raid not exist".format(user_initiator.user.name))
+            await UsersSender.send_user_try_show_not_exist_raid(user_initiator.user, captain_to_show.nickname)
             return False
         return True
 
@@ -254,3 +294,77 @@ class RaidGate:
             await UsersSender.send_raid_is_full(user.user, raid)
             return False
         return True
+
+    @classmethod
+    async def check_captain_exist(cls, user_initiator: RaidMember, captain: RaidMember) -> bool:
+        """
+        Check raid to show exist
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid
+        :return: True if captain exist else False
+        """
+        if not captain:
+            logging.info("User `{}` try to interact with not exist captain {}".
+                         format(user_initiator.user.name, captain.nickname))
+            await UsersSender.send_to_user_captain_not_exist(user_initiator.user, captain.nickname)
+            return False
+        return True
+
+    @classmethod
+    async def check_user_what_raid_want_to_show(cls, user_initiator: RaidMember, captain: RaidMember,
+                                                raids: List[Raid]) -> Optional[Raid]:
+        """
+        Check which raid the user wants to show
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid
+        :param raids: list of raids to choose
+        """
+        raids_messages = []
+        for raid in raids:
+            raid_message = messages.raid_parameters_without_number.format(
+                time_leaving=raid.time.normal_time_leaving, server=raid.bdo_server)
+            raids_messages.append(raid_message)
+        question = messages.what_raids_need_to_show.format(captain=captain.nickname)
+        raid_choice = await UsersChoicer.ask_with_choices(user_initiator.user, question, raids_messages)
+        return raids[raid_choice - 1] if raid_choice else None
+
+    @classmethod
+    async def check_is_correct_time_leaving_of_raid_to_show(cls, user_initiator: RaidMember, captain: RaidMember,
+                                                            raid: Raid, time_leaving: datetime) -> bool:
+        """
+        Check the given raid has the given time leaving
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid
+        :param raid: raid to check
+        :param time_leaving: time leaving to check
+        """
+        if raid.time.time_leaving != time_leaving:
+            logging.info("User `{}` try to show raid with captain `{}` with wrong time".
+                         format(user_initiator.user.name, captain.nickname))
+            await UsersSender.send_user_try_show_raid_with_wrong_time(
+                user_initiator.user, captain.nickname, raid.time.normal_time_leaving, str(time_leaving.time()))
+        return True
+
+    @classmethod
+    async def check_raid_with_time_leaving_exist(cls, user_initiator: RaidMember, captain: RaidMember,
+                                                 raids: List[Raid], time_leaving: datetime) -> Optional[Raid]:
+        """
+        Check and return raid with the given time leaving
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid
+        :param raids: list of the raids to check
+        :param time_leaving: time leaving to check
+        """
+        for raid in raids:
+            if raid.time.time_leaving == time_leaving:
+                return raid
+
+        logging.info("User `{}` try to show raid with captain `{}` and time leaving `{}`. Raid not found.".
+                     format(user_initiator.user.name, captain.nickname, str(time_leaving.time())))
+        await UsersSender.send_try_show_raid_from_raids_by_wrong_time(user_initiator.user, captain.nickname,
+                                                                      str(time_leaving.time()))
+        return

@@ -4,7 +4,7 @@ Contain class for producing raid items
 from core.raid.raid import Raid
 from core.raid.raid_channel import RaidChannel
 from core.raid.raid_item import RaidItem
-from core.raid.raid_member import RaidMemberBuilder
+from core.raid.raid_member import RaidMemberFactory
 
 
 class RaidItemFactory:
@@ -20,7 +20,7 @@ class RaidItemFactory:
         :param raid_item: main raid information
         :return: raid from raid item
         """
-        captain = await RaidMemberBuilder.build_by_nickname(raid_item.captain_name)
+        captain = await RaidMemberFactory.produce_by_nickname(raid_item.captain_name)
         new_raid = Raid(
             captain=captain,
             bdo_server=raid_item.game_server,
@@ -29,7 +29,7 @@ class RaidItemFactory:
             reservation_count=raid_item.reservation_amount,
         )
         new_raid.time.creation_time = raid_item.creation_time
-        new_raid.members = await RaidMemberBuilder.build_by_list_of_attributes(raid_item.members)
+        new_raid.members = await RaidMemberFactory.produce_by_list_of_attributes(raid_item.members)
         new_raid.channels = await RaidChannel.get_channels_from_channels_info(raid_item.channels_info, new_raid)
         return new_raid
 
@@ -41,7 +41,7 @@ class RaidItemFactory:
         :param raid_item: main raid information
         :return: raid from raid item
         """
-        captain = await RaidMemberBuilder.build_by_nickname(raid_item.captain_name)
+        captain = await RaidMemberFactory.produce_by_nickname(raid_item.captain_name)
         new_raid = Raid(
             captain=captain,
             bdo_server=raid_item.game_server,

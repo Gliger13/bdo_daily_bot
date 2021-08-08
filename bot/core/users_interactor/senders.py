@@ -224,7 +224,7 @@ class UsersSender:
     async def send_user_set_notification_role(cls, user: User, guild_name: str, role_name: str,
                                               time_start_at: time, time_end_at: time):
         """
-        Send message that set notification role in the current guild
+        Send message that user set notification role in the current guild
 
         :param user: discord user for message sending
         :param guild_name: discord guild name where the user set notification role
@@ -239,13 +239,62 @@ class UsersSender:
     @classmethod
     async def send_user_remove_notification_role(cls, user: User, guild_name: str, role_name: str):
         """
-        Send message in channel that captain created new raid
+        Send message to user that he removed notification role in the current guild
 
         :param user: discord user for message sending
         :param guild_name: discord guild name where the user remove notification role
         :param role_name: discord role name for mentions
         """
         message = messages.user_remove_notification_role.format(guild=guild_name, role=role_name)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_try_show_not_exist_raid(cls, user: User, captain_name: str):
+        """
+        Send message that user try show not exist raid
+
+        :param user: discord user for message sending
+        :param captain_name: captain name of the raid to show
+        """
+        message = messages.user_try_show_not_exist_raid.format(captain=captain_name)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_to_user_captain_not_exist(cls, user: User, captain_name: str):
+        """
+        Send message that user try action with not exist captain
+
+        :param user: discord user for message sending
+        :param captain_name: captain name of the raid
+        """
+        message = messages.user_try_action_with_not_exist_captain.format(captain=captain_name)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_try_show_raid_with_wrong_time(cls, user: User, captain_name: str,
+                                                      correct_time: str, wrong_time: str):
+        """
+        Send message that user try action with raid with wrong time
+
+        :param user: discord user for message sending
+        :param captain_name: captain name of the raid
+        :param correct_time: correct time of the raid to show
+        :param wrong_time: wrong time of the raid to show
+        """
+        message = messages.user_try_show_raid_with_wrong_time.format(
+            captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_try_show_raid_from_raids_by_wrong_time(cls, user: User, captain_name: str, wrong_time: str):
+        """
+        Send message that user try show raid from raids by the wrong time leaving
+
+        :param user: discord user for message sending
+        :param captain_name: captain name of the raid
+        :param wrong_time: wrong time of the raid to show
+        """
+        message = messages.user_try_show_raid_from_raids_by_wrong_time.format(captain=captain_name, time=wrong_time)
         await cls.send_to_user(user, message)
 
 
