@@ -138,8 +138,8 @@ class RaidNotifier:
         check_time = time(hour=time_to_check.hour, minute=time_to_check.minute)
         if start_time < end_time:
             return start_time <= check_time <= end_time
-        else:  # crosses midnight
-            return check_time >= start_time or check_time <= end_time
+        # crosses midnight
+        return check_time >= start_time or check_time <= end_time
 
     @classmethod
     async def get_roles_to_notify(cls, guild: Guild, time_leaving: datetime) -> Optional[List[Role]]:

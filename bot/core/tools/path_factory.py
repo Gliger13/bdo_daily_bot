@@ -42,6 +42,7 @@ class ProjectPathFactory:
             dirs[:] = [directory for directory in dirs if directory not in ProjectFileMapping.EXCLUDE_DIRS_FROM_SEARCH]
             if dirname in dirs:
                 return os.path.join(root_path, dirname)
+        return None
 
     @classmethod
     def get_bot_data_dir_path(cls) -> Optional[str]:

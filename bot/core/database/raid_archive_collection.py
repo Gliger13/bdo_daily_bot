@@ -46,6 +46,11 @@ class RaidArchiveCollection(metaclass=MetaSingleton):
         await self.collection.insert_one(raid_dict_to_archive)
 
     async def get_yesterday_raids(self) -> Optional[List[RaidItem]]:
+        """
+        Gets all yesterday raids from the raid archive database
+
+        :return: list of the raid item with time leaving more then a day ago
+        """
         find_cursor = self.collection.find({
             "time_leaving": {
                 "$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)

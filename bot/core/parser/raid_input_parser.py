@@ -92,7 +92,7 @@ class CommandInputParameter(CommonCommandInputParser):
         if not self.attribute:
             logging.error("Command input argument not found for key: '{}', value: '{}'".
                           format(self.key, self.value))
-            return
+            return None
         if not self.value:
             return self.value
 
@@ -230,7 +230,7 @@ class RaidInputParser:
         for validated_parameter in validated_input.values():
             if validated_parameter.parsed_value:
                 continue
-            elif validated_parameter.attribute.input_type == CommandInputTypes.NAME.name_:
+            if validated_parameter.attribute.input_type == CommandInputTypes.NAME.name_:
                 validated_parameter.parsed_value = await cls.__get_nickname_from_database(validated_input)
             elif validated_parameter.attribute.attribute_name == \
                     RaidInputAttributes.TIME_RESERVATION_OPEN.attribute_name:
@@ -248,9 +248,8 @@ class RaidInputParser:
             return captain_name.parsed_value
         if captain_name := await cls.__database.user.get_user_nickname(ctx.author.id):
             return captain_name
-        else:
-            await UsersSender.send_captain_not_registered(ctx.author)
-            return
+        await UsersSender.send_captain_not_registered(ctx.author)
+        return
 
     @classmethod
     def __get_default_time_reservation_open(cls) -> datetime:

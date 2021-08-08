@@ -1,12 +1,12 @@
 """Contains the class for working with the captain database collection."""
 import datetime
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from core.database.database import Database
-from core.tools import tools
+from core.raid.raid_item import RaidItem
 from core.tools.common import MetaSingleton
 from settings import settings
 
@@ -18,17 +18,16 @@ class CaptainCollection(metaclass=MetaSingleton):
     @property
     def collection(self) -> AsyncIOMotorCollection:
         """
-        Responsible for providing captain collection.
+        Responsible for providing captain collection
 
         Responsible for providing captain collection. If this collection exists, it returns it.
         If the collection does not exist, then it is create and provide.
 
-        :return: captain database collection.
-        :rinput_type: AsyncIOMotorCollection
+        :return: captain database collection
         """
         if not self._collection:
             self._collection = Database().database[settings.CAPTAIN_COLLECTION]
-            logging.debug('Bot initialization: Collection {} connected.'.format(settings.CAPTAIN_COLLECTION))
+            logging.debug("Bot initialization: Collection {} connected.".format(settings.CAPTAIN_COLLECTION))
         return self._collection
 
     async def create_captain(self, discord_id: int) -> Dict[str, Any]:
@@ -36,115 +35,55 @@ class CaptainCollection(metaclass=MetaSingleton):
         Creates a new document about the captain in the captain database collection.
 
         :param discord_id: User discord id.
-        :input_type discord_id: int
         :return: Document about the new captain.
-        :rinput_type: Dict[str, Any]
         """
         captain_new_document = {
             "discord_id": discord_id,
             "raids_created": 0,
             "drove_people": 0,
-            "registration_time": datetime.datetime.now().strftime('%H:%M %d.%m.%y'),
+            "registration_time": datetime.datetime.now(),
             "last_raids": []
         }
         await self.collection.insert_one(captain_new_document)
         return captain_new_document
 
-    async def update_captain(self, discord_id: int, raid):
+    async def find_captain_post(self, discord_id: int) -> Optional[Dict[str, Any]]:
         """
-        Updates the captain's information after taken away raid.
+        Returns the captain"s document using its discord id.
 
         :param discord_id: User discord id.
-        :input_type discord_id: int
-        :param raid: Taken away raid.
-        :input_type raid: Raid
+        :return: Captain"s document.
         """
-        captain_post = await self.find_captain_post(discord_id)
-
-        # If the captain is not found, then register him
-        if not captain_post:
-            captain_post = await self.create_captain(discord_id)
-
-        # Retrieving old captains raids
-        old_last_raids = captain_post.get('last_raids', [])
-
-        # Do not register the raid reservation time open
-        # if the time difference between it and the raid time leaving is less than an one minute.
-        time_difference = tools.get_time_difference(raid.raid_time.time_reservation_open, raid.raid_time.time_leaving)
-        time_reservation_open = '' if time_difference < 60 else raid.raid_time.time_reservation_open
-
-        # Checking for existence the same raid in the previous raids.
-        # This is done to eliminate duplicate entries.
-        is_duplicate_raid_exists = False
-        for last_raid in old_last_raids:
-            if (
-                    last_raid['server'] == raid.server and
-                    last_raid['time_leaving'] == raid.raid_time.time_leaving and
-                    last_raid['time_reservation_open'] == time_reservation_open and
-                    last_raid['reservation_count'] == raid.reservation_count
-            ):
-                is_duplicate_raid_exists = True
-                break
-
-        if not is_duplicate_raid_exists:
-            # If the number of raids is more than three, then remove the last one
-            if len(old_last_raids) >= 3:
-                old_last_raids.pop(0)
-
-            old_last_raids.append({
-                'server': raid.server,
-                'time_leaving': raid.raid_time.time_leaving,
-                'time_reservation_open': time_reservation_open,
-                'reservation_count': raid.reservation_count,
-            })
-
-        await self.collection.find_one_and_update(
-            {'discord_id': discord_id},
-            {
-                '$inc': {
-                    'raids_created': 1,
-                    'drove_people': len(raid.member_dict)
-                },
-                '$set': {
-                    'last_created': datetime.datetime.now().strftime('%H:%M %d.%m.%y'),
-                    'last_raids': old_last_raids
-                },
-            }
-        )
-
-    async def find_captain_post(self, discord_id: int) -> Dict[str, Any] or None:
-        """
-        Returns the captain's document using its discord id.
-
-        :param discord_id: User discord id.
-        :input_type discord_id: int
-        :return: Captain's document.
-        :rinput_type: Dict[str, Any] or None
-        """
-        return await self.collection.find_one({'discord_id': discord_id})
+        return await self.collection.find_one({"discord_id": discord_id})
 
     async def find_or_new(self, discord_id: int) -> Dict[str, Any]:
         """
-        Returns the captain's document using its discord id.
+        Returns the captain"s document using its discord id.
 
-        Returns the captain's document using its discord id. If there is no such document,
+        Returns the captain"s document using its discord id. If there is no such document,
         then it creates and returns it.
 
         :param discord_id: User discord id.
-        :input_type discord_id: int
-        :return: Captain's document.
-        :rinput_type: Dict[str, Any]
+        :return: Captain"s document.
         """
-        captain_post = await self.find_captain_post(discord_id)
-        return captain_post if captain_post else await self.create_captain(discord_id)
+        return await self.find_captain_post(discord_id) or await self.create_captain(discord_id)
 
-    async def get_last_raids(self, discord_id: int) -> List[Dict[str, Any]]:
+    async def update_captain(self, discord_id: int, raid_item: RaidItem):
         """
-        Returns the captain's last raids using its discord id.
+        Updates the captain information with the given raid item
 
-        :param discord_id: User discord id.
-        :input_type discord_id: int
-        :return: Captain's last raids.
-        :rinput_type: List[Dict[str, Any]
+        :param discord_id: captain discord user id
+        :param raid_item: captain raid attributes
         """
-        return (await self.find_captain_post(discord_id)).get('last_raids')  # !!!!!!!!!!!!!!!!!!!!!
+        await self.collection.find_one_and_update(
+            {"discord_id": discord_id},
+            {
+                "$inc": {
+                    "raids_created": 1,
+                    "drove_people": len(raid_item.members)
+                },
+                "$set": {
+                    "last_created": raid_item.time_leaving
+                }
+            }
+        )

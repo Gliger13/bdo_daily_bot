@@ -4,7 +4,7 @@ Contain raid collection for storing and processing raid items
 import dataclasses
 import logging
 from datetime import datetime
-from typing import Dict, Optional, List
+from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 

@@ -10,6 +10,7 @@ from discord import Forbidden, HTTPException, NotFound, TextChannel
 from bot import BdoDailyBot
 from core.raid.raid import Raid
 from core.raid.raid_notifier import RaidNotifier
+from core.users_interactor.message_reaction_interactor import MessagesReactions
 from messages import messages
 
 
@@ -141,7 +142,6 @@ class RaidCollectionMessage(RaidMessage):
     """
     Class for sending, editing and updating raid collection message
     """
-    _collection_emoji = '❤'
 
     def __init__(self, channel: TextChannel, raid: Raid):
         """
@@ -173,7 +173,7 @@ class RaidCollectionMessage(RaidMessage):
         Send collection message and add collection reaction
         """
         await super().send()
-        await self.message.add_reaction(self._collection_emoji)
+        await self.message.add_reaction(MessagesReactions.COLLECTION_EMOJI)
 
 
 class RaidTableMessage(RaidMessage):

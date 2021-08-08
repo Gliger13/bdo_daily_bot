@@ -3,7 +3,7 @@ Contain dataclass for storing main raid information
 """
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 
 @dataclass
@@ -19,7 +19,7 @@ class RaidItem:
     channels_info: Optional[List[Dict[str, int]]] = field(default_factory=list)
     creation_time: datetime = datetime.now()
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             return False
         return self.captain_name == other.captain_name and self.time_leaving == other.time_leaving

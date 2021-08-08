@@ -156,7 +156,7 @@ class Raid:
         for raid_member in self.members:
             if raid_member.nickname == member.nickname:
                 return raid_member
-        return
+        return None
 
     def get_channel(self, guild: Guild) -> Optional[TextChannel]:
         """
@@ -168,4 +168,4 @@ class Raid:
         for channel in self.channels:
             if channel.guild == guild:
                 return channel.channel
-        return
+        return None

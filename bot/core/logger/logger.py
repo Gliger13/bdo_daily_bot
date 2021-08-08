@@ -9,12 +9,19 @@ class BotLogger(logging.Logger):
     """
     Custom logger realisation with file and console handlers
     """
+
     def __init__(self, name: str):
+        """
+        :param name: logger name
+        """
         super().__init__(name)
         self.__set_handlers()
 
     @classmethod
     def set_default(cls):
+        """
+        Set custom logger as root logger
+        """
         logger = BotLogger('bot_logger')
         logging.root = logger
 

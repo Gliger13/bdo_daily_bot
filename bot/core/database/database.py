@@ -22,8 +22,7 @@ class Database(metaclass=MetaSingleton):
         Responsible for providing the database. If this database exists, it returns it.
         If the database does not exist, then it is connect and provide.
 
-        :return: Mongo database.
-        :rinput_type: AsyncIOMotorDatabase
+        :return: Mongo database
         """
         if not self._cluster:
             logging.debug('Bot initialization: Initialisation database.')
@@ -34,9 +33,8 @@ class Database(metaclass=MetaSingleton):
     @property
     def database(self) -> AsyncIOMotorDatabase:
         """
-        Mongo database.
+        Mongo database
 
-        :return: Mongo database.
-        :rinput_type: AsyncIOMotorDatabase
+        :return: Mongo database
         """
         return self._connect()

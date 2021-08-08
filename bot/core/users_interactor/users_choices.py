@@ -9,11 +9,9 @@ from typing import List, Optional
 from discord import Message, Reaction, User
 
 from bot import BdoDailyBot
+from core.users_interactor.common import add_reaction
+from core.users_interactor.message_reaction_interactor import MessagesReactions
 
-YES_EMOJI = '✔'
-NO_EMOJI = '❌'
-
-CHOICES_NUMBERS = {1: "1️⃣", 2: "2️⃣", 3: "3️⃣", 4: "4️⃣", 5: "5️⃣", 6: "6️⃣", 7: "7️⃣", 8: "8️⃣", 9: "9️⃣"}
 CHOICE_MESSAGE_TEMPLATE = "{index}) {choice}"
 
 CHOICE_TIMEOUT = 300
@@ -36,8 +34,8 @@ class UsersChoicer:
         logging.info("Private/{}: User was asked with yes or no answer.\nQuestion: {}".
                      format(user.name, question))
         message = await user.send(question)
-        await message.add_reaction(YES_EMOJI)
-        await message.add_reaction(NO_EMOJI)
+        await add_reaction(message, MessagesReactions.YES_EMOJI)
+        await add_reaction(message, MessagesReactions.NO_EMOJI)
 
         def check_correct_user_and_answer(input_reaction: Reaction, reaction_user: User):
             """
@@ -47,7 +45,8 @@ class UsersChoicer:
             :param reaction_user: user to check
             :return: True if answer only by author of command and with correct reaction else False
             """
-            return user.id == reaction_user.id and str(input_reaction.emoji) in (YES_EMOJI, NO_EMOJI)
+            return user.id == reaction_user.id and str(input_reaction.emoji) in (MessagesReactions.YES_EMOJI,
+                                                                                 MessagesReactions.NO_EMOJI)
 
         try:
             reaction, user = await BdoDailyBot.bot.wait_for('reaction_add', timeout=CHOICE_TIMEOUT,
@@ -85,7 +84,8 @@ class UsersChoicer:
             :param reaction_user: user to check
             :return: True if answer only by author of command and with correct reaction else False
             """
-            return user.id == reaction_user.id and str(input_reaction.emoji) in CHOICES_NUMBERS.values()
+            return user.id == reaction_user.id and \
+                   str(input_reaction.emoji) in MessagesReactions.CHOICES_NUMBERS.values()
 
         try:
             reaction, user = await BdoDailyBot.bot.wait_for('reaction_add', timeout=CHOICE_TIMEOUT,
@@ -125,7 +125,7 @@ class UsersChoicer:
         :param choices_amount: amount of the choices emoji to add
         """
         for choice_index in range(1, choices_amount + 1):
-            await message.add_reaction(CHOICES_NUMBERS.get(choice_index))
+            await add_reaction(message, MessagesReactions.CHOICES_NUMBERS.get(choice_index))
 
     @classmethod
     def __check_user_yes_or_no_answer(cls, emoji: str) -> bool:
@@ -135,7 +135,7 @@ class UsersChoicer:
         :param emoji: user answer emoji
         :return: boolean value of user answer
         """
-        return emoji == YES_EMOJI
+        return emoji == MessagesReactions.YES_EMOJI
 
     @classmethod
     def __check_user_choice(cls, emoji: str) -> int:
@@ -145,7 +145,7 @@ class UsersChoicer:
         :param emoji: choices emoji
         :return: choice number
         """
-        for choice_index, choice_emoji in CHOICES_NUMBERS.items():
+        for choice_index, choice_emoji in MessagesReactions.CHOICES_NUMBERS.items():
             if emoji == choice_emoji:
                 return choice_index
         raise AttributeError("Wrong emoji given for answer question with choices")

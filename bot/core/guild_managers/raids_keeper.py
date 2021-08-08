@@ -66,13 +66,12 @@ class RaidsKeeper:
         if len(raids) == 1:
             return messages.raid_parameters_without_number.format(time_leaving=raids[0].time.normal_time_leaving,
                                                                   server=raids[0].bdo_server)
-        else:
-            message_parts = []
-            for index, raid in enumerate(raids):
-                message_parts.append(messages.raid_parameters.format(number=index + 1,
-                                                                     time_leaving=raid.time.normal_time_leaving,
-                                                                     server=raid.bdo_server))
-            return '\n'.join(message_parts)
+        message_parts = []
+        for index, raid in enumerate(raids):
+            message_parts.append(messages.raid_parameters.format(number=index + 1,
+                                                                 time_leaving=raid.time.normal_time_leaving,
+                                                                 server=raid.bdo_server))
+        return '\n'.join(message_parts)
 
     @classmethod
     def get_by_captain_name_and_time_leaving(cls, captain_name: str, time_leaving: datetime) -> Optional[Raid]:

@@ -5,7 +5,7 @@ import logging
 from datetime import timedelta
 from typing import Optional
 
-from discord import Forbidden, HTTPException, Message, NotFound, TextChannel
+from discord import Forbidden, HTTPException, InvalidArgument, Message, NotFound, TextChannel
 
 from bot import BdoDailyBot
 
@@ -70,7 +70,7 @@ async def pin_message(message: Message, reason: str = None):
     except Forbidden:
         logging.info("{}/{}: Can't pin message by user `{}`. Forbidden.\n"
                      "Message content: {}".
-                      format(message.guild, message.channel, message.author, message.content))
+                     format(message.guild, message.channel, message.author, message.content))
     except NotFound:
         logging.debug("{}/{}: Can't pin message by user `{}`. Message not found.\n"
                       "Message content: {}".
@@ -90,3 +90,33 @@ async def __delete_bot_not_pinned_messages(channel: TextChannel):
     async for message in channel.history(limit=25):
         if not message.pinned and message.author == BdoDailyBot.bot.user:
             await delete_message(message)
+
+
+async def add_reaction(message: Message, emoji: str):
+    """
+    Wrapped add reaction method
+
+    :param message: message to add reaction
+    :param emoji: reaction to add
+    """
+    try:
+        await message.add_reaction(emoji)
+        logging.info("{}/{}: Reaction `{}` was added to the message.\n"
+                     "Message content: {}".
+                     format(message.guild, message.channel, emoji, message.content))
+    except Forbidden:
+        logging.debug("{}/{}: Can't add reaction `{}` to the message. Forbidden.\n"
+                      "Message content: {}".
+                      format(message.guild, message.channel, emoji, message.author, message.content))
+    except NotFound:
+        logging.debug("{}/{}: Can't add reaction `{}` to the message. Message not found.\n"
+                      "Message content: {}".
+                      format(message.guild, message.channel, emoji, message.author, message.content))
+    except InvalidArgument:
+        logging.warning("{}/{}: Can't add reaction `{}` to the message. Invalid emoji.\n"
+                        "Message content: {}".
+                        format(message.guild, message.channel, emoji, message.author, message.content))
+    except HTTPException as error:
+        logging.warning("{}/{}: Can't add reaction `{}` to the message. HTTPException.\n"
+                        "Message content: {}\nError: {}".
+                        format(message.guild, message.channel, emoji, message.author, message.content, error))
