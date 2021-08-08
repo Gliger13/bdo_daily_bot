@@ -122,14 +122,74 @@ class RaidGate:
                await cls.check_raid_to_show_exist(user_initiator, captain_to_show, raids) and \
                (len(raids) == 1 and (not raid_time_leaving or
                                      await cls.check_is_correct_time_leaving_of_raid_to_show(
-                                         user_initiator, captain_to_show, raids[0], raid_time_leaving))
-                and raids[0]) \
+                                         user_initiator, captain_to_show, raids[0], raid_time_leaving)) and raids[0]) \
                or raid_time_leaving and await cls.check_raid_with_time_leaving_exist(user_initiator, captain_to_show,
                                                                                      raids, raid_time_leaving) \
-               or await cls.check_user_what_raid_want_to_show(user_initiator, captain_to_show, raids)
+               or await cls.check_user_what_raid_want(user_initiator, captain_to_show, raids)
+
+    @classmethod
+    async def can_user_close_reservation(cls, user_initiator: RaidMember, captain: RaidMember,
+                                         raids: Optional[List[Raid]],
+                                         raid_time_leaving: Optional[datetime], places: int) -> Optional[Raid]:
+        """
+        Check user can close the given raid reservation places and return raid to close reservation places
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid to close places
+        :param raids: list of raids to check
+        :param raid_time_leaving: time leaving of the raid to close places
+        :param places: places to close in raid to check
+        :return: raid if checks passed
+        """
+        if await cls.check_captain_exist(user_initiator, captain) and \
+           await cls.check_raid_to_show_exist(user_initiator, captain, raids):
+            raid = None
+            if len(raids) == 1 and (not raid_time_leaving or await cls.check_is_correct_time_leaving_of_raid_to_change(
+                                    user_initiator, captain, raids[0], raid_time_leaving) or
+                                    await cls.check_user_want_this_raid(user_initiator, raids[0])):
+                raid = raids[0]
+            if not raid:
+                raid = raid_time_leaving and await cls.check_raid_with_time_leaving_exist(
+                         user_initiator, captain, raids, raid_time_leaving) or \
+                       await cls.check_user_what_raid_want(user_initiator, captain, raids)
+
+            if raid and await cls.check_user_can_close_raid_places(user_initiator, raid, places):
+                return raid
+            return None
+
+    @classmethod
+    async def can_user_open_reservation(cls, user_initiator: RaidMember, captain: RaidMember,
+                                         raids: Optional[List[Raid]],
+                                         raid_time_leaving: Optional[datetime], places: int) -> Optional[Raid]:
+        """
+        Check user can open the given raid reservation places and return raid to close reservation places
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid to close places
+        :param raids: list of raids to check
+        :param raid_time_leaving: time leaving of the raid to close places
+        :param places: places to close in raid to check
+        :return: raid if checks passed
+        """
+        if await cls.check_captain_exist(user_initiator, captain) and \
+           await cls.check_raid_to_show_exist(user_initiator, captain, raids):
+            raid = None
+            if len(raids) == 1 and (not raid_time_leaving or await cls.check_is_correct_time_leaving_of_raid_to_change(
+                                    user_initiator, captain, raids[0], raid_time_leaving) or
+                                    await cls.check_user_want_this_raid(user_initiator, raids[0])):
+                raid = raids[0]
+            if not raid:
+                raid = raid_time_leaving and await cls.check_raid_with_time_leaving_exist(
+                         user_initiator, captain, raids, raid_time_leaving) or \
+                       await cls.check_user_what_raid_want(user_initiator, captain, raids)
+
+            if raid and await cls.check_user_can_open_raid_places(user_initiator, raid, places):
+                return raid
+            return None
 
     @classmethod
     async def check_user_same_raid_not_exist(cls, user: RaidMember, raid_item: RaidItem) -> bool:
+
         """
         Check user don't have raid with given raid attributes
 
@@ -312,8 +372,8 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_user_what_raid_want_to_show(cls, user_initiator: RaidMember, captain: RaidMember,
-                                                raids: List[Raid]) -> Optional[Raid]:
+    async def check_user_what_raid_want(cls, user_initiator: RaidMember, captain: RaidMember,
+                                        raids: List[Raid]) -> Optional[Raid]:
         """
         Check which raid the user wants to show
 
@@ -340,6 +400,7 @@ class RaidGate:
         :param captain: captain of the raid
         :param raid: raid to check
         :param time_leaving: time leaving to check
+        :return: True
         """
         if raid.time.time_leaving != time_leaving:
             logging.info("User `{}` try to show raid with captain `{}` with wrong time".
@@ -358,13 +419,117 @@ class RaidGate:
         :param captain: captain of the raid
         :param raids: list of the raids to check
         :param time_leaving: time leaving to check
+        :return: Raid if exist for the given time else None
         """
         for raid in raids:
             if raid.time.time_leaving == time_leaving:
                 return raid
 
-        logging.info("User `{}` try to show raid with captain `{}` and time leaving `{}`. Raid not found.".
+        logging.info("User `{}` try to get raid with captain `{}` and time leaving `{}`. Raid not found.".
                      format(user_initiator.user.name, captain.nickname, str(time_leaving.time())))
-        await UsersSender.send_try_show_raid_from_raids_by_wrong_time(user_initiator.user, captain.nickname,
+        await UsersSender.send_try_get_raid_from_raids_by_wrong_time(user_initiator.user, captain.nickname,
                                                                       str(time_leaving.time()))
         return
+
+    @classmethod
+    async def check_is_correct_time_leaving_of_raid_to_change(cls, user_initiator: RaidMember, captain: RaidMember,
+                                                              raid: Raid, time_leaving: datetime) -> Optional[Raid]:
+        """
+        Check the given raid has the given time leaving
+
+        :param user_initiator: user who entered the command
+        :param captain: captain of the raid
+        :param raid: raid to check
+        :param time_leaving: time leaving to check
+        :return: True if time is correct else False
+        """
+        if raid.time.time_leaving != time_leaving:
+            logging.info("User `{}` try to change reservation places in raid with captain `{}` with wrong time".
+                         format(user_initiator.user.name, captain.nickname))
+            await UsersSender.send_user_try_change_raid_places_by_wrong_time(
+                user_initiator.user, captain.nickname, raid.time.normal_time_leaving, str(time_leaving.time()))
+            return None
+        return raid
+
+    @classmethod
+    async def check_user_want_this_raid(cls, user_initiator: RaidMember, raid: Raid) -> bool:
+        """
+        Check user want change the given raid
+
+        :param user_initiator: user who entered the command
+        :param raid: raid to check
+        :return: True if user want this raid else False
+        """
+        question = messages.user_want_this_raid.format(raid.captain.nickname, raid.time.normal_time_leaving)
+        return await UsersChoicer.ask_yes_or_no(user_initiator.user, question)
+
+    @classmethod
+    async def check_raid_places_in_range(cls, user_initiator: RaidMember, raid: Raid, places: int) -> bool:
+        """
+        Check the given raid places in available range
+
+        :param user_initiator: user who entered the command
+        :param raid: raid to check
+        :param places: raid places to check
+        :return: True if raid places in available range else False
+        """
+        if not raid.MAX_RAID_MEMBERS_AMOUNT > places > 0:
+            logging.info("User `{}` use raid places not from the available range".format(user_initiator.user.name))
+            await UsersSender.send_user_raid_places_not_in_range(user_initiator.user)
+            return False
+        return True
+
+    @classmethod
+    async def check_raid_places_is_not_zero(cls, user_initiator: RaidMember, places: int) -> bool:
+        """
+        Check the given raid places is not zero
+
+        :param user_initiator: user who entered the command
+        :param places: raid places to check
+        :return: True is the give raid places is not zero else False
+        """
+        if places == 0:
+            logging.info("User `{}` entered raid places with 0 value".format(user_initiator.user.name))
+            await UsersSender.send_user_raid_places_is_zero(user_initiator.user)
+            return False
+        return True
+
+    @classmethod
+    async def check_user_can_close_raid_places(cls, user_initiator: RaidMember, raid: Raid, places: int) -> bool:
+        """
+        Check user can close reservation places in the given raid with the given places
+
+        :param user_initiator: user who entered the command
+        :param raid: raid to check
+        :param places: raid places to check
+        :return: True if user can close reservation places in the given raid else False
+        """
+        if places < 0:
+            await UsersSender.send_user_use_negative_raid_places(user_initiator.user)
+            return await cls.check_user_can_close_raid_places(user_initiator, raid, abs(places))
+        if await cls.check_raid_places_is_not_zero(user_initiator, places) and \
+           await cls.check_raid_places_in_range(user_initiator, raid, places):
+            if places > raid.places_left:
+                await UsersSender.send_user_wrong_raid_places(user_initiator.user)
+                return False
+        return True
+
+    @classmethod
+    async def check_user_can_open_raid_places(cls, user_initiator: RaidMember, raid: Raid, places: int) -> bool:
+        """
+        Check user can open reservation places in the given raid with the given places
+
+        :param user_initiator: user who entered the command
+        :param raid: raid to check
+        :param places: raid places to check
+        :return: True if user can open reservation places in the given raid else False
+        """
+        if places < 0:
+            await UsersSender.send_user_use_negative_raid_places(user_initiator.user)
+            return await cls.check_user_can_close_raid_places(user_initiator, raid, abs(places))
+        if await cls.check_raid_places_is_not_zero(user_initiator, places) and \
+           await cls.check_raid_places_in_range(user_initiator, raid, places):
+            if places >= raid.reservation_count:
+                await UsersSender.send_user_wrong_raid_places(user_initiator.user)
+                return False
+        return True

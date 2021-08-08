@@ -36,7 +36,7 @@ class CommandInputTypes(Enum):
 
 class CommonCommandInputParser:
     """
-    Response for parsing common attributes
+    Response for parsing common commands attributes
     """
     __database = DatabaseManager()
 
@@ -63,12 +63,7 @@ class CommonCommandInputParser:
         :return: parsed time as time
         """
         if search_result := re.search(CommandInputTypes.TIME.template, time_string):
-            input_hours = int(search_result.group("hours"))
-            input_minutes = int(search_result.group("minutes"))
-            now = datetime.now()
-            if now.hour >= input_hours and now.minute >= input_minutes:
-                return now.replace(day=now.day + 1, hour=input_hours, minute=input_minutes, second=0, microsecond=0)
-            return now.replace(hour=input_hours, minute=input_minutes, second=0, microsecond=0)
+            return cls.parse_time_by_match(search_result)
         return None
 
     @classmethod
@@ -87,14 +82,26 @@ class CommonCommandInputParser:
         return now.replace(hour=input_hours, minute=input_minutes, second=0, microsecond=0)
 
     @classmethod
-    def parse_number(cls, number: str) -> int:
+    def parse_number(cls, number: str) -> Optional[int]:
         """
         Parse input number
 
         :param number: input number
         :return: parsed number
         """
-        return int(number)
+        if search_result := re.search(CommandInputTypes.NUMBER.template, number):
+            return cls.parse_number_by_match(search_result)
+        return None
+
+    @classmethod
+    def parse_number_by_match(cls, number_search_result: Match) -> Optional[int]:
+        """
+        Parse input number by the given match
+
+        :param number_search_result: input number search result
+        :return: parsed number
+        """
+        return int(number_search_result.group("number"))
 
     @classmethod
     async def parse_nickname(cls, user: User, nickname: Optional[str]) -> Optional[str]:

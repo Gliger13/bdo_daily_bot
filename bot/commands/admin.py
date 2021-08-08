@@ -13,7 +13,6 @@ from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.logger import log_template
 from core.parser.common_parser import CommonCommandInputParser
-from core.parser.raid_input_parser import RaidInputParser
 from core.users_interactor.senders import ChannelsSender
 from messages import command_names, help_text, messages
 

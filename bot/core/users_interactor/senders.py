@@ -286,7 +286,7 @@ class UsersSender:
         await cls.send_to_user(user, message)
 
     @classmethod
-    async def send_try_show_raid_from_raids_by_wrong_time(cls, user: User, captain_name: str, wrong_time: str):
+    async def send_try_get_raid_from_raids_by_wrong_time(cls, user: User, captain_name: str, wrong_time: str):
         """
         Send message that user try show raid from raids by the wrong time leaving
 
@@ -294,7 +294,63 @@ class UsersSender:
         :param captain_name: captain name of the raid
         :param wrong_time: wrong time of the raid to show
         """
-        message = messages.user_try_show_raid_from_raids_by_wrong_time.format(captain=captain_name, time=wrong_time)
+        message = messages.user_try_get_raid_from_raids_by_wrong_time.format(captain=captain_name, time=wrong_time)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_try_change_raid_places_by_wrong_time(cls, user: User, captain_name: str,
+                                                             correct_time: str, wrong_time: str):
+        """
+        Send message that user try change places in the raid with the wrong time
+
+        :param user: discord user for message sending
+        :param captain_name: captain name of the raid
+        :param correct_time: correct time of the raid to show
+        :param wrong_time: wrong time of the raid to show
+        """
+        message = messages.user_try_change_places_in_raid_by_wrong_time.format(
+            captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
+        await cls.send_to_user(user, message)
+
+
+    @classmethod
+    async def send_user_use_negative_raid_places(cls, user: User):
+        """
+        Send message that user use negative number of the raid places
+
+        :param user: discord user for message sending
+        """
+        message = messages.use_negative_raid_places
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_raid_places_not_in_range(cls, user: User):
+        """
+        Send message that user enter raid places not from available range
+
+        :param user: discord user for message sending
+        """
+        message = messages.user_raid_places_not_in_range
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_raid_places_is_zero(cls, user: User):
+        """
+        Send message that user entered 0 raid places
+
+        :param user: discord user for message sending
+        """
+        message = messages.user_raid_places_is_zero
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_wrong_raid_places(cls, user: User):
+        """
+        Send message that user can't change raid places with the given number
+
+        :param user: discord user for message sending
+        """
+        message = messages.user_wrong_raid_places
         await cls.send_to_user(user, message)
 
 

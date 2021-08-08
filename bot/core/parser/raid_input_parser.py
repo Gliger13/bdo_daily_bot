@@ -97,15 +97,14 @@ class CommandInputParameter(CommonCommandInputParser):
             return self.value
 
         search_result = self.__search_by_key()
-        if self.attribute.input_type == CommandInputTypes.TIME:
-            return self.parse_time_by_match(search_result)
-        if self.attribute.input_type == CommandInputTypes.SIMPLE_TIME:
-            return self.parse_simple_time(search_result)
-        if self.attribute.input_type == CommandInputTypes.NUMBER:
-            return self.parse_number(search_result)
-        if isinstance(search_result, Match):
-            return search_result.group(self.attribute.input_type.name_)
-        return self.value
+        if search_result:
+            if self.attribute.input_type == CommandInputTypes.TIME:
+                return self.parse_time_by_match(search_result)
+            if self.attribute.input_type == CommandInputTypes.NUMBER:
+                return self.parse_number_by_match(search_result)
+            if isinstance(search_result, Match):
+                return search_result.group(self.attribute.input_type.name_)
+            return self.value
 
     def __search_by_key(self) -> Optional[Union[Match, Any]]:
         """

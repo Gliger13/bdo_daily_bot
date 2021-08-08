@@ -39,7 +39,7 @@ class RaidOverview(commands.Cog):
         :param time_leaving: time leaving of the raid to show
         """
         captain_name = await CommonCommandInputParser.parse_nickname(ctx.author, captain_name)
-        time_leaving = CommonCommandInputParser.parse_time(time_leaving) if time_leaving else ''
+        time_leaving = CommonCommandInputParser.parse_time(time_leaving) if time_leaving else None
         captain_to_show = await RaidMemberFactory.produce_by_nickname(captain_name)
         user_initiator = await RaidMemberFactory.produce_by_discord_user(ctx.author)
         await show(ctx, user_initiator, captain_to_show, time_leaving)

@@ -2,6 +2,7 @@
 Contain functions with a main logic of the overview command cog
 """
 from datetime import datetime
+from typing import Optional
 
 import discord
 from discord.ext.commands import Context
@@ -15,7 +16,7 @@ from core.raid.raid_member import RaidMember
 __database = DatabaseManager()
 
 
-async def show(ctx: Context, user_initiator: RaidMember, captain: RaidMember, time_leaving: datetime):
+async def show(ctx: Context, user_initiator: RaidMember, captain: RaidMember, time_leaving: Optional[datetime]):
     """
     Command to send raid members nicknames as image
 
