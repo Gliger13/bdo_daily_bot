@@ -2,7 +2,7 @@
 FROM python:3.8
 
 # set the working directory in the container
-WORKDIR /bot
+WORKDIR /bdo_daily_bot/bot
 
 ENV TZ=Europe/Minsk
 
