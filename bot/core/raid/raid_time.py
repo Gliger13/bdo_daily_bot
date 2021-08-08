@@ -9,7 +9,7 @@ class RaidTime:
     """
     Class for storing and processing raid time
     """
-    __time_to_wait_after_leaving = timedelta(minutes=1)
+    __time_to_wait_after_leaving = timedelta(minutes=10)
     __time_to_notify_before_leaving = timedelta(minutes=7)
 
     def __init__(self, time_leaving: datetime, time_reservation_open: datetime):
