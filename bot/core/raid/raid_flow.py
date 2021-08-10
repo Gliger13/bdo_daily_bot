@@ -73,9 +73,9 @@ class RaidFlow:
         self.raid.flow = None
         self.__cancel_all_tasks()
         await self.__archive_raid()
-        await self.update_raids_information_channels()
         RaidsKeeper.remove_raid(self.raid)
         await self.__remove_all_channels()
+        await self.update_raids_information_channels()
         logging.debug("Raid with captain {} and time leaving {} completely removed".format(
             self.raid.captain.nickname, self.raid.time.kebab_time_leaving))
 

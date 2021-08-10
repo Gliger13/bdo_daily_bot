@@ -77,7 +77,7 @@ class CommonCommandInputParser:
         input_hours = int(time_search_result.group("hours"))
         input_minutes = int(time_search_result.group("minutes"))
         now = datetime.now()
-        if now.hour >= input_hours and now.minute >= input_minutes:
+        if now.hour > input_hours or now.hour >= input_hours and now.minute >= input_minutes:
             return now.replace(day=now.day + 1, hour=input_hours, minute=input_minutes, second=0, microsecond=0)
         return now.replace(hour=input_hours, minute=input_minutes, second=0, microsecond=0)
 

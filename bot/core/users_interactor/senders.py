@@ -155,7 +155,7 @@ class UsersSender:
 
         :param user: discord user for message sending
         """
-        message = messages.raid_not_removed_not_found
+        message = messages.raid_already_exist
         await cls.send_to_user(user, message)
 
     @classmethod

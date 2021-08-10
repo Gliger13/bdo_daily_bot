@@ -190,12 +190,13 @@ class Events(commands.Cog):
         logging.debug("Reaction {} was added by member {} in guild {}".format(emoji, user.name, channel.name))
         # If user react in dm channel
         if not payload.guild_id:
+            logging.debug("Payload without guild id")
             if emoji == '💤':
                 await self.not_notify_me(user)
         else:  # If user react in text channel on server
             message = await channel.fetch_message(payload.message_id)
 
-            if emoji == '❤':
+            if emoji in ['❤️', '♥', '❤️', '❤']:
                 logging.debug("User add collection message reaction")
                 await join_raid_by_reaction(message, user)
 
