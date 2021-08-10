@@ -51,7 +51,7 @@ function_command = FunctionCommand({
     'remove_notification_role': 'убери_пинг',
     # commands.base
     'test': 'тест',
-    'help_command': 'help_command',
+    'help_command': 'помощь',
     'turn_off_bot': 'заверши_работу',
     'author_of_bot': 'автор',
     'send_logs': 'логи',

@@ -193,8 +193,7 @@ class RaidsInformationChannel:
         embed = Embed(
             title=messages.active_raids_message_title,
             description=messages.active_raids_message_description,
-            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)),
-            timestamp=datetime.now())
+            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)))
         bot_as_user = BdoDailyBot.bot.get_user(settings.BOT_ID)
         embed.set_author(
             name=bot_as_user.name,
@@ -236,8 +235,7 @@ class RaidsInformationChannel:
         embed = Embed(
             title=messages.yesterday_raids_message_title,
             description=messages.yesterday_raids_message_description,
-            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)),
-            timestamp=datetime.now())
+            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)))
         bot_as_user = BdoDailyBot.bot.get_user(settings.BOT_ID)
         embed.set_author(
             name=bot_as_user.name,
@@ -248,9 +246,10 @@ class RaidsInformationChannel:
             for last_raid in yesterday_raids:
                 field_name = messages.yesterday_raids_message_name.format(
                     captain_name=last_raid.captain.nickname, time_leaving=last_raid.time.normal_time_leaving)
+                day = messages.today if last_raid.time.time_leaving.day == datetime.now().day else messages.yesterday
                 field_message = messages.yesterday_raids_message.format(
                     discord_username=last_raid.captain.user.mention,
-                    captain_name=last_raid.captain.nickname, time_leaving=last_raid.time.normal_time_leaving,
+                    captain_name=last_raid.captain.nickname, day=day, time_leaving=last_raid.time.normal_time_leaving,
                     places_left=last_raid.places_left, max_places=last_raid.MAX_RAID_MEMBERS_AMOUNT)
                 embed.add_field(name=field_name, value=field_message, inline=False)
         else:

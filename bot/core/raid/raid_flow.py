@@ -58,28 +58,26 @@ class RaidFlow:
             await self.__update_table_messages()
 
         await self.__send_leave_messages()
+        await self.__database.captain.update_captain(self.raid.captain.user.id, self.raid.raid_item)
+        await self.__archive_raid(archive=True)
+        await self.update_raids_information_channels()
         await self.__sleep_after_leaving()
         await self.end()
 
-    async def end(self, *, archive: bool = True):
+    async def end(self):
         """
         End raid flow
 
         Cancel all active tasks, remove raid channels, remove raid from keeper and database
-
-        :param archive: archive or not raid in the database raid archive
         """
         self.raid.flow = None
         self.__cancel_all_tasks()
-        await self.__remove_all_channels()
+        await self.__archive_raid()
+        await self.update_raids_information_channels()
         RaidsKeeper.remove_raid(self.raid)
-        await self.__database.raid.delete(self.raid.raid_item)
-        if archive:
-            await self.__database.raid_archive.archive(self.raid.raid_item)
-        await self.__database.captain.update_captain(self.raid.captain.user.id, self.raid.raid_item)
+        await self.__remove_all_channels()
         logging.debug("Raid with captain {} and time leaving {} completely removed".format(
             self.raid.captain.nickname, self.raid.time.kebab_time_leaving))
-        await self.update_raids_information_channels()
 
     async def update(self):
         """
@@ -101,6 +99,16 @@ class RaidFlow:
         """
         for information_channel in self.raid.information_channels:
             await information_channel.update()
+
+    async def __archive_raid(self, *, archive: bool = False):
+        """
+        Update database collection with the new raid data
+
+        :param archive: archive or not raid in the database raid archive
+        """
+        await self.__database.raid.delete(self.raid.raid_item)
+        if archive:
+            await self.__database.raid_archive.archive(self.raid.raid_item)
 
     async def __notify_raid_members(self):
         """

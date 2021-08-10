@@ -61,14 +61,13 @@ class Events(commands.Cog):
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
 
         BdoDailyBot.bot = self.bot
-        await ManagersController.load_managers()
-        await ManagersController.load_raids()
-        logging.debug("Bot initialization completed.")
-
         # Track unplanned bot reboot
         if not self.is_bot_ready:
             self.is_bot_ready = True
             logging.info(logger_msgs.bot_ready)
+            await ManagersController.load_managers()
+            await ManagersController.load_raids()
+            logging.debug("Bot initialization completed.")
         else:
             log_template.bot_restarted()
 
@@ -119,20 +118,21 @@ class Events(commands.Cog):
         guild_settings = await self.database.settings.find_settings_post(payload.guild_id)
 
         if not guild_settings:
+            logging.info("No guild settings for guild: `{}`".format(payload.guild_id))
             return
 
         role_from_reaction = guild_settings.get('role_from_reaction')
 
         if not role_from_reaction:
+            logging.info("No role_from_reaction settings for guild: `{}`".format(payload.guild_id))
             return
 
         reaction = str(payload.emoji)
         reaction_role = role_from_reaction.get(str(payload.message_id))
+        guild = self.bot.get_guild(payload.guild_id)
+        member = payload.member
 
         if reaction_role and reaction in reaction_role:
-            guild = self.bot.get_guild(payload.guild_id)
-            member = payload.member
-
             role = discord.utils.get(guild.roles, id=reaction_role.get(reaction))
             await member.add_roles(role)
 
@@ -187,6 +187,7 @@ class Events(commands.Cog):
         emoji = str(payload.emoji)
         channel = self.bot.get_channel(payload.channel_id)
 
+        logging.debug("Reaction {} was added by member {} in guild {}".format(emoji, user.name, channel.name))
         # If user react in dm channel
         if not payload.guild_id:
             if emoji == '💤':
@@ -195,6 +196,7 @@ class Events(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
 
             if emoji == '❤':
+                logging.debug("User add collection message reaction")
                 await join_raid_by_reaction(message, user)
 
     @commands.Cog.listener()

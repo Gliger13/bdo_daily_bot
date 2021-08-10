@@ -452,6 +452,9 @@ active_raids_message_footer = "Во время ежей уходи в АФК - �
 yesterday_raids_message_title = "Прошедшие рейды"
 yesterday_raids_message_description = "Рейды которые были вчера или уже отплыли сегодня"
 yesterday_raids_message_name = "{captain_name} в {time_leaving}"
-yesterday_raids_message = "Капитан {discord_username} с фамилией **{captain_name}** отплывал в **{time_leaving}** " \
-                          "Оставалось свободно **{places_left}/{max_places}** мест."
+yesterday = "вчера"
+today = "сегодня"
+yesterday_raids_message = "Капитан {discord_username} с фамилией **{captain_name}** отплывал **{day}** в " \
+                          "**{time_leaving}**. Оставалось свободно **{places_left}/{max_places}** мест."
 yesterday_raids_message_footer = "Возможно кто-то из этих великих повезёт снова."
+

@@ -128,7 +128,10 @@ class RaidTime:
         Gets list of seconds before 1, 5, 15, 30, 60 and 1 hours before display
         """
         secs_to_display_list = []
-        time_difference = self.time_leaving - datetime.now()
+        if self.time_reservation_open > datetime.now():
+            time_difference = self.time_leaving - self.time_reservation_open
+        else:
+            time_difference = self.time_leaving - datetime.now()
         if time_difference.total_seconds() < 0:
             return secs_to_display_list
         time_difference_seconds = time_difference.total_seconds()
