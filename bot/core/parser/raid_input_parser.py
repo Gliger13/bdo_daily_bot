@@ -230,7 +230,7 @@ class RaidInputParser:
         for validated_parameter in validated_input.values():
             if validated_parameter.parsed_value:
                 continue
-            if validated_parameter.attribute.input_type == CommandInputTypes.NAME.name_:
+            if validated_parameter.attribute.input_type == CommandInputTypes.NAME:
                 validated_parameter.parsed_value = await cls.__get_nickname_from_database(validated_input)
             elif validated_parameter.attribute.attribute_name == \
                     RaidInputAttributes.TIME_RESERVATION_OPEN.attribute_name:

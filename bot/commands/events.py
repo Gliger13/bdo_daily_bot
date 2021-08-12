@@ -6,9 +6,9 @@ import sys
 import traceback
 
 import discord
-from discord import DiscordException, Member, RawReactionActionEvent, User
+from discord import DiscordException, DMChannel, Member, RawReactionActionEvent, User
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot, Command, Context
 
 from bot import BdoDailyBot
 from core.commands.raid.joining import join_raid_by_reaction, leave_raid_by_reaction
@@ -16,6 +16,7 @@ from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.guild_managers.managers_controller import ManagersController
 from core.logger import log_template
+from core.tools.common import empty_function, ListenerContext
 from messages import logger_msgs, messages
 from settings import settings
 
@@ -186,6 +187,11 @@ class Events(commands.Cog):
         user = self.bot.get_user(payload.user_id)
         emoji = str(payload.emoji)
         channel = self.bot.get_channel(payload.channel_id)
+        command = Command(empty_function, name="Remove reaction")
+        if isinstance(channel, DMChannel):
+            guild = None
+        else:
+            guild = channel.guild
 
         logging.debug("Reaction {} was added by member {} in guild {}".format(emoji, user.name, channel.name))
         # If user react in dm channel
@@ -196,9 +202,11 @@ class Events(commands.Cog):
         else:  # If user react in text channel on server
             message = await channel.fetch_message(payload.message_id)
 
+            listener_ctx = ListenerContext(
+                guild=guild, channel=channel, message=message, author=user, command=command)
             if emoji in ['❤️', '♥', '❤️', '❤']:
                 logging.debug("User add collection message reaction")
-                await join_raid_by_reaction(message, user)
+                await join_raid_by_reaction(listener_ctx, message, user)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
@@ -216,6 +224,11 @@ class Events(commands.Cog):
         user = self.bot.get_user(payload.user_id)
         emoji = str(payload.emoji)
         channel = self.bot.get_channel(payload.channel_id)
+        command = Command(empty_function, name="Add reaction")
+        if isinstance(channel, DMChannel):
+            guild = None
+        else:
+            guild = channel.guild
 
         # If user react in dm channel
         if not payload.guild_id:
@@ -225,7 +238,9 @@ class Events(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
 
             if emoji == '❤':
-                await leave_raid_by_reaction(message, user)
+                listener_ctx = ListenerContext(
+                    guild=guild, channel=channel, message=message, author=user, command=command)
+                await leave_raid_by_reaction(listener_ctx, message, user)
 
     async def not_notify_me(self, user: User):
         """

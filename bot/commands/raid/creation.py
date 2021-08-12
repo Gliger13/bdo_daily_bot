@@ -10,6 +10,7 @@ from discord.ext.commands import Bot, Context
 from core.commands.raid.builder import RaidBuilder
 from core.logger import log_template
 from core.parser.raid_input_parser import RaidInputAttributes, RaidInputParser
+from core.raid.raid_member import RaidMemberFactory
 from messages import command_names, help_text
 
 
@@ -78,7 +79,9 @@ class RaidCreation(commands.Cog):
         if parsed_input := await RaidInputParser.parse_raid_remove_input(**locals()):
             captain_name = parsed_input.get(RaidInputAttributes.CAPTAIN_NAME.attribute_name)
             time_leaving = parsed_input.get(RaidInputAttributes.TIME_LEAVING.attribute_name)
-            await RaidBuilder.destroy(ctx, captain_name, time_leaving)
+            user_initiator = await RaidMemberFactory.produce_by_discord_user(ctx.author)
+            captain = await RaidMemberFactory.produce_by_nickname(captain_name)
+            await RaidBuilder.destroy(ctx, user_initiator, captain, time_leaving)
 
 
 def setup(bot: Bot):

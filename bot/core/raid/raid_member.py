@@ -1,7 +1,7 @@
 """
 Module contain class for describing raid member
 """
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from discord import User
 
@@ -27,6 +27,17 @@ class RaidMember:
         :return: True if discord user exist and nickname in the database exist
         """
         return bool(self.user and self.nickname)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        if self.nickname and other.nickname and self.user and other.user:
+            return self.nickname == other.nickname and self.user.id == other.user.id
+        if self.nickname and other.nickname:
+            return self.nickname == other.nickname
+        if self.user and other.user:
+            return self.user.id == other.user.id
+        return False
 
     @property
     def attributes(self) -> Dict[str, Union[str, int]]:

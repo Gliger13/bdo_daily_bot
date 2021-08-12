@@ -285,17 +285,6 @@ class UsersSender:
             captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
         await cls.send_to_user(user, message)
 
-    @classmethod
-    async def send_try_get_raid_from_raids_by_wrong_time(cls, user: User, captain_name: str, wrong_time: str):
-        """
-        Send message that user try show raid from raids by the wrong time leaving
-
-        :param user: discord user for message sending
-        :param captain_name: captain name of the raid
-        :param wrong_time: wrong time of the raid to show
-        """
-        message = messages.user_try_get_raid_from_raids_by_wrong_time.format(captain=captain_name, time=wrong_time)
-        await cls.send_to_user(user, message)
 
     @classmethod
     async def send_user_try_change_raid_places_by_wrong_time(cls, user: User, captain_name: str,
@@ -351,6 +340,51 @@ class UsersSender:
         :param user: discord user for message sending
         """
         message = messages.user_wrong_raid_places
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_captain_raids_not_exist(cls, user: User, captain_name: str):
+        """
+        Send message that the given captain don't has any raids
+
+        :param user: discord user for message sending
+        :param captain_name: captain nickname without raids
+        """
+        message = messages.captain_does_not_has_raids.format(captain_name=captain_name)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_raids_not_exist(cls, user: User):
+        """
+        Send message that user doesn't has any raids
+
+        :param user: discord user for message sending
+        """
+        message = messages.user_does_not_has_raids
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_get_raid_from_raids_by_wrong_time(cls, user: User, wrong_time: str):
+        """
+        Send message that user try show raid from raids by the wrong time leaving
+
+        :param user: discord user for message sending
+        :param wrong_time: wrong time of the raid to show
+        """
+        message = messages.user_try_get_raid_from_raids_by_wrong_time.format(time=wrong_time)
+        await cls.send_to_user(user, message)
+
+    @classmethod
+    async def send_user_get_captain_raid_from_raids_by_wrong_time(cls, user: User, captain_name: str, wrong_time: str):
+        """
+        Send message that user try show raid from raids by the wrong time leaving
+
+        :param user: discord user for message sending
+        :param captain_name: captain name of the raid
+        :param wrong_time: wrong time of the raid to show
+        """
+        message = messages.user_try_get_captain_raid_from_raids_by_wrong_time.format(
+            captain=captain_name, time=wrong_time)
         await cls.send_to_user(user, message)
 
 
