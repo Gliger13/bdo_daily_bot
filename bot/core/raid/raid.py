@@ -142,7 +142,7 @@ class Raid:
         :return: True if given discord collection message is from the current raid else False
         """
         for channel in self.channels:
-            if channel.collection_message.message.id == collection_message_id:
+            if channel.collection_message and channel.collection_message.message.id == collection_message_id:
                 return True
         return False
 
