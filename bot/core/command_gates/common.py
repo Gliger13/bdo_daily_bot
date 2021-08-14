@@ -6,11 +6,11 @@ from typing import Union
 
 from discord.ext.commands import Context
 
+from core.models.context import ContextInterface
 from core.raid.raid import Raid
-from core.tools.common import ListenerContext
 
 
-def log_gate_check_failed(ctx: Union[Context, ListenerContext], failed_check_message: str):
+def log_gate_check_failed(ctx: Union[Context, ContextInterface], failed_check_message: str):
     """
     Logging raid gate check failed
 
@@ -22,7 +22,7 @@ def log_gate_check_failed(ctx: Union[Context, ListenerContext], failed_check_mes
     logging.info(logging_msg)
 
 
-def log_gate_check_branched(ctx: Union[Context, ListenerContext], branched_check_message: str):
+def log_gate_check_branched(ctx: Union[Context, ContextInterface], branched_check_message: str):
     """
     Logging gate check which not passed but it can try another check
 
@@ -34,7 +34,7 @@ def log_gate_check_branched(ctx: Union[Context, ListenerContext], branched_check
     logging.info(logging_msg)
 
 
-def log_raid_gate_check_failed(ctx: Union[Context, ListenerContext], raid: Raid, failed_check_message: str):
+def log_raid_gate_check_failed(ctx: Union[Context, ContextInterface], raid: Raid, failed_check_message: str):
     """
     Logging raid gate check failed
 
@@ -48,7 +48,7 @@ def log_raid_gate_check_failed(ctx: Union[Context, ListenerContext], raid: Raid,
     logging.info(logging_msg)
 
 
-def log_raid_gate_check_branched(ctx: Union[Context, ListenerContext], raid: Raid, branched_check_message: str):
+def log_raid_gate_check_branched(ctx: Union[Context, ContextInterface], raid: Raid, branched_check_message: str):
     """
     Logging gate check which not passed but it can try another check
 

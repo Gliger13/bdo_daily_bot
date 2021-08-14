@@ -72,9 +72,9 @@ class RaidPicker:
         :param time_leaving: time leaving of the raid to pick
         :return: picked raid
         """
-        if time_leaving and (raid := await cls.pick_raid_by_time_leaving(ctx, user_interactor, captain,
-                                                                         raids, time_leaving)):
-            return raid
+        if time_leaving:
+            if raid := await cls.pick_raid_by_time_leaving(ctx, user_interactor, captain, raids, time_leaving):
+                return raid
         return await cls.__check_what_raid_user_want(ctx, user_interactor, captain, raids)
 
     @classmethod

@@ -203,13 +203,22 @@ class RaidsInformationChannel:
         if self.active_raids:
             for active_raid in RaidsKeeper.sort_raids_by_time_leaving(self.active_raids):
                 if raid_channel := RaidChannel.get_channel_by_guild_id(active_raid.channels, self.guild.id):
+                    if active_raid.time.time_leaving.day == datetime.now().day:
+                        day = messages.today
+                    else:
+                        day = messages.tomorrow
                     field_name = messages.active_raids_message_name.format(
-                        captain_name=active_raid.captain.nickname, time_leaving=active_raid.time.normal_time_leaving)
+                        captain_name=active_raid.captain.nickname,
+                        time_leaving=active_raid.time.normal_time_leaving)
                     field_message = messages.active_raids_message.format(
                         discord_username=active_raid.captain.user.mention,
-                        captain_name=active_raid.captain.nickname, time_leaving=active_raid.time.normal_time_leaving,
-                        server=active_raid.bdo_server, places_left=active_raid.places_left,
-                        max_places=active_raid.MAX_RAID_MEMBERS_AMOUNT, channel_name=raid_channel.channel.mention)
+                        captain_name=active_raid.captain.nickname,
+                        day=day,
+                        time_leaving=active_raid.time.normal_time_leaving,
+                        server=active_raid.bdo_server,
+                        places_left=active_raid.places_left,
+                        max_places=active_raid.MAX_RAID_MEMBERS_AMOUNT,
+                        channel_name=raid_channel.channel.mention)
                     embed.add_field(name=field_name, value=field_message, inline=False)
         else:
             embed.add_field(name=messages.no_active_raids_name, value=messages.no_active_raids, inline=False)
@@ -245,12 +254,16 @@ class RaidsInformationChannel:
         if yesterday_raids := await self.__yesterday_raids():
             for last_raid in yesterday_raids:
                 field_name = messages.yesterday_raids_message_name.format(
-                    captain_name=last_raid.captain.nickname, time_leaving=last_raid.time.normal_time_leaving)
+                    captain_name=last_raid.captain.nickname,
+                    time_leaving=last_raid.time.normal_time_leaving)
                 day = messages.today if last_raid.time.time_leaving.day == datetime.now().day else messages.yesterday
                 field_message = messages.yesterday_raids_message.format(
                     discord_username=last_raid.captain.user.mention,
-                    captain_name=last_raid.captain.nickname, day=day, time_leaving=last_raid.time.normal_time_leaving,
-                    places_left=last_raid.places_left, max_places=last_raid.MAX_RAID_MEMBERS_AMOUNT)
+                    captain_name=last_raid.captain.nickname,
+                    day=day,
+                    time_leaving=last_raid.time.normal_time_leaving,
+                    places_left=last_raid.places_left,
+                    max_places=last_raid.MAX_RAID_MEMBERS_AMOUNT)
                 embed.add_field(name=field_name, value=field_message, inline=False)
         else:
             embed.add_field(name=messages.no_yesterday_raids_name, value=messages.no_yesterday_raids, inline=False)

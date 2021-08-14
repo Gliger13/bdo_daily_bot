@@ -1,11 +1,6 @@
 """
 Contain common classes
 """
-from dataclasses import dataclass
-from typing import Optional, Union
-
-from discord import DMChannel, Guild, Message, TextChannel, User
-from discord.ext.commands import Command
 
 
 class MetaSingleton(type):
@@ -20,21 +15,15 @@ class MetaSingleton(type):
         return cls._instances[cls]
 
 
-@dataclass
-class ListenerContext:
+class PlugCommand:
     """
-    Dataclass for storing context from discord listener
+    Empty discord command implementation with command name only
+
+    Made for the implementation single handlers for discord commands and listeners
     """
 
-    guild: Optional[Guild]
-    channel: Union[TextChannel, DMChannel]
-    message: Message
-    author: User
-    command: Command
-
-
-async def empty_function(*args, **kwargs):
-    """
-    Empty async function to use as plug
-    """
-    pass
+    def __init__(self, name: str):
+        """
+        :param name: command name
+        """
+        self.name = name

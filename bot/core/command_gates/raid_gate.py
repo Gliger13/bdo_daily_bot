@@ -11,10 +11,10 @@ from core.command_gates.gate import CommandsGate
 from core.command_gates.raid_picker import RaidPicker
 from core.commands.registration_controller import RegistrationController
 from core.guild_managers.raids_keeper import RaidsKeeper
+from core.models.context import ContextInterface
 from core.raid.raid import Raid
 from core.raid.raid_item import RaidItem
 from core.raid.raid_member import RaidMember
-from core.tools.common import ListenerContext
 from core.users_interactor.senders import UsersSender
 from core.users_interactor.users_choices import UsersChoicer
 from messages import messages
@@ -26,7 +26,7 @@ class RaidGate:
     """
 
     @classmethod
-    async def can_user_join_raid(cls, ctx: ListenerContext, user: RaidMember, raid: Optional[Raid]) -> bool:
+    async def can_user_join_raid(cls, ctx: ContextInterface, user: RaidMember, raid: Optional[Raid]) -> bool:
         """
         Check user can join raid
 
@@ -42,7 +42,7 @@ class RaidGate:
                await cls.check_user_not_in_same_raid(ctx, user, raid)
 
     @classmethod
-    async def can_user_leave_raid(cls, ctx: ListenerContext, user: RaidMember, raid: Raid) -> bool:
+    async def can_user_leave_raid(cls, ctx: ContextInterface, user: RaidMember, raid: Raid) -> bool:
         """
         Check user can leave raid
 
@@ -174,7 +174,7 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_raid_to_join_or_leave_exist(cls, ctx: ListenerContext, user: RaidMember,
+    async def check_raid_to_join_or_leave_exist(cls, ctx: ContextInterface, user: RaidMember,
                                                 raid: Optional[Raid]) -> bool:
         """
         Check raid exist
@@ -191,7 +191,7 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_user_not_in_raid(cls, ctx: ListenerContext, user: RaidMember, raid: Raid) -> bool:
+    async def check_user_not_in_raid(cls, ctx: ContextInterface, user: RaidMember, raid: Raid) -> bool:
         """
         Check user not in the given raid
 
@@ -207,7 +207,7 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_user_in_raid(cls, ctx: ListenerContext, user: RaidMember, raid: Raid) -> bool:
+    async def check_user_in_raid(cls, ctx: ContextInterface, user: RaidMember, raid: Raid) -> bool:
         """
         Check user in the given raid
 
@@ -223,7 +223,7 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_user_not_in_same_raid(cls, ctx: ListenerContext, user: RaidMember, raid: Raid) -> bool:
+    async def check_user_not_in_same_raid(cls, ctx: ContextInterface, user: RaidMember, raid: Raid) -> bool:
         """
         Check user not in the raids with given time leaving
 
@@ -240,7 +240,7 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_raid_is_full(cls, ctx: ListenerContext, user: RaidMember, raid: Raid) -> bool:
+    async def check_raid_is_full(cls, ctx: ContextInterface, user: RaidMember, raid: Raid) -> bool:
         """
         Check raid is not full in which user try to join
 

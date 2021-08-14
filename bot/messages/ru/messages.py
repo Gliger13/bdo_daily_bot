@@ -436,8 +436,8 @@ raid_channel_creation_reason = "Создан для вступления в ре
 active_raids_message_title = "Активные рейды"
 active_raids_message_description = "Рейды которые будут отплывать сегодня или завтра"
 active_raids_message_name = "{captain_name} в {time_leaving}"
-active_raids_message = "Капитан {discord_username} с фамилией **{captain_name}** отплывает в **{time_leaving}** " \
-                       "на сервере **{server}**. Свободно **{places_left}/{max_places}** мест. " \
+active_raids_message = "Капитан {discord_username} с фамилией **{captain_name}** отплывает **{day}** в " \
+                       "**{time_leaving}** на сервере **{server}**. Свободно **{places_left}/{max_places}** мест. " \
                        "Записаться тут {channel_name}."
 active_raids_message_footer = "Во время ежей уходи в АФК - кандидумы любят таких."
 
@@ -446,6 +446,7 @@ yesterday_raids_message_description = "Рейды которые были вче
 yesterday_raids_message_name = "{captain_name} в {time_leaving}"
 yesterday = "вчера"
 today = "сегодня"
+tomorrow = "завтра"
 yesterday_raids_message = "Капитан {discord_username} с фамилией **{captain_name}** отплывал **{day}** в " \
                           "**{time_leaving}**. Оставалось свободно **{places_left}/{max_places}** мест."
 yesterday_raids_message_footer = "Возможно кто-то из этих великих повезёт снова."

@@ -235,7 +235,23 @@ class SettingsCollection(metaclass=MetaSingleton):
         )
         return True
 
-    async def set_raids_enabled(self, guild_name: str, guild_id: id):
+    async def get_reactions_for_action_with_roles(self, guild_id: int) -> Optional[List[str]]:
+        """
+        Return all reactions for getting or removing roles
+
+        :param guild_id: discord guild id
+        :return: list of reactions
+        """
+        roles_from_reaction = await self.collection.find_one(
+            {"guild_id": guild_id},
+            {"role_from_reaction": 1}
+        )
+        reactions = []
+        for messages_reactions_roles in roles_from_reaction.get("role_from_reaction", {}).values():
+            reactions.extend(list(messages_reactions_roles))
+        return reactions
+
+    async def set_raids_enabled(self, guild_name: str, guild_id: int):
         """
         Set availability to initialize the raids in given guild
 
@@ -247,7 +263,7 @@ class SettingsCollection(metaclass=MetaSingleton):
         updated_document = {"$set": settings_document}
         await self.collection.find_one_and_update({"guild_id": guild_id}, updated_document)
 
-    async def set_raids_disabled(self, guild_name: str, guild_id: id):
+    async def set_raids_disabled(self, guild_name: str, guild_id: int):
         """
         Disable availability to initialize the raids in given guild
 
