@@ -1,6 +1,7 @@
 """
 Contain classes for picking handlers for the specific reactions
 """
+from functools import lru_cache
 from typing import Any, Callable, Coroutine, Dict, List, NewType, Optional
 
 from core.commands.raid.joining import join_raid_by_reaction, leave_raid_by_reaction
@@ -119,13 +120,12 @@ class ReactionStrategy:
         """
         united_map: cls.ReactionMap = {}
         for reaction_map in reaction_maps:
-            for reactions, handler in reaction_map.items():
-                for reaction in reactions:
-                    handlers = united_map.get(reaction)
-                    if handlers:
-                        handlers.extend(handler)
-                    else:
-                        united_map[reaction] = handler
+            for reaction, handlers in reaction_map.items():
+                exist_handlers = united_map.get(reaction)
+                if exist_handlers:
+                    exist_handlers.extend(handlers)
+                else:
+                    united_map[reaction] = handlers
         return united_map
 
     @classmethod

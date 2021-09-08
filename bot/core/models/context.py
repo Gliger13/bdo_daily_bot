@@ -37,6 +37,9 @@ class ReactionContext(ContextInterface):
     reaction_type: str
     reaction: str
 
+    def __hash__(self) -> int:
+        return hash((self.guild.id, self.reaction_type, self.reaction))
+
     def __post_init__(self):
         """
         Validate and replace command with plug after instance initialization
