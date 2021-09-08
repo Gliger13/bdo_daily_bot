@@ -68,6 +68,8 @@ class RaidGate:
         if not await CommandsGate.check_user_registered(user):
             await RegistrationController.register(user.user, raid_item.captain_name)
 
+        await RegistrationController.register_captain(user.user, raid_item.captain_name)
+
         return await cls.check_user_same_raid_not_exist(ctx, user, raid_item) and \
                (await cls.check_user_raids_not_exist(raid_item) or
                 await cls.check_user_want_create_another_raid(ctx, user, raid_item))

@@ -30,43 +30,47 @@ class CaptainCollection(metaclass=MetaSingleton):
             logging.debug("Bot initialization: Collection {} connected.".format(settings.CAPTAIN_COLLECTION))
         return self._collection
 
-    async def create_captain(self, discord_id: int) -> Dict[str, Any]:
+    async def create_captain(self, discord_id: int, captain_name: str) -> Dict[str, Any]:
         """
         Creates a new document about the captain in the captain database collection.
 
-        :param discord_id: User discord id.
-        :return: Document about the new captain.
+        :param discord_id: discord user id
+        :param captain_name: game captain nickname
+        :return: document about the new captain
         """
         captain_new_document = {
             "discord_id": discord_id,
+            "captain_name": captain_name,
             "raids_created": 0,
             "drove_people": 0,
             "registration_time": datetime.datetime.now(),
             "last_raids": []
         }
         await self.collection.insert_one(captain_new_document)
+        logging.info("New captain `{}` was registered in the database", captain_name)
         return captain_new_document
 
     async def find_captain_post(self, discord_id: int) -> Optional[Dict[str, Any]]:
         """
         Returns the captain"s document using its discord id.
 
-        :param discord_id: User discord id.
-        :return: Captain"s document.
+        :param discord_id: User discord id
+        :return: captain"s document
         """
         return await self.collection.find_one({"discord_id": discord_id})
 
-    async def find_or_new(self, discord_id: int) -> Dict[str, Any]:
+    async def find_or_new(self, discord_id: int, captain_name: str) -> Dict[str, Any]:
         """
-        Returns the captain"s document using its discord id.
+        Returns the captain's document using its discord id.
 
-        Returns the captain"s document using its discord id. If there is no such document,
+        Returns the captain's document using its discord id. If there is no such document,
         then it creates and returns it.
 
-        :param discord_id: User discord id.
-        :return: Captain"s document.
+        :param discord_id: User discord id
+        :param captain_name: game captain nickname
+        :return: captain's document
         """
-        return await self.find_captain_post(discord_id) or await self.create_captain(discord_id)
+        return await self.find_captain_post(discord_id) or await self.create_captain(discord_id, captain_name)
 
     async def update_captain(self, discord_id: int, raid_item: RaidItem):
         """

@@ -53,7 +53,7 @@ class Base(commands.Cog):
             embed = discord.Embed(
                 title=command.name,
                 colour=discord.Colour.blue(),
-                description=command.help_command,
+                description=command.help,
             )
 
             bot_as_user = self.bot.get_user(settings.BOT_ID)
