@@ -41,6 +41,7 @@ async def add_role_from_reaction(ctx: ReactionContext):
         member = ctx.guild.get_member(ctx.author.id)
         await member.add_roles(role)
         log_template.role_add_from_reaction(ctx.guild, ctx.author, role, ctx.reaction)
+        return True
 
 
 @command_logging
@@ -70,3 +71,4 @@ async def remove_role_from_reaction(ctx: ReactionContext):
         role = discord.utils.get(ctx.guild.roles, id=reaction_role.get(ctx.reaction))
         await member.remove_roles(role)
         log_template.role_remove_from_reaction(ctx.guild, member, role, ctx.reaction)
+        return True

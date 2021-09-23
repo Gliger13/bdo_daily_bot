@@ -2,7 +2,7 @@
 Module contain class for parsing common input arguments
 """
 import re
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from enum import Enum
 from re import Match
 from typing import Optional
@@ -78,7 +78,7 @@ class CommonCommandInputParser:
         input_minutes = int(time_search_result.group("minutes"))
         now = datetime.now()
         if now.hour > input_hours or now.hour >= input_hours and now.minute >= input_minutes:
-            return now.replace(day=now.day + 1, hour=input_hours, minute=input_minutes, second=0, microsecond=0)
+            return now.replace(hour=input_hours, minute=input_minutes, second=0, microsecond=0) + timedelta(days=1)
         return now.replace(hour=input_hours, minute=input_minutes, second=0, microsecond=0)
 
     @classmethod

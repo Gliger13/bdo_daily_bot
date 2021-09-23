@@ -219,8 +219,8 @@ class RaidGate:
         :return: True if user in given raid else False
         """
         if not raid.has_member(user):
-            log_raid_gate_check_failed(ctx, raid, "User didn't join raid. Not in")
-            await UsersSender.send_user_not_in_raid(user.user, raid)
+            log_raid_gate_check_failed(ctx, raid, "User not in.")
+            #  await UsersSender.send_user_not_in_raid(user.user, raid)
             return False
         return True
 

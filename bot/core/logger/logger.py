@@ -67,7 +67,7 @@ class BotLogger(logging.Logger):
         :return: log formatted file handler
         """
         file_handler = logging.FileHandler(ProjectPathFactory.get_logs_path())
-        file_format = logging.Formatter('[%(levelname)-8s] %(asctime)s | %(message)s', "%H:%M:%S")
+        file_format = logging.Formatter('[%(levelname)-8s] %(asctime)s | %(message)s', "%d.%m.%y %H:%M:%S")
         file_handler.setFormatter(file_format)
         file_handler.setLevel(logging.DEBUG)
         return file_handler

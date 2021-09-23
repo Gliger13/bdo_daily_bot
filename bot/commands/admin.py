@@ -3,7 +3,7 @@ Module contain discord cog with name `Admin`. Provide server admin commands
 """
 from datetime import datetime, timedelta
 
-from discord import Role
+from discord import NotFound, Role
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
@@ -90,7 +90,10 @@ class Admin(commands.Cog):
                 msg_count += 1
 
         # Remove messages from channel
-        await channel.delete_messages(messages_to_remove)
+        try:
+            await channel.delete_messages(messages_to_remove)
+        except NotFound:
+            pass
         await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.set_reaction_for_role, help=help_text.set_reaction_for_role)

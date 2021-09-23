@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from functools import cached_property
 from typing import Any, Dict, List, Match, Optional, Union
@@ -254,7 +254,7 @@ class RaidInputParser:
     @classmethod
     def __get_default_time_reservation_open(cls) -> datetime:
         now = datetime.now()
-        return now.replace(minute=now.minute + 1, second=0, microsecond=0)
+        return now.replace(second=0, microsecond=0) + timedelta(minutes=1)
 
     @classmethod
     def __transform_to_kwargs(cls, validated_input: Dict[str, CommandInputParameter]) -> Dict[str, Any]:
