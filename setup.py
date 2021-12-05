@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='DiscordBotBDO',
-    version='3.0.0_unstable',
+    version='3.0.0',
     packages=find_packages(),
     long_description=open(join(dirname(__file__), 'README.txt')).read(),
 )
