@@ -1,56 +1,83 @@
+"""
+Module contain discord cog with name `Events`. Provide discord listeners.
+"""
 import logging
 import sys
 import traceback
 
-import discord
+from discord import DiscordException, DMChannel, Game, Member, RawReactionActionEvent, Status, TextChannel
 from discord.ext import commands
+from discord.ext.commands import Bot, Context
 
-from messages import messages, logger_msgs
+from bot import BdoDailyBot
+from core.commands_reporter.reporter import Reporter
+from core.database.manager import DatabaseManager
+from core.guild_managers.managers_controller import ManagersController
+from core.logger import log_template
+from core.models.context_factory import ReactionContextFactory
+from core.models.reaction_strategy import ReactionStrategy
+from messages import logger_msgs, messages
 from settings import settings
-from settings.logger import log_template
-
-module_logger = logging.getLogger('my_bot')
 
 
 class Events(commands.Cog):
     """
-       Cog that responsible for various events.
+    Cog that responsible for various events.
     """
+    database = DatabaseManager()
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
+        """
+        :param bot: discord bot for executing the cog commands
+        """
         self.bot = bot
+        self.reporter = Reporter()
         # Needed to track unplanned bot reboots
         self.is_bot_ready = False
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: Member):
         """
-        Send msg to new user on server.
+        Listener sends hello message to the new server member
+
+        Listener trigger where new member join server. Sends hello message to the new member.
+
+        :param member: discord member which join server
         """
-        # Send only in main guild
+        # Send only for new users in the main guild
         if member.guild.id == settings.MAIN_GUILD_ID:
             await member.send(messages.hello_new_member)
 
     @commands.Cog.listener()
     async def on_ready(self):
         """
-        Runs after bot initialization.
+        Listener to set bot main configuration
+
+        Listener trigger after bot will ready to process commands. Sets bot main configuration such
+        as status and current game. Loads still active raids from the database.
         """
+        # Set custom status
+        custom_status = 'Разрушаюсь и перестраиваюсь'
+        await self.bot.change_presence(status=Status.online, activity=Game(custom_status))
+
+        BdoDailyBot.bot = self.bot
         # Track unplanned bot reboot
         if not self.is_bot_ready:
-            module_logger.info(logger_msgs.bot_ready)
             self.is_bot_ready = True
+            logging.info(logger_msgs.bot_ready)
+            await ManagersController.load_managers()
+            await ManagersController.load_raids()
+            logging.debug("Bot initialization completed.")
         else:
             log_template.bot_restarted()
 
-        # Set custom status
-        custom_status = 'Покоряем мир и людишек'
-        await self.bot.change_presence(status=discord.Status.online, activity=discord.Game(custom_status))
-
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(self, ctx: Context, error: DiscordException):
         """
-        Handle and process all errors
+        Listener to handle and process all errors
+
+        :param ctx: discord command context
+        :param error: discord exception to handle
         """
         if isinstance(error, commands.errors.BadArgument):
             await ctx.message.add_reaction('❔')
@@ -70,7 +97,7 @@ class Events(commands.Cog):
         elif isinstance(error, commands.errors.UserInputError):
             await ctx.message.add_reaction('❓')
         elif isinstance(error, commands.errors.MissingRole):
-            await ctx.message.add_reaction('⛔️')
+            await ctx.message.add_reaction('⛔')
         else:
             # If this is an unknown error
             log_template.unknown_command_error(ctx, error)
@@ -78,83 +105,50 @@ class Events(commands.Cog):
             return
         log_template.command_error(ctx, error)
 
-    async def add_role_from_reaction(self, payload: discord.RawReactionActionEvent):
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
         """
-        Give user a role by clicking reaction on message
+        Listener to handle all added reaction by discord member
+
+        :param payload: discord raw reaction action event payload
         """
-        # Is correct guild, message and reaction?
-        if (
-                payload.guild_id != settings.MAIN_GUILD_ID or
-                payload.message_id != settings.ROLE_MANAGER_MESSAGE_ID or
-                str(payload.emoji) not in settings.ROLE_EMOJI
-        ):
+        if payload.user_id == settings.BOT_ID:
             return
 
-        emoji = str(payload.emoji)
-        guild = self.bot.get_guild(payload.guild_id)
-        member = payload.member
+        ctx = await ReactionContextFactory.produce_by_raw_reaction_event(payload)
+        if handlers := await ReactionStrategy.get_add_reaction_handlers(ctx):
+            for handler in handlers:
+                await handler(ctx)
+            return
+        channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else ctx.channel
+        logging.debug("{}/{}/{}/{} No handler for reaction `{}`".format(
+            ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction))
 
-        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[emoji])
-
-        # Send warning of role to user
-        if emoji == '🔑':
-            await member.send(messages.NSFW_warning)
-
-        await member.add_roles(role)
-        log_template.role_from_reaction(guild, member, role, emoji, is_get=True)
-
-    async def remove_role_from_reaction(self, payload: discord.RawReactionActionEvent):
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: RawReactionActionEvent):
         """
-        Remove the role of user by clicking reaction on message.
+        Listener to handle all removed reactions by discord member
+
+        :param payload: discord raw reaction action event payload
         """
-        # Is correct guild, message and reaction?
-        if (
-                payload.guild_id != settings.MAIN_GUILD_ID or
-                payload.message_id != settings.ROLE_MANAGER_MESSAGE_ID or
-                str(payload.emoji) not in settings.ROLE_EMOJI
-        ):
+        if payload.user_id == settings.BOT_ID:
             return
 
-        emoji = str(payload.emoji)
-        guild = self.bot.get_guild(payload.guild_id)
-        member = guild.get_member(payload.user_id)
-
-        role = discord.utils.get(guild.roles, name=settings.ROLE_EMOJI[emoji])
-
-        await member.remove_roles(role)
-        log_template.role_from_reaction(guild, member, role, emoji, is_get=False)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        """
-        Process all reaction that added by user.
-        """
-        # Check if is reaction for get role
-        await self.add_role_from_reaction(payload)
-
-        # Check if is reaction for get in raid
-        joining = self.bot.get_cog('RaidJoining')
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        user = self.bot.get_user(payload.user_id)
-        await joining.raid_reaction_add(message, payload.emoji, user)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        """
-        Process all reaction that removed by user.
-        """
-        # Check if is reaction for get role
-        await self.remove_role_from_reaction(payload)
-
-        # Check if is reaction for get in raid
-        joining = self.bot.get_cog('RaidJoining')
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        user = self.bot.get_user(payload.user_id)
-        await joining.raid_reaction_remove(message, payload.emoji, user)
+        ctx = await ReactionContextFactory.produce_by_raw_reaction_event(payload)
+        if handlers := await ReactionStrategy.get_remove_reaction_handlers(ctx):
+            for handler in handlers:
+                await handler(ctx)
+            return
+        channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else ctx.channel
+        logging.debug("{}/{}/{}/{} No handler for reaction `{}`".format(
+            ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction))
 
 
-def setup(bot):
+def setup(bot: Bot):
+    """
+    Function to add events cog to the given bot
+
+    :param bot: discord bot to add the cog
+    """
     bot.add_cog(Events(bot))
     log_template.cog_launched('Events')

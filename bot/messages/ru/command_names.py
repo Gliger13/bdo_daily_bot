@@ -1,8 +1,14 @@
-# matches function name and its command for discord
+"""
+Contain all bot commands names
+"""
+
 from collections import UserDict
 
 
 class FunctionCommand(UserDict):
+    """
+    Class for matching function name and it's discord command name
+    """
     def __missing__(self, key):
         raise ImportError(f"Function {key} is not a registered command")
 
@@ -16,6 +22,9 @@ function_command = FunctionCommand({
     'collection': 'сбор',
     'captain': 'капитан',
     'cap': 'кэп',
+    # commands.raid_manager.manager
+    'open_reservation': 'открой_бронь',
+    'close_reservation': 'закрой_бронь',
     # commands.raid_manager.joining
     'reserve': 'бронь',
     'remove_res': 'удали_бронь',
@@ -31,12 +40,18 @@ function_command = FunctionCommand({
     'save_raids': 'сохрани_рейды',
     'save_raid': 'сохрани_рейд',
     # commands.admin
+    'set_reaction_for_role': 'получение_роли',
+    'remove_reaction_for_role': 'удаление_роли',
     'remove_there': 'удалять_тут',
     'remove_msgs': 'очисти_чат',
     'not_remove_there': 'не_удалять',
+    'set_raids_enabled': 'можно_рейды',
+    'set_raids_disabled': 'нельзя_рейды',
+    'set_notification_role': 'пингай_между',
+    'remove_notification_role': 'убери_пинг',
     # commands.base
     'test': 'тест',
-    'help': 'help',
+    'help_command': 'помощь',
     'turn_off_bot': 'заверши_работу',
     'author_of_bot': 'автор',
     'send_logs': 'логи',
@@ -46,6 +61,7 @@ function_command = FunctionCommand({
     'judge_him': 'осуди_его',
     'say': 'скажи',
     'react': 'реакция',
+    'update_specific_roles': 'обнови_роли',
     # commands.statistics
     'user_statistics': 'стат',
     'guild_statistics': 'сервер_стат',

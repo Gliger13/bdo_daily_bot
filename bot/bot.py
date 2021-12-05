@@ -1,45 +1,55 @@
+"""Contain entry point for run bot"""
 import logging
-import os
-import traceback
 
 import discord
-from discord.ext import commands
+from discord.ext.commands import Bot
+from discord_slash import SlashCommand
 
+from core.logger.logger import BotLogger
+from core.tools.common import MetaSingleton
+from core.tools.path_factory import ProjectPathFactory
 from settings import settings
 
-# Uncomment this to use pyinstaller
-from commands import events, base, admin, fun, statistics
-from commands.raid_manager import creation, save_load, registration, joining, overview
 
-# Initialization logger
-from settings.logger import logger
-module_logger = logging.getLogger('my_bot')
+class BdoDailyBot(metaclass=MetaSingleton):
+    """
+    Discord Black Desert Online Daily bot. Contain methods to initialize and run bot.
+    """
+    bot: Bot
 
-bot = commands.Bot(command_prefix=settings.PREFIX)
+    def __init__(self):
+        self.bot = self.__initialize_bot()
+        self.__load_all_cogs()
 
-# Load all commands for bot and run bot
-# if __name__ == '__main__':
-#     for extension in [f.replace('.py', '') for f in os.listdir('commands') if os.path.isfile(os.path.join('commands', f))]:
-#         if not extension == '__init__':
-#             print(extension)
-#             try:
-#                 bot.load_extension('commands' + "." + extension)
-#             except (discord.ClientException, ModuleNotFoundError):
-#                 print(f'Failed to load extension {extension}.')
-#                 traceback.print_exc()
+    def run(self):
+        """
+        Run discord bot event loop
+        """
+        self.bot.run(settings.TOKEN)
 
-# Explicitly loading cogs for pyinstaller
-bot.load_extension(f"commands.events")
-bot.load_extension(f"commands.base")
-bot.load_extension(f"commands.admin")
-bot.load_extension(f"commands.fun")
-bot.load_extension(f"commands.statistics")
-bot.load_extension(f"commands.raid_manager.creation")
-bot.load_extension(f"commands.raid_manager.save_load")
-bot.load_extension(f"commands.raid_manager.registration")
-bot.load_extension(f"commands.raid_manager.joining")
-bot.load_extension(f"commands.raid_manager.overview")
+    @staticmethod
+    def __initialize_bot() -> Bot:
+        """
+        Initialize bot with intents and slash commands
+
+        :return: discord bot
+        """
+        intents = discord.Intents(messages=True, guilds=True, reactions=True, members=True)
+        bot = Bot(command_prefix=settings.PREFIX, intents=intents)
+        SlashCommand(bot, sync_commands=True)
+        return bot
+
+    def __load_all_cogs(self):
+        """
+        Load all cogs extensions
+        """
+        for cog_path in ProjectPathFactory.get_all_cogs_with_extensions():
+            try:
+                self.bot.load_extension(cog_path)
+            except (discord.ClientException, ModuleNotFoundError):
+                logging.critical("Cog {} not loaded".format(cog_path))
 
 
-# Start bot
-bot.run(settings.TOKEN)
+if __name__ == "__main__":
+    BotLogger.set_default()
+    BdoDailyBot().run()

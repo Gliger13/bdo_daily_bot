@@ -1,4 +1,10 @@
+"""
+Contain general settings for the bot
+"""
+import os
+
 from settings import secrets
+
 # ====================================================================================================
 
 
@@ -23,7 +29,10 @@ LANGUAGE = 'ru'
 # Used Mongo Database
 
 # Cluster name
+
 CLUSTER_NAME = 'discord'
+# For tests purpose
+# CLUSTER_NAME = 'test_discord'
 
 # Collection names
 
@@ -68,17 +77,16 @@ SETTINGS_COLLECTION = 'settings'
 #     }
 # }
 
+RAID_COLLECTION = 'raid'
+RAID_ARCHIVE_COLLECTION = 'raid_archive'
+
 # ====================================================================================================
-# Give role by clicking reaction
 
 MAIN_GUILD_ID = 726859545082855483
-ROLE_MANAGER_MESSAGE_ID = 727294713547325493
-ROLE_EMOJI = {
-    "PVP": '⚔️',
-    '⚔️': "PVP",
-    '🔑': "NSFW",
-    'NSFW': '🔑',
-}
+
+ROOT_DIR_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+# Save path for all created files
+BOT_DATA_PATH = os.path.join(ROOT_DIR_PATH, 'bot_data')
 
 # ====================================================================================================
 

@@ -1,3 +1,6 @@
+"""
+Module contains deprecated way to import the correct messages path depending on the language settings
+"""
 from settings import settings
 
 if settings.LANGUAGE == 'ru':
