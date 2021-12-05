@@ -39,10 +39,7 @@ class RaidsKeeper:
         :param raid_item: raid item to check wit
         :return: boolean valued of check
         """
-        for raid in cls.__raids:
-            if raid.raid_item == raid_item:
-                return True
-        return False
+        return any(raid.raid_item == raid_item for raid in cls.__raids)
 
     @classmethod
     def get_raids_by_captain_name(cls, captain_name: str) -> List[Optional[Raid]]:

@@ -30,7 +30,6 @@ class ProjectPathFactory:
         return current_directory_path
 
     @classmethod
-    @lru_cache
     def __get_dir_path_in_project_by_name(cls, dirname: str) -> Optional[str]:
         """
         Gets directory path in current project by it's name
@@ -45,13 +44,21 @@ class ProjectPathFactory:
         return None
 
     @classmethod
-    def get_bot_data_dir_path(cls) -> Optional[str]:
+    @lru_cache
+    def get_bot_data_dir_path(cls) -> str:
         """
         Gets path of the bot data directory
 
+        Gets path of bot data dir in project files. If it does not find, then will create a new directory in the root
+        path and return the created directory path.
+
         :return: bot data directory path
         """
-        return cls.__get_dir_path_in_project_by_name(ProjectFileMapping.BOT_DATA_DIR_NAME)
+        if dir_path := cls.__get_dir_path_in_project_by_name(ProjectFileMapping.BOT_DATA_DIR_NAME):
+            return dir_path
+        default_bot_data_dir_path = os.path.join(cls.get_root_dir_path(), ProjectFileMapping.BOT_DATA_DIR_NAME)
+        os.mkdir(default_bot_data_dir_path)
+        return default_bot_data_dir_path
 
     @classmethod
     def get_commands_dir_path(cls) -> Optional[str]:

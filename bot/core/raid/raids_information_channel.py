@@ -18,7 +18,7 @@ from settings import settings
 
 
 class RaidsInformationChannel:
-    """"
+    """
     Class responsible for discord channel with information about all raids.
     Include active raids and it's attributes.
     """
@@ -52,12 +52,11 @@ class RaidsInformationChannel:
             await self.__init_active_raids_message(channel_attributes)
             await self.update_active_raids_message()
             await self.update_yesterday_raids_message()
-            await self.__save()
         else:
             await self.__create_channel()
             await self.__send_yesterday_raids_message()
             await self.__send_active_raids_message()
-            await self.__save()
+        await self.__save()
 
     async def update_active_raids_message(self):
         """

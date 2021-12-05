@@ -3,10 +3,11 @@ Module contain classes for wrapping discord context and listeners
 """
 from abc import ABC
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from discord import DMChannel, Guild, Message, TextChannel, User
-from discord.ext.commands import Command
+from discord.ext.commands import Command, Context
+from typing_extensions import TypeGuard
 
 from core.tools.common import PlugCommand
 
@@ -62,3 +63,13 @@ class ReactionContext(ContextInterface):
         Replace command field with command plug
         """
         self.command = PlugCommand(self.reaction_type.lower())
+
+
+def is_context(argument: Any) -> TypeGuard[Union[Context, ContextInterface]]:
+    """
+    Determines whether object is Context or ContextInterface
+
+    :param argument: any object to check
+    :return: True if argument is Context or ContextInterface else False
+    """
+    return isinstance(argument, (Context, ContextInterface))

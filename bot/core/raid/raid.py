@@ -3,7 +3,7 @@ Module contain raid class to containing raid attributes and control raid flow
 """
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from discord import Guild, TextChannel
 
@@ -37,7 +37,7 @@ class Raid:
         self.time = RaidTime(time_leaving, time_reservation_open)
         self.reservation_count = max(reservation_count, 1)
 
-        self.members = []
+        self.members: Optional[List[RaidMember]] = []
 
         self.channels = []
         self.information_channels = []

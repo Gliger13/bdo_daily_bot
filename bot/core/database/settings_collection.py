@@ -62,7 +62,7 @@ class SettingsCollection(metaclass=MetaSingleton):
         :return: Settings document
         """
         settings_document = await self.find_settings_post(guild_id)
-        return settings_document if settings_document else await self.new_settings(guild_id, guild)
+        return settings_document or await self.new_settings(guild_id, guild)
 
     async def update_allowed_channels(self, guild_id: int, guild: str, channel_id: int, channel: str):
         """

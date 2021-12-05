@@ -36,7 +36,7 @@ class RaidNotifier:
             return
         await cls.__wait_until_notification_time(raid.time.secs_before_notification)
         await cls.__notify_users(raid)
-        if raid.captain.nickname not in raid.members:
+        if raid.captain not in raid.members:
             await cls.__notify_captain_about_leaving(raid.captain.nickname)
         logging.info("Raid {}/{}: Members was notified about leaving".
                      format(raid.captain.nickname, raid.time.normal_time_leaving))
@@ -77,7 +77,8 @@ class RaidNotifier:
         :param raid: raid to notify
         """
         if raid.members:
-            users_documents = await cls.__database.user.get_users_by_nicknames(raid.members)
+            member_nicknames = [member.nickname for member in raid.members]
+            users_documents = await cls.__database.user.get_users_by_nicknames(member_nicknames)
             for user, user_document in cls.__users_generator(users_documents):
                 if not user_document.get('first_notification'):
                     await cls.__send_first_notification(user)

@@ -3,12 +3,12 @@ Contain common functions and wrappers for commands
 """
 import logging
 from functools import wraps
-from typing import Callable
+from typing import Callable, Union
 
 from discord import HTTPException, TextChannel
 from discord.ext.commands import Context
 
-from core.models.context import ContextInterface
+from core.models.context import ContextInterface, is_context
 from core.users_interactor.message_reaction_interactor import MessagesReactions
 
 
@@ -21,15 +21,17 @@ def command_logging(command: Callable):
 
     @wraps(command)
     async def wrapper(*args, **kwargs):
-        ctx = next(filter(lambda arg: isinstance(arg, (Context, ContextInterface)), args))
-        channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else ctx.channel
-        logging.info("{}/{}/{}/{} User entered command".format(
-            ctx.guild.name, channel_name, ctx.author.name, ctx.command.name))
+        ctx: Union[Context, ContextInterface] = next(filter(is_context, args))
+        channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else str(ctx.channel)
+        if ctx.guild:
+            logging_prefix = "/".join((ctx.guild.name, channel_name, ctx.author.name, ctx.command.name))
+        else:
+            logging_prefix = "/".join((channel_name, ctx.author.name, ctx.command.name))
+        logging.info("{} User entered command".format(logging_prefix))
         try:
             command_result = await command(*args, **kwargs)
         except BaseException as error:
-            logging.warning("{}/{}/{}/{} Command failed with an error.\nError: {}".format(
-                ctx.guild.name, channel_name, ctx.author.name, ctx.command.name, error))
+            logging.warning("{} Command failed with an error.\nError: {}".format(logging_prefix, error))
             try:
                 if isinstance(ctx, Context):
                     await ctx.message.add_reaction(MessagesReactions.COMMAND_FAILED_WITH_ERROR)
@@ -38,16 +40,14 @@ def command_logging(command: Callable):
             raise error
         else:
             if command_result:
-                logging.info("{}/{}/{}/{} Command success".format(
-                    ctx.guild, channel_name, ctx.author.name, ctx.command.name))
+                logging.info("{} Command success".format(logging_prefix))
                 try:
                     if isinstance(ctx, Context):
                         await ctx.message.add_reaction(MessagesReactions.YES_EMOJI)
                 except HTTPException:
                     pass
             else:
-                logging.info("{}/{}/{}/{} Command didn't passed, user choice".format(
-                    ctx.guild, channel_name, ctx.author.name, ctx.command.name))
+                logging.info("{} Command didn't passed, user choice".format(logging_prefix))
                 try:
                     if isinstance(ctx, Context):
                         await ctx.message.add_reaction(MessagesReactions.NO_EMOJI)

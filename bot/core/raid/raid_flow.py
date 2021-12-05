@@ -115,7 +115,7 @@ class RaidFlow:
         Notify raid members and captain before raid left
         """
         self.notification_task = asyncio.create_task(RaidNotifier.notify_about_leaving(self.raid))
-        asyncio.ensure_future(self.notification_task)
+        await asyncio.ensure_future(self.notification_task)
 
     async def __send_table_messages(self):
         """

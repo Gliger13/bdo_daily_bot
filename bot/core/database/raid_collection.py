@@ -92,12 +92,8 @@ class RaidCollection(metaclass=MetaSingleton):
 
         :return: list of expired raid items
         """
-        expired_raid_items = []
         all_raids = await self.get_all_raids()
-        for raid_item in all_raids:
-            if raid_item.is_expired():
-                expired_raid_items.append(raid_item)
-        return expired_raid_items
+        return [raid_item for raid_item in all_raids if raid_item.is_expired()]
 
     async def delete_expired_raids(self):
         """
