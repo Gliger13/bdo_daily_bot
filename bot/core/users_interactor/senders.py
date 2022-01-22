@@ -285,7 +285,6 @@ class UsersSender:
             captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
         await cls.send_to_user(user, message)
 
-
     @classmethod
     async def send_user_try_change_raid_places_by_wrong_time(cls, user: User, captain_name: str,
                                                              correct_time: str, wrong_time: str):
@@ -300,7 +299,6 @@ class UsersSender:
         message = messages.user_try_change_places_in_raid_by_wrong_time.format(
             captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
         await cls.send_to_user(user, message)
-
 
     @classmethod
     async def send_user_use_negative_raid_places(cls, user: User):
@@ -387,6 +385,15 @@ class UsersSender:
             captain=captain_name, time=wrong_time)
         await cls.send_to_user(user, message)
 
+    @classmethod
+    async def send_user_message_for_spam(cls, user: User):
+        """
+        Send a message to the user that they spam
+
+        :param user: discord user for message sending
+        """
+        await cls.send_to_user(user, messages.message_to_user_for_spam)
+
 
 class ChannelsSender:
     """
@@ -426,4 +433,17 @@ class ChannelsSender:
         """
         message = messages.raid_created.format(channel=raid.get_channel(channel.guild).mention,
                                                time_reservation_open=raid.time.normal_time_reservation_open)
+        return await cls.send(channel, message)
+
+    @classmethod
+    async def send_spam_report(cls, channel: TextChannel, spam_message: Message):
+        """
+        Send message to channel about the specific spam message
+
+        :param channel: discord channel for message sending
+        :param spam_message: discord spam message
+        :return: message that was sent
+        """
+        message = messages.spam_message_report.format(user_id=spam_message.author.id,
+                                                      message_content=spam_message.content)
         return await cls.send(channel, message)

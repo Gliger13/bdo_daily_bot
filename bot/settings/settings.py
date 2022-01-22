@@ -29,7 +29,7 @@ LANGUAGE = 'ru'
 # Used Mongo Database
 
 # Cluster name
-
+#
 CLUSTER_NAME = 'discord'
 # For tests purpose
 # CLUSTER_NAME = 'test_discord'
@@ -93,11 +93,13 @@ BOT_DATA_PATH = os.path.join(ROOT_DIR_PATH, 'bot_data')
 # Check for required parameters
 
 if DEBUG:
+    CHANNEL_ID_TO_REPORT = 714486347649384479
     TOKEN = secrets.DEBUG_TOKEN
     BOT_ID = secrets.DEBUG_BOT_ID
     BD_STRING = secrets.DB_STRING
     PREFIX = DEBUG_PREFIX
 else:
+    CHANNEL_ID_TO_REPORT = 726859547230208016
     TOKEN = secrets.PRODUCTION_TOKEN
     BOT_ID = secrets.PRODUCTION_BOT_ID
     BD_STRING = secrets.DB_STRING

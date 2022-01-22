@@ -5,7 +5,7 @@ import logging
 import sys
 import traceback
 
-from discord import DiscordException, DMChannel, Game, Member, RawReactionActionEvent, Status, TextChannel
+from discord import DiscordException, Game, Member, Message, RawReactionActionEvent, Status, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
@@ -13,6 +13,7 @@ from bot import BdoDailyBot
 from core.commands_reporter.reporter import Reporter
 from core.database.manager import DatabaseManager
 from core.guild_managers.managers_controller import ManagersController
+from core.guild_security.guild_security_manager import GuildSecurityManager
 from core.logger import log_template
 from core.models.context_factory import ReactionContextFactory
 from core.models.reaction_strategy import ReactionStrategy
@@ -142,6 +143,16 @@ class Events(commands.Cog):
         channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else ctx.channel
         logging.debug("{}/{}/{}/{} No handler for reaction `{}`".format(
             ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction))
+
+    @commands.Cog.listener()
+    async def on_message(self, message: Message):
+        """
+        Listen all created and sent messages
+
+        :param message: income message
+        """
+        if message.author.id != settings.BOT_ID:
+            await GuildSecurityManager.invoke_message_spam_checker(message)
 
 
 def setup(bot: Bot):

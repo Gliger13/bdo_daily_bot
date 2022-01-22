@@ -136,26 +136,26 @@ class RaidTime:
             return secs_to_display_list
         time_difference_seconds = time_difference.total_seconds()
 
-        # If difference is greater then a minute display at 1 minute before leaving and moment of leaving
+        # If difference is greater than minute display at 1 minute before leaving and moment of leaving
         if time_difference_seconds > 60:
             secs_to_display_list.append(60)
             time_difference_seconds -= 60
-        # If difference is less then a minute then just wait it
+        # If difference is less than minute then just wait it
         else:
             secs_to_display_list.append(time_difference_seconds)
-        # If difference is greater then a 5 minutes display at 5 minutes before leaving
+        # If difference is greater than 5 minutes display at 5 minutes before leaving
         if time_difference_seconds > 300:
             secs_to_display_list.append(300)
             time_difference_seconds -= 300
-        # If difference is greater then a 15 minutes display at 15 minutes before leaving
+        # If difference is greater than 15 minutes display at 15 minutes before leaving
         if time_difference_seconds > 600:
             secs_to_display_list.append(600)
             time_difference_seconds -= 600
-        # If difference is greater then a 30 minutes display at 30 minutes before leaving
+        # If difference is greater than 30 minutes display at 30 minutes before leaving
         if time_difference_seconds > 900:
             secs_to_display_list.append(900)
             time_difference_seconds -= 900
-        # If difference is greater then a 60 minutes display at 60 minutes before leaving
+        # If difference is greater than 60 minutes display at 60 minutes before leaving
         if time_difference_seconds > 1800:
             secs_to_display_list.append(1800)
             time_difference_seconds -= 1800
