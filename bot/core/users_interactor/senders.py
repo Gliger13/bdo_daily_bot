@@ -445,5 +445,5 @@ class ChannelsSender:
         :return: message that was sent
         """
         message = messages.spam_message_report.format(user_id=spam_message.author.id,
-                                                      message_content=spam_message.content)
+                                                      message_content=spam_message.content.replace("@", ""))
         return await cls.send(channel, message)
