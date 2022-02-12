@@ -9,7 +9,7 @@ from settings import secrets
 
 
 # Chose run mode. If False run production mode
-DEBUG = True
+DEBUG = False
 
 
 # ====================================================================================================
