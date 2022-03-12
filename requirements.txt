@@ -10,7 +10,7 @@ motor==2.5.1
 multidict==5.2.0
 numpy==1.21.4
 opencv-python==4.5.4.60
-Pillow==9.0.0
+Pillow==9.0.1
 pymongo==3.12.0
 typing-extensions==4.0.1
 yarl==1.7.2
