@@ -1,19 +1,32 @@
 # Daily Discord Bot BDO
-![Generic badge](https://img.shields.io/badge/version-3.0.0-green.svg) ![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot) ![Generic badge](https://img.shields.io/badge/python-3.8-blue.svg) [![Discord](https://img.shields.io/discord/726859545082855483)](https://discord.gg/VaEsRTc)
+![Generic badge](https://img.shields.io/badge/version-3.1.2-green.svg) 
+![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot) 
+![Generic badge](https://img.shields.io/badge/python-3.10-blue.svg) 
+[![Discord](https://img.shields.io/discord/726859545082855483)](https://discord.gg/VaEsRTc)
 
-Discord Bot for help in collection daily raid in the game **Black Desert Online[RU]**(BDO).
+## Purpose
 
-Discord Bot making for BDO community that help collect daily raid, usually sea raids. You can specify the raid collection time, the end time. The bot will send through each interval an image of the raid structure table. Users can enter the raid with one click and they won’t need to worry about anything.
+Discord Bot to organize and collect daily sea raids in the game **Black Desert Online[RU]**(BDO).
 
-**Technologies**: Python 3.8, discord, Pillow, MongoDB.
+Discord Bot for Black Desert Online RU community to collect daily sea raids. We
+can specify the raid collection and leaving time. The bot will send an image 
+with the raid members every interval. Users can join the raid with one click
+and don't have to worry about anything. 
 
-**Command localisation**: Russion, you can add any other language.
+## Content
+
+- [Purpose](#purpose)
+- [Features](#features)
+- [Additional features](#additional-features)
+- [Localisation](#localisation)
+- [Author](#author)
+- [License](#license)
 
 ## Features
 
 Arguments with * are required
 
- -------------------------------
+-------------------------------
 
 **Create raid**
  - ```!!капитан *[captain_name] *[bdo_server] *[time_leaving] [reservation_open] [reservation_count]``` - Users with role 'Капитан' can create raid.
@@ -79,7 +92,12 @@ The bot does auto-save the raid when it changes.
  - ```!!логи``` - Send logs list as message.
 
 -----
-# Community
+
+## Localisation
+
+Only russian. Others will be added later I hope.
+
+## Community
 
 If you want to ask a question or look at the work of the bot, then you can visit discord server
 
@@ -87,10 +105,10 @@ If you want to ask a question or look at the work of the bot, then you can visit
     <img src="https://discordapp.com/api/guilds/726859545082855483/widget.png?style=banner2">
 </a>
 
-# Author
+## Author
 
 Made by Andrei Zaneuski (@Gliger13), Belarus, Minsk.
 
-# License
+## License
 
-**MIT**
+[**GNUv3**](LICENSE)

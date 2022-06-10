@@ -10,6 +10,8 @@ __pycache__/
 # Distribution / packaging / PyInstaller
 *.spec
 .idea/
+build/
+*.egg-info/
 
 # Files created by script and user data
 bot_data/
