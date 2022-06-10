@@ -1,3 +1,6 @@
+#! /usr/local/bin/python3
+# -*- coding: utf-8 -*-
+
 """Contain entry point for run bot"""
 import logging
 
