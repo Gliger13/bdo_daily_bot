@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 # Package metadata
 
 PACKAGE_NAME = "bdo_daily_bot"
-VERSION = "v3.1.2"
+VERSION = "v3.1.3"
 AUTHOR = "Andrei Zaneuski"
 AUTHOR_EMAIL = "zanevskiyandrey@gmail.com"
 DESCRIPTION = "Discord Bot to organize and collect daily sea raids in the game Black Desert Online[RU] (BDO)"
@@ -27,6 +27,6 @@ setup(
     long_description=LONG_DESCRIPTION,
     url=URL,
     packages=find_packages(),
-    package_dir={'bdo_daily_bot': 'bot'},
-    scripts=[join("bot", "bot.py")]
+    package_dir={'bdo_daily_bot': 'bdo_daily_bot'},
+    scripts=[join("bdo_daily_bot", "bot.py")]
 )

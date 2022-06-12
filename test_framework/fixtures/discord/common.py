@@ -7,7 +7,7 @@ from typing import Optional, List, Union
 import pytest
 from discord import Client, Guild, TextChannel, VoiceChannel, CategoryChannel, Role
 
-from bot.bot import BdoDailyBot
+from bdo_daily_bot.bot import BdoDailyBot
 from settings import settings
 
 
