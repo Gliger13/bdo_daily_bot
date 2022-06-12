@@ -1,48 +1,38 @@
 """Contain common discord fixtures"""
 import asyncio
-import logging
 import threading
 from time import sleep
-from typing import List, Optional, Union
+from typing import Optional, List, Union
 
 import pytest
-from discord import CategoryChannel, Client, Guild, Role, TextChannel, VoiceChannel
+from discord import Client, Guild, TextChannel, VoiceChannel, CategoryChannel, Role
 
-<<<<<<< Updated upstream
-from bdo_daily_bot.bot import BdoDailyBot
+from bot.bot import BdoDailyBot
 from settings import settings
-=======
-from bot.bot_entry import BdoDailyBot
-from bot.settings import settings
->>>>>>> Stashed changes
 
 
 @pytest.fixture(scope="session")
 async def bot() -> Client:
-    """Initialize and provide bot client
-
-    Initialize and provide bot client. Shutdown it after tests session
-    complete.
+    """
+    Gets and initialised discord bot
 
     :return: initialised discord bot
     """
-    logging.info("Initializing bot for tests")
     bot = BdoDailyBot().bot
     loop = asyncio.get_event_loop()
     loop.create_task(bot.start(settings.TOKEN))
     threading.Thread(target=loop.run_forever).start()
     await bot.wait_until_ready()
-    logging.info("Testing bot is ready")
+
     yield bot
-    logging.info("Shutting down testing bot")
-    await bot.close()
+
+    bot.close()
     while bot.is_closed():
         sleep(0.1)
-    logging.info("Bot is off")
 
 
 @pytest.fixture(scope="session")
-async def guild(bot: Client, general_test_data: dict) -> Optional[Guild]:
+def guild(bot: Client, general_test_data: dict) -> Optional[Guild]:
     """
     Gets discord guild using discord id from general section of the test data
 

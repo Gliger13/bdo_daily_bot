@@ -1,6 +1,12 @@
+<<<<<<< Updated upstream:tests/test_discord_server/conftest.py
 from test_framework.fixtures.discord.common import *
 from test_framework.fixtures.discord.roles import *
 from test_framework.fixtures.common.test_data import *
+=======
+import asyncio
+
+import pytest
+>>>>>>> Stashed changes:tests/tests/test_discord_server/conftest.py
 
 
 @pytest.fixture(scope="session")

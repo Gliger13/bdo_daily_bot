@@ -22,5 +22,6 @@ bot_data/
 # Secrets
 bdo_daily_bot/settings/secrets.py
 
-# Pytest logs
+# Pytest files
 pytest.log
+.pytest_cache/

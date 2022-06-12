@@ -1,5 +1,5 @@
 # Daily Discord Bot BDO
-![Generic badge](https://img.shields.io/badge/version-3.1.3-green.svg) 
+![Generic badge](https://img.shields.io/badge/version-3.1.4-green.svg) 
 ![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot) 
 ![Generic badge](https://img.shields.io/badge/python-3.10-blue.svg) 
 [![Discord](https://img.shields.io/discord/726859545082855483)](https://discord.gg/VaEsRTc)
