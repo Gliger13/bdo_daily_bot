@@ -20,7 +20,7 @@ bot_data/
 .scannerwork/
 
 # Secrets
-bot/settings/secrets.py
+bdo_daily_bot/settings/secrets.py
 
 # Pytest logs
 pytest.log

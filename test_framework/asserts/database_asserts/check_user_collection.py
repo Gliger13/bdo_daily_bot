@@ -1,5 +1,5 @@
 """Contain checks of the database user collection."""
-from bot.core.database.user_collection import UserCollection
+from bdo_daily_bot.core.database.user_collection import UserCollection
 from test_framework.scripts.common.data_factory import parse_test_sample
 from test_framework.scripts.database_scripts.find_in_database import find_document
 from test_framework.scripts.database_scripts.setup_database import setup_database

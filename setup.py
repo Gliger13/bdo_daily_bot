@@ -27,6 +27,6 @@ setup(
     long_description=LONG_DESCRIPTION,
     url=URL,
     packages=find_packages(),
-    package_dir={'bdo_daily_bot': 'bot'},
-    scripts=[join("bot", "bot.py")]
+    package_dir={'bdo_daily_bot': 'bdo_daily_bot'},
+    scripts=[join("bdo_daily_bot", "bot.py")]
 )
