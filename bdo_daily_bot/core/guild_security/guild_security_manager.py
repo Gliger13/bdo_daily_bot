@@ -1,5 +1,6 @@
-"""
-Contain classes to protect guilds
+"""Security manager for guilds
+
+Module contain classes to protect guilds against bad peoples as spammers.
 """
 import asyncio
 import logging
@@ -18,7 +19,7 @@ class MessageContainer:
     """
     Container to store discord messages information for some time
     """
-    MESSAGE_LIFECYCLE_IN_SECONDS: Final[int] = 180
+    MESSAGE_LIFECYCLE_IN_SECONDS: Final[int] = 60
 
     # Structure: {"user_id": {"message_hash": [("channel_id", "message_id"), ]}}
     Container = NewType("Container", DefaultDict[int, Dict[int, Set[Tuple[int, int]]]])
@@ -31,7 +32,7 @@ class MessageContainer:
 
         :param message: discord message to store
         """
-        cls.__message_container[message.author.id][hash(message.content)].add((message.channel.id, message.id))
+        cls.__message_container[message.author.id][cls.get_message_hash(message)].add((message.channel.id, message.id))
         asyncio.ensure_future(cls.__enable_message_lifecycle(message))
 
     @classmethod
@@ -42,10 +43,11 @@ class MessageContainer:
         :param message: discord message to delete after some time
         """
         await asyncio.sleep(cls.MESSAGE_LIFECYCLE_IN_SECONDS)
-        if cls.__message_container[message.author.id][hash(message.content)]:
-            cls.__message_container[message.author.id][hash(message.content)].remove((message.channel.id, message.id))
-        if not cls.__message_container[message.author.id][hash(message.content)]:
-            cls.__message_container[message.author.id].pop(hash(message.content))
+        message_hash = cls.get_message_hash(message)
+        if cls.__message_container[message.author.id][message_hash]:
+            cls.__message_container[message.author.id][message_hash].remove((message.channel.id, message.id))
+        if not cls.__message_container[message.author.id][message_hash]:
+            cls.__message_container[message.author.id].pop(message_hash)
         if not cls.__message_container[message.author.id]:
             cls.__message_container.pop(message.author.id)
 
@@ -57,7 +59,7 @@ class MessageContainer:
         :param message: discord message
         :return: amount of stored user identical messages
         """
-        return len(cls.__message_container.get(message.author.id, {}).get(hash(message.content), set()))
+        return len(cls.__message_container.get(message.author.id, {}).get(cls.get_message_hash(message), set()))
 
     @classmethod
     def get_user_messages_id(cls, message: Message) -> Set[Tuple[int, int]]:
@@ -67,7 +69,7 @@ class MessageContainer:
         :param message: discord message
         :return: set of tuple with channel_id, message_id for message and author
         """
-        return cls.__message_container[message.author.id][hash(message.content)]
+        return cls.__message_container[message.author.id][cls.get_message_hash(message)]
 
     @classmethod
     def clear_user_history(cls, user_id: int):
@@ -77,6 +79,18 @@ class MessageContainer:
         :param user_id: discord user id
         """
         cls.__message_container.pop(user_id)
+
+    @classmethod
+    def get_message_hash(cls, message: Message) -> int:
+        """Get the hash of the discord message
+
+        :param message: discord message
+        :return: hash of the given discord message
+        """
+        attachments_hash = 0
+        for attachment in message.attachments:
+            attachments_hash += hash(attachment.content_type) + hash(attachment.filename) + hash(attachment.size)
+        return hash(message.content) + attachments_hash
 
 
 class GuildSecurityManager:

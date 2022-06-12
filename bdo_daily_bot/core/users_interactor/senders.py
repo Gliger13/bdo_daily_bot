@@ -444,6 +444,6 @@ class ChannelsSender:
         :param spam_message: discord spam message
         :return: message that was sent
         """
-        message = messages.spam_message_report.format(user_id=spam_message.author.id,
-                                                      message_content=spam_message.content.replace("@", ""))
+        message_content = spam_message.content.replace("@", "") or messages.attachments_spam
+        message = messages.spam_message_report.format(user_id=spam_message.author.id, message_content=message_content)
         return await cls.send(channel, message)
