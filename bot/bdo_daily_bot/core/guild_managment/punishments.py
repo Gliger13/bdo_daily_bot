@@ -1,10 +1,12 @@
 """
 Module contain classes to punish guild users
 """
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 import aiohttp
-from discord import NotFound, User
+from discord import NotFound
+from discord import User
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.settings import settings
@@ -14,6 +16,7 @@ class Punishments:
     """
     Class to punish guild users
     """
+
     SPAM_TIMEOUT_PUNISHMENT = 1440
 
     @classmethod
@@ -28,7 +31,7 @@ class Punishments:
         headers = {"Authorization": f"Bot {settings.TOKEN}"}
         url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}"
         timeout = (datetime.utcnow() + timedelta(minutes=timeout)).isoformat()
-        json = {'communication_disabled_until': timeout}
+        json = {"communication_disabled_until": timeout}
         session = aiohttp.ClientSession()
         await session.patch(url, json=json, headers=headers)
         await session.close()

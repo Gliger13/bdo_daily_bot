@@ -11,15 +11,18 @@ from bdo_daily_bot.core.commands.common import command_logging
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.guild_managers.managers_controller import ManagersController
 from bdo_daily_bot.core.raid.raid_item import RaidItem
-from bdo_daily_bot.core.raid.raid_member import RaidMember, RaidMemberFactory
+from bdo_daily_bot.core.raid.raid_member import RaidMember
+from bdo_daily_bot.core.raid.raid_member import RaidMemberFactory
 from bdo_daily_bot.core.users_interactor.common import delete_message_after_some_time
-from bdo_daily_bot.core.users_interactor.senders import ChannelsSender, UsersSender
+from bdo_daily_bot.core.users_interactor.senders import ChannelsSender
+from bdo_daily_bot.core.users_interactor.senders import UsersSender
 
 
 class RaidBuilder:
     """
     Build or destroy raids by given arguments
     """
+
     __database = DatabaseManager()
 
     @classmethod
@@ -60,8 +63,9 @@ class RaidBuilder:
 
     @classmethod
     @command_logging
-    async def destroy(cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember,
-                      time_leaving: Optional[datetime]) -> bool:
+    async def destroy(
+        cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember, time_leaving: Optional[datetime]
+    ) -> bool:
         """
         Try remove raid for given captain name and time leaving
 

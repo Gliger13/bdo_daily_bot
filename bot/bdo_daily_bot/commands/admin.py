@@ -1,27 +1,35 @@
 """
 Module contain discord cog with name `Admin`. Provide server admin commands
 """
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
-from discord import NotFound, Role
+from discord import NotFound
+from discord import Role
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot
+from discord.ext.commands import Context
 
-from bdo_daily_bot.core.commands.admin import remove_notification_role, set_notification_role, set_raids_disabled, \
-    set_raids_enabled
+from bdo_daily_bot.core.commands.admin import remove_notification_role
+from bdo_daily_bot.core.commands.admin import set_notification_role
+from bdo_daily_bot.core.commands.admin import set_raids_disabled
+from bdo_daily_bot.core.commands.admin import set_raids_enabled
 from bdo_daily_bot.core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from bdo_daily_bot.core.commands_reporter.reporter import Reporter
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.logger import log_template
 from bdo_daily_bot.core.parser.common_parser import CommonCommandInputParser
 from bdo_daily_bot.core.users_interactor.senders import ChannelsSender
-from bdo_daily_bot.messages import command_names, help_text, messages
+from bdo_daily_bot.messages import command_names
+from bdo_daily_bot.messages import help_text
+from bdo_daily_bot.messages import messages
 
 
 class Admin(commands.Cog):
     """
     Cog for controlling server, channels and messages.
     """
+
     __database = DatabaseManager()
 
     def __init__(self, bot: Bot):
@@ -33,7 +41,7 @@ class Admin(commands.Cog):
 
     @commands.command(name=command_names.function_command.remove_there, help=help_text.remove_there)
     @commands.guild_only()
-    @commands.has_role('Капитан')
+    @commands.has_role("Капитан")
     async def remove_there(self, ctx: Context):
         """
         Allow the raid creator use command for mass messages remove in current channel.
@@ -60,7 +68,7 @@ class Admin(commands.Cog):
 
     @commands.command(name=command_names.function_command.remove_msgs, help=help_text.remove_msgs)
     @commands.guild_only()
-    @commands.has_role('Капитан')
+    @commands.has_role("Капитан")
     async def remove_msgs(self, ctx: Context, amount=100):
         """
         Remove messages in current channel.
@@ -81,9 +89,7 @@ class Admin(commands.Cog):
 
             # Warning user if messages older than 14 days
             if not msg.pinned and is_time_has_passed:
-                await ctx.author.send(
-                    messages.remove_msgs_fail_14.format(msg_count=msg_count, amount=amount)
-                )
+                await ctx.author.send(messages.remove_msgs_fail_14.format(msg_count=msg_count, amount=amount))
                 break
 
             if not msg.pinned:
@@ -114,7 +120,7 @@ class Admin(commands.Cog):
         :param emoji: emoji or reaction to add
         :param role_name: name of the discord role to get by clicking reaction
         """
-        role_name = ' '.join(role_name)
+        role_name = " ".join(role_name)
 
         channel = self.bot.get_channel(channel_id)
         message = await channel.fetch_message(message_id)
@@ -132,7 +138,11 @@ class Admin(commands.Cog):
             role = roles[0]
 
             await self.__database.settings.set_reaction_by_role(
-                ctx.guild.id, str(ctx.guild), message.id, emoji, role.id,
+                ctx.guild.id,
+                str(ctx.guild),
+                message.id,
+                emoji,
+                role.id,
             )
 
             await self.reporter.report_success_command(ctx)
@@ -157,7 +167,7 @@ class Admin(commands.Cog):
         else:
             await self.reporter.report_unsuccessful_command(ctx, CommandFailureReasons.REMOVE_REACTION_FAILURE)
 
-    @commands.command(name='бан')
+    @commands.command(name="бан")
     @commands.is_owner()
     async def ban(self, ctx: Context, user_id: int, *reason: str):
         """
@@ -195,8 +205,7 @@ class Admin(commands.Cog):
         """
         await set_raids_disabled(ctx)
 
-    @commands.command(name=command_names.function_command.set_notification_role,
-                      help=help_text.set_notification_role)
+    @commands.command(name=command_names.function_command.set_notification_role, help=help_text.set_notification_role)
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def set_notification_role(self, ctx: Context, role: Role, start_time: str, end_time: str):
@@ -212,8 +221,9 @@ class Admin(commands.Cog):
         end_time = CommonCommandInputParser.parse_simple_time(end_time)
         await set_notification_role(ctx, role.name, role.id, start_time, end_time)
 
-    @commands.command(name=command_names.function_command.remove_notification_role,
-                      help=help_text.remove_notification_role)
+    @commands.command(
+        name=command_names.function_command.remove_notification_role, help=help_text.remove_notification_role
+    )
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def remove_notification_role(self, ctx: Context, role: Role):
@@ -233,4 +243,4 @@ def setup(bot: Bot):
     :param bot: discord bot to add the cog
     """
     bot.add_cog(Admin(bot))
-    log_template.cog_launched('Admin')
+    log_template.cog_launched("Admin")

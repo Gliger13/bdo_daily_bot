@@ -6,7 +6,8 @@ from typing import Optional
 
 from discord.ext.commands import Context
 
-from bdo_daily_bot.core.command_gates.common import log_gate_check_failed, log_raid_gate_check_failed
+from bdo_daily_bot.core.command_gates.common import log_gate_check_failed
+from bdo_daily_bot.core.command_gates.common import log_raid_gate_check_failed
 from bdo_daily_bot.core.command_gates.gate import CommandsGate
 from bdo_daily_bot.core.command_gates.raid_picker import RaidPicker
 from bdo_daily_bot.core.commands.registration_controller import RegistrationController
@@ -35,11 +36,13 @@ class RaidGate:
         :param raid: raid to check
         :return: True if user can join given raid else False
         """
-        return await CommandsGate.check_user_registered(user) and \
-               await cls.check_raid_to_join_or_leave_exist(ctx, user, raid) and \
-               await cls.check_raid_is_full(ctx, user, raid) and \
-               await cls.check_user_not_in_raid(ctx, user, raid) and \
-               await cls.check_user_not_in_same_raid(ctx, user, raid)
+        return (
+            await CommandsGate.check_user_registered(user)
+            and await cls.check_raid_to_join_or_leave_exist(ctx, user, raid)
+            and await cls.check_raid_is_full(ctx, user, raid)
+            and await cls.check_user_not_in_raid(ctx, user, raid)
+            and await cls.check_user_not_in_same_raid(ctx, user, raid)
+        )
 
     @classmethod
     async def can_user_leave_raid(cls, ctx: ContextInterface, user: RaidMember, raid: Raid) -> bool:
@@ -51,9 +54,11 @@ class RaidGate:
         :param raid: raid to check
         :return: True if user can leave given raid else False
         """
-        return await CommandsGate.check_user_registered(user) and \
-               await cls.check_raid_to_join_or_leave_exist(ctx, user, raid) and \
-               await cls.check_user_in_raid(ctx, user, raid)
+        return (
+            await CommandsGate.check_user_registered(user)
+            and await cls.check_raid_to_join_or_leave_exist(ctx, user, raid)
+            and await cls.check_user_in_raid(ctx, user, raid)
+        )
 
     @classmethod
     async def can_user_create_raid(cls, ctx: Context, user: RaidMember, raid_item: RaidItem) -> bool:
@@ -70,13 +75,15 @@ class RaidGate:
 
         await RegistrationController.register_captain(user.user, raid_item.captain_name)
 
-        return await cls.check_user_same_raid_not_exist(ctx, user, raid_item) and \
-               (await cls.check_user_raids_not_exist(raid_item) or
-                await cls.check_user_want_create_another_raid(ctx, user, raid_item))
+        return await cls.check_user_same_raid_not_exist(ctx, user, raid_item) and (
+            await cls.check_user_raids_not_exist(raid_item)
+            or await cls.check_user_want_create_another_raid(ctx, user, raid_item)
+        )
 
     @classmethod
-    async def pick_and_check_raid(cls, ctx: Context, user_initiator: RaidMember,
-                                  captain: RaidMember, time_leaving: Optional[datetime]) -> Optional[Raid]:
+    async def pick_and_check_raid(
+        cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember, time_leaving: Optional[datetime]
+    ) -> Optional[Raid]:
         """
         Check user can remove raid
 
@@ -94,8 +101,14 @@ class RaidGate:
         return None
 
     @classmethod
-    async def can_user_close_reservation(cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember,
-                                         time_leaving: Optional[datetime], places: int) -> Optional[Raid]:
+    async def can_user_close_reservation(
+        cls,
+        ctx: Context,
+        user_initiator: RaidMember,
+        captain: RaidMember,
+        time_leaving: Optional[datetime],
+        places: int,
+    ) -> Optional[Raid]:
         """
         Check user can close the given raid reservation places and return raid to close reservation places
 
@@ -113,8 +126,14 @@ class RaidGate:
         return None
 
     @classmethod
-    async def can_user_open_reservation(cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember,
-                                        time_leaving: Optional[datetime], places: int) -> Optional[Raid]:
+    async def can_user_open_reservation(
+        cls,
+        ctx: Context,
+        user_initiator: RaidMember,
+        captain: RaidMember,
+        time_leaving: Optional[datetime],
+        places: int,
+    ) -> Optional[Raid]:
         """
         Check user can open the given raid reservation places and return raid to close reservation places
 
@@ -133,7 +152,6 @@ class RaidGate:
 
     @classmethod
     async def check_user_same_raid_not_exist(cls, ctx: Context, user: RaidMember, raid_item: RaidItem) -> bool:
-
         """
         Check user don't have raid with given raid attributes
 
@@ -176,8 +194,9 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_raid_to_join_or_leave_exist(cls, ctx: ContextInterface, user: RaidMember,
-                                                raid: Optional[Raid]) -> bool:
+    async def check_raid_to_join_or_leave_exist(
+        cls, ctx: ContextInterface, user: RaidMember, raid: Optional[Raid]
+    ) -> bool:
         """
         Check raid exist
 
@@ -274,8 +293,9 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_raid_places_in_range(cls, ctx: Context, user_initiator: RaidMember,
-                                         raid: Raid, places: int) -> bool:
+    async def check_raid_places_in_range(
+        cls, ctx: Context, user_initiator: RaidMember, raid: Raid, places: int
+    ) -> bool:
         """
         Check the given raid places in available range
 
@@ -292,8 +312,9 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_raid_places_is_not_zero(cls, ctx: Context, user_initiator: RaidMember,
-                                            raid: Raid, places: int) -> bool:
+    async def check_raid_places_is_not_zero(
+        cls, ctx: Context, user_initiator: RaidMember, raid: Raid, places: int
+    ) -> bool:
         """
         Check the given raid places is not zero
 
@@ -310,8 +331,9 @@ class RaidGate:
         return True
 
     @classmethod
-    async def check_user_can_close_raid_places(cls, ctx: Context, user_initiator: RaidMember,
-                                               raid: Raid, places: int) -> bool:
+    async def check_user_can_close_raid_places(
+        cls, ctx: Context, user_initiator: RaidMember, raid: Raid, places: int
+    ) -> bool:
         """
         Check user can close reservation places in the given raid with the given places
 
@@ -324,16 +346,18 @@ class RaidGate:
         if places < 0:
             await UsersSender.send_user_use_negative_raid_places(user_initiator.user)
             return await cls.check_user_can_close_raid_places(ctx, user_initiator, raid, abs(places))
-        if await cls.check_raid_places_is_not_zero(ctx, user_initiator, raid, places) and \
-                await cls.check_raid_places_in_range(ctx, user_initiator, raid, places):
+        if await cls.check_raid_places_is_not_zero(
+            ctx, user_initiator, raid, places
+        ) and await cls.check_raid_places_in_range(ctx, user_initiator, raid, places):
             if places > raid.places_left:
                 await UsersSender.send_user_wrong_raid_places(user_initiator.user)
                 return False
         return True
 
     @classmethod
-    async def check_user_can_open_raid_places(cls, ctx: Context, user_initiator: RaidMember,
-                                              raid: Raid, places: int) -> bool:
+    async def check_user_can_open_raid_places(
+        cls, ctx: Context, user_initiator: RaidMember, raid: Raid, places: int
+    ) -> bool:
         """
         Check user can open reservation places in the given raid with the given places
 
@@ -346,8 +370,9 @@ class RaidGate:
         if places < 0:
             await UsersSender.send_user_use_negative_raid_places(user_initiator.user)
             return await cls.check_user_can_close_raid_places(ctx, user_initiator, raid, abs(places))
-        if await cls.check_raid_places_is_not_zero(ctx, user_initiator, raid, places) and \
-                await cls.check_raid_places_in_range(ctx, user_initiator, raid, places):
+        if await cls.check_raid_places_is_not_zero(
+            ctx, user_initiator, raid, places
+        ) and await cls.check_raid_places_in_range(ctx, user_initiator, raid, places):
             if places >= raid.reservation_count:
                 await UsersSender.send_user_wrong_raid_places(user_initiator.user)
                 return False

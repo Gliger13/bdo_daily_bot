@@ -1,7 +1,8 @@
 """Contain function to get different project paths"""
 import os
 from functools import lru_cache
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 
 class ProjectFileMapping:

@@ -6,7 +6,9 @@ import random
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 
 from bdo_daily_bot.settings.settings import BOT_DATA_PATH
 
@@ -15,6 +17,7 @@ class RaidTable:
     """
     Class for producing raid table images
     """
+
     # Text settings
 
     # Size
@@ -35,7 +38,7 @@ class RaidTable:
     NUMBER_THICKNESS = 1
     NUMBER_BASE_LINE = cv2.LINE_AA
     # '0000' - space that takes for number of member
-    NUMBER_SIZE = cv2.getTextSize('0000', NUMBER_FONT_FACE, NUMBER_FONT_SCALE, NUMBER_THICKNESS)
+    NUMBER_SIZE = cv2.getTextSize("0000", NUMBER_FONT_FACE, NUMBER_FONT_SCALE, NUMBER_THICKNESS)
     NUMBER_SIZE_WIDTH = NUMBER_SIZE[0][0]  # px
 
     # Table frame
@@ -143,11 +146,11 @@ class RaidTable:
     def _save(self, img):
         # Save image on local storage
         # Find dir 'images'. If not - create
-        self.table_path = os.path.join(BOT_DATA_PATH, 'images')
+        self.table_path = os.path.join(BOT_DATA_PATH, "images")
         if not os.path.isdir(self.table_path):
             os.mkdir(self.table_path)
 
-        file_name = self.raid.captain.nickname + '_' + str(self.raid.time.kebab_time_leaving) + ".png"
+        file_name = self.raid.captain.nickname + "_" + str(self.raid.time.kebab_time_leaving) + ".png"
         self.table_path = os.path.join(self.table_path, file_name)
         cv2.imwrite(self.table_path, img)
 

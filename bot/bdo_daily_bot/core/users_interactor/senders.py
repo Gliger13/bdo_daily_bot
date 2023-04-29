@@ -5,7 +5,11 @@ import logging
 from datetime import time
 from typing import Optional
 
-from discord import Forbidden, HTTPException, Message, TextChannel, User
+from discord import Forbidden
+from discord import HTTPException
+from discord import Message
+from discord import TextChannel
+from discord import User
 
 from bdo_daily_bot.core.raid.raid import Raid
 from bdo_daily_bot.core.raid.raid_item import RaidItem
@@ -27,15 +31,20 @@ class UsersSender:
         """
         try:
             discord_message = await user.send(message)
-            logging.info("Private/{}: Message to user was send. \n"
-                         "Message content: {}".format(user.name, message))
+            logging.info("Private/{}: Message to user was send. \nMessage content: {}".format(user.name, message))
             return discord_message
         except Forbidden:
-            logging.info("Private/{}: Failed to send message to user. Forbidden.\n"
-                         "Message content: {}\n".format(user.name, message))
+            logging.info(
+                "Private/{}: Failed to send message to user. Forbidden.\nMessage content: {}\n".format(
+                    user.name, message
+                )
+            )
         except HTTPException as error:
-            logging.warning("Private/{}: Failed to send message to user. HTTPException.\n"
-                            "Message content: {}\nError: {}".format(user.name, message, error))
+            logging.warning(
+                "Private/{}: Failed to send message to user. HTTPException.\nMessage content: {}\nError: {}".format(
+                    user.name, message, error
+                )
+            )
 
     @classmethod
     async def send_user_not_registered(cls, user: User):
@@ -92,8 +101,9 @@ class UsersSender:
         :param user: discord user for message sending
         :param raid: raid that user joined
         """
-        message = messages.raid_joined.format(captain_name=raid.captain.nickname, server=raid.bdo_server,
-                                              time_leaving=raid.time.normal_time_leaving)
+        message = messages.raid_joined.format(
+            captain_name=raid.captain.nickname, server=raid.bdo_server, time_leaving=raid.time.normal_time_leaving
+        )
         await cls.send_to_user(user, message)
 
     @classmethod
@@ -221,8 +231,9 @@ class UsersSender:
         await cls.send_to_user(user, message)
 
     @classmethod
-    async def send_user_set_notification_role(cls, user: User, guild_name: str, role_name: str,
-                                              time_start_at: time, time_end_at: time):
+    async def send_user_set_notification_role(
+        cls, user: User, guild_name: str, role_name: str, time_start_at: time, time_end_at: time
+    ):
         """
         Send message that user set notification role in the current guild
 
@@ -232,8 +243,9 @@ class UsersSender:
         :param time_start_at: start time where should ping given role
         :param time_end_at: end time where not need ping given role
         """
-        message = messages.user_set_notification_role.format(guild=guild_name, role=role_name,
-                                                             time_start_at=time_start_at, time_end_at=time_end_at)
+        message = messages.user_set_notification_role.format(
+            guild=guild_name, role=role_name, time_start_at=time_start_at, time_end_at=time_end_at
+        )
         await cls.send_to_user(user, message)
 
     @classmethod
@@ -271,8 +283,9 @@ class UsersSender:
         await cls.send_to_user(user, message)
 
     @classmethod
-    async def send_user_try_show_raid_with_wrong_time(cls, user: User, captain_name: str,
-                                                      correct_time: str, wrong_time: str):
+    async def send_user_try_show_raid_with_wrong_time(
+        cls, user: User, captain_name: str, correct_time: str, wrong_time: str
+    ):
         """
         Send message that user try action with raid with wrong time
 
@@ -282,12 +295,14 @@ class UsersSender:
         :param wrong_time: wrong time of the raid to show
         """
         message = messages.user_try_show_raid_with_wrong_time.format(
-            captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
+            captain=captain_name, correct_time=correct_time, wrong_time=wrong_time
+        )
         await cls.send_to_user(user, message)
 
     @classmethod
-    async def send_user_try_change_raid_places_by_wrong_time(cls, user: User, captain_name: str,
-                                                             correct_time: str, wrong_time: str):
+    async def send_user_try_change_raid_places_by_wrong_time(
+        cls, user: User, captain_name: str, correct_time: str, wrong_time: str
+    ):
         """
         Send message that user try change places in the raid with the wrong time
 
@@ -297,7 +312,8 @@ class UsersSender:
         :param wrong_time: wrong time of the raid to show
         """
         message = messages.user_try_change_places_in_raid_by_wrong_time.format(
-            captain=captain_name, correct_time=correct_time, wrong_time=wrong_time)
+            captain=captain_name, correct_time=correct_time, wrong_time=wrong_time
+        )
         await cls.send_to_user(user, message)
 
     @classmethod
@@ -382,7 +398,8 @@ class UsersSender:
         :param wrong_time: wrong time of the raid to show
         """
         message = messages.user_try_get_captain_raid_from_raids_by_wrong_time.format(
-            captain=captain_name, time=wrong_time)
+            captain=captain_name, time=wrong_time
+        )
         await cls.send_to_user(user, message)
 
     @classmethod
@@ -411,16 +428,24 @@ class ChannelsSender:
         """
         try:
             message = await channel.send(message)
-            logging.info("{}/{}: Message to channel was send.\n"
-                         "Message content: {}".format(channel.name, channel.guild.name, message.content))
+            logging.info(
+                "{}/{}: Message to channel was send.\nMessage content: {}".format(
+                    channel.name, channel.guild.name, message.content
+                )
+            )
             return message
         except Forbidden:
-            logging.info("{}/{}: Failed to send message to channel. Forbidden.\n"
-                         "Message content: {}\n".format(channel.name, channel.guild.name, message))
+            logging.info(
+                "{}/{}: Failed to send message to channel. Forbidden.\nMessage content: {}\n".format(
+                    channel.name, channel.guild.name, message
+                )
+            )
         except HTTPException as error:
-            logging.warning("{}/{}: Failed to send message to channel. HTTPException.\n"
-                            "Message content: {}\nError: {}"
-                            .format(channel.name, channel.guild.name, message, error))
+            logging.warning(
+                "{}/{}: Failed to send message to channel. HTTPException.\nMessage content: {}\nError: {}".format(
+                    channel.name, channel.guild.name, message, error
+                )
+            )
 
     @classmethod
     async def send_captain_created_raid(cls, channel: TextChannel, raid: Raid) -> Message:
@@ -431,8 +456,10 @@ class ChannelsSender:
         :param raid: raid that user created
         :return: message that was sent
         """
-        message = messages.raid_created.format(channel=raid.get_channel(channel.guild).mention,
-                                               time_reservation_open=raid.time.normal_time_reservation_open)
+        message = messages.raid_created.format(
+            channel=raid.get_channel(channel.guild).mention,
+            time_reservation_open=raid.time.normal_time_reservation_open,
+        )
         return await cls.send(channel, message)
 
     @classmethod

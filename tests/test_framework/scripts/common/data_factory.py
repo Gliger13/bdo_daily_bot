@@ -1,6 +1,8 @@
 """Contain class that response for providing test data."""
 import os
-from typing import Tuple, List, Dict
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 import pytest
 import yaml
@@ -24,7 +26,7 @@ class DataFactory:
         :return: test data.
         """
         test_data_path = self.__get_test_data_path_from_test_path(self._test_file_path)
-        return self.__load_yaml_test_data(test_data_path)['test_sets'][self._test_name]
+        return self.__load_yaml_test_data(test_data_path)["test_sets"][self._test_name]
 
     @property
     def _test_name(self) -> str:
@@ -63,7 +65,7 @@ class DataFactory:
 
         :return: absolute path of the yaml test data file.
         """
-        return os.path.join(os.path.dirname(test_file_path), 'test_data.yaml')
+        return os.path.join(os.path.dirname(test_file_path), "test_data.yaml")
 
     @classmethod
     def __load_yaml_test_data(cls, test_data_path: str):
@@ -105,7 +107,7 @@ def parse_test_sample(test_sample: Dict[str, dict]) -> Tuple[dict, dict, dict]:
     :param test_sample: Test sample of the test data.
     :return: data setup, data, expected data.
     """
-    data_setup = test_sample.get('data_setup')
-    data = test_sample.get('data')
-    expected_data = test_sample.get('expected_data')
+    data_setup = test_sample.get("data_setup")
+    data = test_sample.get("data")
+    expected_data = test_sample.get("expected_data")
     return data_setup, data, expected_data

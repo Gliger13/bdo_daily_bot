@@ -1,8 +1,11 @@
 """Contain fixtures for providing discord roles"""
-from typing import Optional, Tuple, List
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 import pytest
-from discord import Role, Guild
+from discord import Guild
+from discord import Role
 
 
 @pytest.fixture

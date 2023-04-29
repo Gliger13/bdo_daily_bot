@@ -1,11 +1,20 @@
 """
 Contain classes for picking handlers for the specific reactions
 """
-from typing import Any, Callable, Coroutine, Dict, List, NewType, Optional
+from typing import Any
+from typing import Callable
+from typing import Coroutine
+from typing import Dict
+from typing import List
+from typing import NewType
+from typing import Optional
 
-from bdo_daily_bot.core.commands.raid.joining import join_raid_by_reaction, leave_raid_by_reaction
-from bdo_daily_bot.core.commands.raid.settings import not_notify_me, notify_me
-from bdo_daily_bot.core.commands.roles import add_role_from_reaction, remove_role_from_reaction
+from bdo_daily_bot.core.commands.raid.joining import join_raid_by_reaction
+from bdo_daily_bot.core.commands.raid.joining import leave_raid_by_reaction
+from bdo_daily_bot.core.commands.raid.settings import not_notify_me
+from bdo_daily_bot.core.commands.raid.settings import notify_me
+from bdo_daily_bot.core.commands.roles import add_role_from_reaction
+from bdo_daily_bot.core.commands.roles import remove_role_from_reaction
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.models.context import ReactionContext
 from bdo_daily_bot.core.users_interactor.message_reaction_interactor import MessagesReactions
@@ -18,8 +27,9 @@ class DynamicReactionsFactory:
 
     __database = DatabaseManager()
 
-    ReactionsFactoryMethod = NewType("ReactionsFactoryMethod",
-                                     Callable[[ReactionContext], Coroutine[Any, Any, List[str]]])
+    ReactionsFactoryMethod = NewType(
+        "ReactionsFactoryMethod", Callable[[ReactionContext], Coroutine[Any, Any, List[str]]]
+    )
 
     @classmethod
     async def get_reactions_to_role_action(cls, ctx: ReactionContext) -> ReactionsFactoryMethod:
@@ -128,8 +138,9 @@ class ReactionStrategy:
         return united_map
 
     @classmethod
-    async def __produce_dynamic_map(cls, ctx: ReactionContext,
-                                    dynamic_reaction_map: DynamicReactionsMap) -> ReactionMap:
+    async def __produce_dynamic_map(
+        cls, ctx: ReactionContext, dynamic_reaction_map: DynamicReactionsMap
+    ) -> ReactionMap:
         """
         Call factory methods from the dynamic reaction map and produce reaction map
 

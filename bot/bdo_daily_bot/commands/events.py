@@ -5,9 +5,16 @@ import logging
 import sys
 import traceback
 
-from discord import DiscordException, Game, Member, Message, RawReactionActionEvent, Status, TextChannel
+from discord import DiscordException
+from discord import Game
+from discord import Member
+from discord import Message
+from discord import RawReactionActionEvent
+from discord import Status
+from discord import TextChannel
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot
+from discord.ext.commands import Context
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.commands_reporter.reporter import Reporter
@@ -17,7 +24,8 @@ from bdo_daily_bot.core.guild_security.guild_security_manager import GuildSecuri
 from bdo_daily_bot.core.logger import log_template
 from bdo_daily_bot.core.models.context_factory import ReactionContextFactory
 from bdo_daily_bot.core.models.reaction_strategy import ReactionStrategy
-from bdo_daily_bot.messages import logger_msgs, messages
+from bdo_daily_bot.messages import logger_msgs
+from bdo_daily_bot.messages import messages
 from bdo_daily_bot.settings import settings
 
 
@@ -25,6 +33,7 @@ class Events(commands.Cog):
     """
     Cog that responsible for various events.
     """
+
     database = DatabaseManager()
 
     def __init__(self, bot: Bot):
@@ -58,7 +67,7 @@ class Events(commands.Cog):
         as status and current game. Loads still active raids from the database.
         """
         # Set custom status
-        custom_status = 'Разрушаюсь и перестраиваюсь'
+        custom_status = "Разрушаюсь и перестраиваюсь"
         await self.bot.change_presence(status=Status.online, activity=Game(custom_status))
 
         BdoDailyBot.bot = self.bot
@@ -81,24 +90,24 @@ class Events(commands.Cog):
         :param error: discord exception to handle
         """
         if isinstance(error, commands.errors.BadArgument):
-            await ctx.message.add_reaction('❔')
+            await ctx.message.add_reaction("❔")
         elif isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.message.add_reaction('❔')
+            await ctx.message.add_reaction("❔")
         elif isinstance(error, commands.errors.CommandNotFound):
-            await ctx.message.add_reaction('❓')
+            await ctx.message.add_reaction("❓")
         elif isinstance(error, commands.errors.PrivateMessageOnly):
             await ctx.message.author.send(messages.private_msg_only)
-            await ctx.message.add_reaction('❓')
+            await ctx.message.add_reaction("❓")
         elif isinstance(error, commands.errors.NoPrivateMessage):
             await ctx.message.author.send(messages.no_private_msg)
-            await ctx.message.add_reaction('❓')
+            await ctx.message.add_reaction("❓")
         elif isinstance(error, commands.errors.BotMissingPermissions):
-            await ctx.message.author.send(messages.missing_perms.format(missing_perms='.'.join(error.missing_perms)))
-            await ctx.message.add_reaction('❓')
+            await ctx.message.author.send(messages.missing_perms.format(missing_perms=".".join(error.missing_perms)))
+            await ctx.message.add_reaction("❓")
         elif isinstance(error, commands.errors.UserInputError):
-            await ctx.message.add_reaction('❓')
+            await ctx.message.add_reaction("❓")
         elif isinstance(error, commands.errors.MissingRole):
-            await ctx.message.add_reaction('⛔')
+            await ctx.message.add_reaction("⛔")
         else:
             # If this is an unknown error
             log_template.unknown_command_error(ctx, error)
@@ -122,8 +131,11 @@ class Events(commands.Cog):
                 await handler(ctx)
             return
         channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else ctx.channel
-        logging.debug("{}/{}/{}/{} No handler for reaction `{}`".format(
-            ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction))
+        logging.debug(
+            "{}/{}/{}/{} No handler for reaction `{}`".format(
+                ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction
+            )
+        )
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: RawReactionActionEvent):
@@ -141,8 +153,11 @@ class Events(commands.Cog):
                 await handler(ctx)
             return
         channel_name = ctx.channel.name if isinstance(ctx.channel, TextChannel) else ctx.channel
-        logging.debug("{}/{}/{}/{} No handler for reaction `{}`".format(
-            ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction))
+        logging.debug(
+            "{}/{}/{}/{} No handler for reaction `{}`".format(
+                ctx.guild, channel_name, ctx.author.name, ctx.command.name, ctx.reaction
+            )
+        )
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -162,4 +177,4 @@ def setup(bot: Bot):
     :param bot: discord bot to add the cog
     """
     bot.add_cog(Events(bot))
-    log_template.cog_launched('Events')
+    log_template.cog_launched("Events")

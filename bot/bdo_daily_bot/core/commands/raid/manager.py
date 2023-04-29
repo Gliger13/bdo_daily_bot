@@ -12,8 +12,9 @@ from bdo_daily_bot.core.raid.raid_member import RaidMember
 
 
 @command_logging
-async def open_reservation(ctx: Context, user_initiator: RaidMember, captain: RaidMember,
-                           time_leaving: Optional[datetime], places: int) -> bool:
+async def open_reservation(
+    ctx: Context, user_initiator: RaidMember, captain: RaidMember, time_leaving: Optional[datetime], places: int
+) -> bool:
     """
     Open raid reservation places
 
@@ -31,8 +32,9 @@ async def open_reservation(ctx: Context, user_initiator: RaidMember, captain: Ra
 
 
 @command_logging
-async def close_reservation(ctx: Context, user_initiator: RaidMember, captain: RaidMember,
-                            time_leaving: Optional[datetime], places: int) -> bool:
+async def close_reservation(
+    ctx: Context, user_initiator: RaidMember, captain: RaidMember, time_leaving: Optional[datetime], places: int
+) -> bool:
     """
     Close raid reservation places
 

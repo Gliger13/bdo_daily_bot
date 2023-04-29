@@ -1,7 +1,6 @@
 """Contain common fixtures that provide information from test data yaml"""
 import pytest
 from _pytest.fixtures import FixtureRequest
-
 from test_framework.scripts.common.data_factory import DataFactory
 
 

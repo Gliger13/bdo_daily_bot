@@ -1,6 +1,8 @@
 """Contains the class for working with the user database collection."""
 import logging
-from typing import Any, Dict, List
+from typing import Any
+from typing import Dict
+from typing import List
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -37,6 +39,7 @@ class UserNotExists(Exception):
 
 class UserCollection(metaclass=MetaSingleton):
     """Responsible for working with the user MongoDB collection."""
+
     _collection = None  # Contain database user collection
 
     @property
@@ -64,7 +67,7 @@ class UserCollection(metaclass=MetaSingleton):
         :return: The existence or lack of a user in the database.
         :rtype: bool
         """
-        user_post = await self.collection.find_one({'discord_id': discord_id})
+        user_post = await self.collection.find_one({"discord_id": discord_id})
         return bool(user_post)
 
     async def get_user_by_id(self, discord_id: int) -> dict or None:
@@ -76,7 +79,7 @@ class UserCollection(metaclass=MetaSingleton):
         :return: Search results.
         :rtype: dict
         """
-        return await self.collection.find_one({'discord_id': discord_id})
+        return await self.collection.find_one({"discord_id": discord_id})
 
     async def get_user_nickname(self, discord_id: int) -> str or None:
         """
@@ -88,7 +91,7 @@ class UserCollection(metaclass=MetaSingleton):
         :rtype: str or None
         """
         user_document = await self.get_user_by_id(discord_id)
-        return user_document.get('nickname') if user_document else None
+        return user_document.get("nickname") if user_document else None
 
     async def find_user_by_nickname(self, nickname: str) -> dict or None:
         """
@@ -99,7 +102,7 @@ class UserCollection(metaclass=MetaSingleton):
         :return: Search results.
         :rtype: dict
         """
-        return await self.collection.find_one({'nickname': nickname})
+        return await self.collection.find_one({"nickname": nickname})
 
     async def register_user(self, discord_id: int, discord_user: str, nickname: str):
         """
@@ -116,10 +119,10 @@ class UserCollection(metaclass=MetaSingleton):
             raise UserExists(discord_id)
 
         new_user_post = {
-            'discord_id': discord_id,
-            'discord_user': discord_user,
-            'nickname': nickname,
-            'entries': 0,
+            "discord_id": discord_id,
+            "discord_user": discord_user,
+            "nickname": nickname,
+            "entries": 0,
         }
         self.collection.insert_one(new_user_post)
 
@@ -139,12 +142,14 @@ class UserCollection(metaclass=MetaSingleton):
         if old_user_document:
             user_entries = old_user_document.get("entries", 0)
 
-            new_user_document = {'$set': {
-                'discord_id': discord_id,
-                'discord_user': discord_user,
-                'nickname': nickname,
-                'entries': user_entries,
-            }}
+            new_user_document = {
+                "$set": {
+                    "discord_id": discord_id,
+                    "discord_user": discord_user,
+                    "nickname": nickname,
+                    "entries": user_entries,
+                }
+            }
             await self.collection.update_one(old_user_document, new_user_document)
         else:
             await self.register_user(discord_id, discord_user, nickname)
@@ -156,10 +161,7 @@ class UserCollection(metaclass=MetaSingleton):
         :param discord_id: User discord id.
         :type discord_id: int
         """
-        await self.collection.find_one_and_update(
-            {'discord_id': discord_id},
-            {'$inc': {'entries': 1}}
-        )
+        await self.collection.find_one_and_update({"discord_id": discord_id}, {"$inc": {"entries": 1}})
 
     async def user_leave_raid(self, discord_id: int):
         """
@@ -169,8 +171,7 @@ class UserCollection(metaclass=MetaSingleton):
         :type discord_id: int
         """
         await self.collection.find_one_and_update(
-            {'$and': [{'discord_id': discord_id}, {'entries': {'$gt': 0}}]},
-            {'$inc': {'entries': -1}}
+            {"$and": [{"discord_id": discord_id}, {"entries": {"$gt": 0}}]}, {"$inc": {"entries": -1}}
         )
 
     async def set_notify_off(self, discord_id: int):
@@ -180,10 +181,7 @@ class UserCollection(metaclass=MetaSingleton):
         :param discord_id: User discord id.
         :type discord_id: int
         """
-        await self.collection.find_one_and_update(
-            {'discord_id': discord_id},
-            {'$set': {'not_notify': True}}
-        )
+        await self.collection.find_one_and_update({"discord_id": discord_id}, {"$set": {"not_notify": True}})
 
     async def set_notify_on(self, discord_id: int):
         """
@@ -192,10 +190,7 @@ class UserCollection(metaclass=MetaSingleton):
         :param discord_id: User discord id.
         :type discord_id: int
         """
-        await self.collection.find_one_and_update(
-            {'discord_id': discord_id},
-            {'$set': {'not_notify': False}}
-        )
+        await self.collection.find_one_and_update({"discord_id": discord_id}, {"$set": {"not_notify": False}})
 
     async def not_notify_status(self, discord_id: int) -> bool:
         """
@@ -211,7 +206,7 @@ class UserCollection(metaclass=MetaSingleton):
         if not user_document:
             raise UserNotExists(discord_id)
 
-        return user_document.get('not_notify', False)
+        return user_document.get("not_notify", False)
 
     async def set_first_notification(self, discord_id: int):
         """
@@ -220,10 +215,7 @@ class UserCollection(metaclass=MetaSingleton):
         :param discord_id: User discord id.
         :type discord_id: int
         """
-        await self.collection.find_one_and_update(
-            {'discord_id': discord_id},
-            {'$set': {'first_notification': True}}
-        )
+        await self.collection.find_one_and_update({"discord_id": discord_id}, {"$set": {"first_notification": True}})
 
     async def first_notification_status(self, discord_id: int) -> bool:
         """
@@ -239,7 +231,7 @@ class UserCollection(metaclass=MetaSingleton):
         if not user_document:
             raise UserNotExists(discord_id)
 
-        return user_document.get('first_notification', False)
+        return user_document.get("first_notification", False)
 
     async def get_users_by_nicknames(self, nicknames_list: List[str]) -> List[Dict[str, Any]]:
         """
@@ -249,7 +241,6 @@ class UserCollection(metaclass=MetaSingleton):
         :return: users documents
         """
         users_documents_cursor = self.collection.find(
-            {'nickname': {'$in': nicknames_list}},
-            {'discord_id': 1, 'not_notify': 1, 'first_notification': 1, '_id': 0}
+            {"nickname": {"$in": nicknames_list}}, {"discord_id": 1, "not_notify": 1, "first_notification": 1, "_id": 0}
         )
         return [document async for document in users_documents_cursor]

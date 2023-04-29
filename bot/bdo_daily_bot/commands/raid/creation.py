@@ -5,13 +5,16 @@ create and delete raids
 import asyncio
 
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot
+from discord.ext.commands import Context
 
 from bdo_daily_bot.core.commands.raid.builder import RaidBuilder
 from bdo_daily_bot.core.logger import log_template
-from bdo_daily_bot.core.parser.raid_input_parser import RaidInputAttributes, RaidInputParser
+from bdo_daily_bot.core.parser.raid_input_parser import RaidInputAttributes
+from bdo_daily_bot.core.parser.raid_input_parser import RaidInputParser
 from bdo_daily_bot.core.raid.raid_member import RaidMemberFactory
-from bdo_daily_bot.messages import command_names, help_text
+from bdo_daily_bot.messages import command_names
+from bdo_daily_bot.messages import help_text
 
 
 class RaidCreation(commands.Cog):
@@ -31,9 +34,16 @@ class RaidCreation(commands.Cog):
     # pylint: disable=too-many-arguments
     @commands.command(name=command_names.function_command.captain, help=help_text.captain)
     @commands.guild_only()
-    @commands.has_role('Капитан')
-    async def captain(self, ctx: Context, captain_name: str, game_server: str, time_leaving: str,
-                      time_reservation_open: str = '', reservation_amount: str = ''):
+    @commands.has_role("Капитан")
+    async def captain(
+        self,
+        ctx: Context,
+        captain_name: str,
+        game_server: str,
+        time_leaving: str,
+        time_reservation_open: str = "",
+        reservation_amount: str = "",
+    ):
         """
         Create raid and start raid flow process of collection user into the new raid.
 
@@ -49,7 +59,7 @@ class RaidCreation(commands.Cog):
 
     @commands.command(name=command_names.function_command.cap, help=help_text.cap)
     @commands.guild_only()
-    @commands.has_role('Капитан')
+    @commands.has_role("Капитан")
     async def cap(self, ctx: Context):
         """
         Create raid using only discord command context
@@ -63,8 +73,8 @@ class RaidCreation(commands.Cog):
 
     @commands.command(name=command_names.function_command.remove_raid, help=help_text.remove_raid)
     @commands.guild_only()
-    @commands.has_role('Капитан')
-    async def remove_raid(self, ctx: Context, captain_name: str = '', time_leaving: str = ''):
+    @commands.has_role("Капитан")
+    async def remove_raid(self, ctx: Context, captain_name: str = "", time_leaving: str = ""):
         """
         Remove raid by given captain and time leaving
 
@@ -91,4 +101,4 @@ def setup(bot: Bot):
     :param bot: discord bot to add the cog
     """
     bot.add_cog(RaidCreation(bot))
-    log_template.cog_launched('RaidCreation')
+    log_template.cog_launched("RaidCreation")

@@ -1,12 +1,14 @@
 """
 Module contain class for asking discord user
 """
-
 import asyncio
 import logging
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
-from discord import Message, Reaction, User
+from discord import Message
+from discord import Reaction
+from discord import User
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.users_interactor.common import add_reaction
@@ -31,8 +33,7 @@ class UsersChoicer:
         :param question: question message
         :return: boolean value of answer: yes = True, no = False
         """
-        logging.info("Private/{}: User was asked with yes or no answer.\nQuestion: {}".
-                     format(user.name, question))
+        logging.info("Private/{}: User was asked with yes or no answer.\nQuestion: {}".format(user.name, question))
         message = await user.send(question)
         await add_reaction(message, MessagesReactions.YES_EMOJI)
         await add_reaction(message, MessagesReactions.NO_EMOJI)
@@ -45,19 +46,26 @@ class UsersChoicer:
             :param reaction_user: user to check
             :return: True if answer only by author of command and with correct reaction else False
             """
-            return user.id == reaction_user.id and str(input_reaction.emoji) in (MessagesReactions.YES_EMOJI,
-                                                                                 MessagesReactions.NO_EMOJI)
+            return user.id == reaction_user.id and str(input_reaction.emoji) in (
+                MessagesReactions.YES_EMOJI,
+                MessagesReactions.NO_EMOJI,
+            )
 
         try:
-            reaction, user = await BdoDailyBot.bot.wait_for('reaction_add', timeout=CHOICE_TIMEOUT,
-                                                            check=check_correct_user_and_answer)
+            reaction, user = await BdoDailyBot.bot.wait_for(
+                "reaction_add", timeout=CHOICE_TIMEOUT, check=check_correct_user_and_answer
+            )
         except asyncio.TimeoutError:
-            logging.info("Private/{}: User did not answer the question in time.\nQuestion: {}".
-                         format(user.name, question))
+            logging.info(
+                "Private/{}: User did not answer the question in time.\nQuestion: {}".format(user.name, question)
+            )
         else:
             boolean_answer = cls.__check_user_yes_or_no_answer(reaction.emoji)
-            logging.info("Private/{}: User answered {} to the question.\nQuestion: {}".
-                         format(user.name, boolean_answer, question))
+            logging.info(
+                "Private/{}: User answered {} to the question.\nQuestion: {}".format(
+                    user.name, boolean_answer, question
+                )
+            )
             return boolean_answer
 
     @classmethod
@@ -70,8 +78,9 @@ class UsersChoicer:
         :param choices: list of str choices message to chose
         :return: number of user chose
         """
-        logging.info("Private/{}: User was asked with question with multiply choices.\nQuestion: {}".
-                     format(user.name, question))
+        logging.info(
+            "Private/{}: User was asked with question with multiply choices.\nQuestion: {}".format(user.name, question)
+        )
         question_with_choices_message = cls.__get_question_with_choices(question, choices)
         message = await user.send(question_with_choices_message)
         await cls.__add_question_message_reactions(message, len(choices))
@@ -84,20 +93,26 @@ class UsersChoicer:
             :param reaction_user: user to check
             :return: True if answer only by author of command and with correct reaction else False
             """
-            return user.id == reaction_user.id and \
-                   str(input_reaction.emoji) in MessagesReactions.CHOICES_NUMBERS.values()
+            return (
+                user.id == reaction_user.id and str(input_reaction.emoji) in MessagesReactions.CHOICES_NUMBERS.values()
+            )
 
         try:
-            reaction, user = await BdoDailyBot.bot.wait_for('reaction_add', timeout=CHOICE_TIMEOUT,
-                                                            check=check_correct_user_and_answer)
+            reaction, user = await BdoDailyBot.bot.wait_for(
+                "reaction_add", timeout=CHOICE_TIMEOUT, check=check_correct_user_and_answer
+            )
         except asyncio.TimeoutError:
-            logging.info("Private/{}: User did not answer the question in time.\nQuestion: {}".
-                         format(user.name, question))
+            logging.info(
+                "Private/{}: User did not answer the question in time.\nQuestion: {}".format(user.name, question)
+            )
             return False
         else:
             boolean_answer = cls.__check_user_choice(reaction.emoji)
-            logging.info("Private/{}: User answered {} to the question.\nQuestion: {}".
-                         format(user.name, boolean_answer, question))
+            logging.info(
+                "Private/{}: User answered {} to the question.\nQuestion: {}".format(
+                    user.name, boolean_answer, question
+                )
+            )
             return boolean_answer
 
     @classmethod

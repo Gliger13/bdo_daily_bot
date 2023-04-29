@@ -18,7 +18,8 @@ def log_gate_check_failed(ctx: Union[Context, ContextInterface], failed_check_me
     :param failed_check_message: command gate failed check message
     """
     logging_msg = "{}/{}/{}/{} Command gate: Not passed. {}".format(
-        ctx.guild.name, ctx.channel.name, ctx.author.name, ctx.command.name, failed_check_message)
+        ctx.guild.name, ctx.channel.name, ctx.author.name, ctx.command.name, failed_check_message
+    )
     logging.info(logging_msg)
 
 
@@ -30,7 +31,8 @@ def log_gate_check_branched(ctx: Union[Context, ContextInterface], branched_chec
     :param branched_check_message: command gate checked check message
     """
     logging_msg = "{}/{}/{}/{} Command gate: Branched. {}".format(
-        ctx.guild.name, ctx.channel.name, ctx.author.name, ctx.command.name, branched_check_message)
+        ctx.guild.name, ctx.channel.name, ctx.author.name, ctx.command.name, branched_check_message
+    )
     logging.info(logging_msg)
 
 
@@ -43,8 +45,14 @@ def log_raid_gate_check_failed(ctx: Union[Context, ContextInterface], raid: Raid
     :param failed_check_message: command gate failed check message
     """
     logging_msg = "{}/{}/{}/{} Raid {}/{} Command gate: Not passed. {}".format(
-        ctx.guild.name, ctx.channel.name, ctx.author.name, ctx.command.name,
-        raid.captain.nickname, raid.time.normal_time_leaving, failed_check_message)
+        ctx.guild.name,
+        ctx.channel.name,
+        ctx.author.name,
+        ctx.command.name,
+        raid.captain.nickname,
+        raid.time.normal_time_leaving,
+        failed_check_message,
+    )
     logging.info(logging_msg)
 
 
@@ -57,6 +65,12 @@ def log_raid_gate_check_branched(ctx: Union[Context, ContextInterface], raid: Ra
     :param branched_check_message: command gate checked check message
     """
     logging_msg = "{}/{}/{}/{} Raid {}/{} Command gate: Branched. {}".format(
-        ctx.guild.name, ctx.channel.name, ctx.author.name, ctx.command.name,
-        raid.captain.nickname, raid.time.normal_time_leaving, branched_check_message)
+        ctx.guild.name,
+        ctx.channel.name,
+        ctx.author.name,
+        ctx.command.name,
+        raid.captain.nickname,
+        raid.time.normal_time_leaving,
+        branched_check_message,
+    )
     logging.info(logging_msg)

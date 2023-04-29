@@ -1,7 +1,8 @@
 """
 Module contain context class factory's
 """
-from discord import DMChannel, RawReactionActionEvent
+from discord import DMChannel
+from discord import RawReactionActionEvent
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.models.context import ReactionContext
@@ -25,5 +26,12 @@ class ReactionContextFactory:
         message = await channel.fetch_message(event.message_id)
         user = BdoDailyBot.bot.get_user(event.user_id)
         reaction = str(event.emoji)
-        return ReactionContext(guild=guild, channel=channel, message=message,
-                               author=user, reaction_type=event.event_type, reaction=reaction, command=None)
+        return ReactionContext(
+            guild=guild,
+            channel=channel,
+            message=message,
+            author=user,
+            reaction_type=event.event_type,
+            reaction=reaction,
+            command=None,
+        )

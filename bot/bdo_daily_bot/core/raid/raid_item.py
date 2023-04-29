@@ -1,14 +1,20 @@
 """
 Contain dataclass for storing main raid information
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 
 @dataclass
 class RaidItem:
     """Class for keeping main raid information"""
+
     captain_name: str
     game_server: str
     time_leaving: datetime

@@ -2,7 +2,8 @@
 Module contain discord cog with name `Registration`. Provide discord command user registration.
 """
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot
+from discord.ext.commands import Context
 
 from bdo_daily_bot.core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from bdo_daily_bot.core.commands_reporter.reporter import Reporter
@@ -10,13 +11,15 @@ from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.database.user_collection import UserExists
 from bdo_daily_bot.core.logger import log_template
 from bdo_daily_bot.core.tools import check_input
-from bdo_daily_bot.messages import command_names, help_text
+from bdo_daily_bot.messages import command_names
+from bdo_daily_bot.messages import help_text
 
 
 class RaidRegistration(commands.Cog):
     """
     Cog that responsible for user registration
     """
+
     database = DatabaseManager()
 
     def __init__(self, bot: Bot):
@@ -61,4 +64,4 @@ def setup(bot: Bot):
     :param bot: discord bot to add the cog
     """
     bot.add_cog(RaidRegistration(bot))
-    log_template.cog_launched('RaidRegistration')
+    log_template.cog_launched("RaidRegistration")

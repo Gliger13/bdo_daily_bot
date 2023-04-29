@@ -1,13 +1,12 @@
 """Test of the correctness of obtaining a document about user by its name."""
 import pytest
-
 from core.database.user_collection import UserCollection
 from test_framework.asserts.database_asserts.check_user_collection import check_find_user_by_nickname
 from test_framework.scripts.common.data_factory import get_test_data
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('test_data', get_test_data(__file__))
+@pytest.mark.parametrize("test_data", get_test_data(__file__))
 async def test_find_user_by_nickname(user_collection: UserCollection, test_data: dict):
     """
     Test of the correctness of obtaining a document about user by its name.

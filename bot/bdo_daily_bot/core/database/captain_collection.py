@@ -1,7 +1,9 @@
 """Contains the class for working with the captain database collection."""
 import datetime
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -13,6 +15,7 @@ from bdo_daily_bot.settings import settings
 
 class CaptainCollection(metaclass=MetaSingleton):
     """Responsible for working with the captain MongoDB collection."""
+
     _collection = None  # Contain database settings collection
 
     @property
@@ -44,7 +47,7 @@ class CaptainCollection(metaclass=MetaSingleton):
             "raids_created": 0,
             "drove_people": 0,
             "registration_time": datetime.datetime.now(),
-            "last_raids": []
+            "last_raids": [],
         }
         await self.collection.insert_one(captain_new_document)
         logging.info("New captain `{}` was registered in the database", captain_name)
@@ -82,12 +85,7 @@ class CaptainCollection(metaclass=MetaSingleton):
         await self.collection.find_one_and_update(
             {"discord_id": discord_id},
             {
-                "$inc": {
-                    "raids_created": 1,
-                    "drove_people": len(raid_item.members)
-                },
-                "$set": {
-                    "last_created": raid_item.time_leaving
-                }
-            }
+                "$inc": {"raids_created": 1, "drove_people": len(raid_item.members)},
+                "$set": {"last_created": raid_item.time_leaving},
+            },
         )

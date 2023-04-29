@@ -2,13 +2,20 @@
 import asyncio
 import threading
 from time import sleep
-from typing import Optional, List, Union
+from typing import List
+from typing import Optional
+from typing import Union
 
 import pytest
-from discord import Client, Guild, TextChannel, VoiceChannel, CategoryChannel, Role
+from discord import CategoryChannel
+from discord import Client
+from discord import Guild
+from discord import Role
+from discord import TextChannel
+from discord import VoiceChannel
+from settings import settings
 
 from bdo_daily_bot.bot import BdoDailyBot
-from settings import settings
 
 
 @pytest.fixture(scope="session")

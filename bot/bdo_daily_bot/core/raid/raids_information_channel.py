@@ -2,9 +2,18 @@
 import logging
 from datetime import datetime
 from random import randrange
-from typing import Dict, List, Optional
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from discord import CategoryChannel, Colour, Embed, Guild, Message, NotFound, TextChannel, utils
+from discord import CategoryChannel
+from discord import Colour
+from discord import Embed
+from discord import Guild
+from discord import Message
+from discord import NotFound
+from discord import TextChannel
+from discord import utils
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.database.manager import DatabaseManager
@@ -22,6 +31,7 @@ class RaidsInformationChannel:
     Class responsible for discord channel with information about all raids.
     Include active raids and it's attributes.
     """
+
     __database = DatabaseManager()
 
     def __init__(self, guild: Guild, category_channel: CategoryChannel, active_raids: List[Raid]):
@@ -107,7 +117,7 @@ class RaidsInformationChannel:
 
         :param information_channel_attributes: raid information attributes from the database
         """
-        channel_id = information_channel_attributes.get('channel_id')
+        channel_id = information_channel_attributes.get("channel_id")
         if not channel_id:
             await self.__create_channel()
 
@@ -124,7 +134,7 @@ class RaidsInformationChannel:
 
         :param information_channel_attributes: raid information attributes from the database
         """
-        active_raids_message_id = information_channel_attributes.get('active_raids_message_id')
+        active_raids_message_id = information_channel_attributes.get("active_raids_message_id")
         if not active_raids_message_id:
             await self.__send_active_raids_message()
 
@@ -141,12 +151,13 @@ class RaidsInformationChannel:
 
         :param information_channel_attributes: raid information attributes from the database
         """
-        yesterday_raids_message_id = information_channel_attributes.get('yesterday_raids_message_id')
+        yesterday_raids_message_id = information_channel_attributes.get("yesterday_raids_message_id")
         if not yesterday_raids_message_id:
             await self.__send_yesterday_raids_message()
 
-        self.yesterday_raids_message = await self.get_message_from_channel_by_id(self.channel,
-                                                                                 yesterday_raids_message_id)
+        self.yesterday_raids_message = await self.get_message_from_channel_by_id(
+            self.channel, yesterday_raids_message_id
+        )
         if not self.yesterday_raids_message:
             await self.__send_yesterday_raids_message()
 
@@ -155,8 +166,12 @@ class RaidsInformationChannel:
         Create and save raids information channel for specific guild and category channel
         """
         self.channel = await self.guild.create_text_channel(
-            name=messages.raid_info_channel_name, category=self.category_channel,
-            position=0, topic=messages.raid_info_channel_topic, reason=messages.raid_info_channel_creation_reason)
+            name=messages.raid_info_channel_name,
+            category=self.category_channel,
+            position=0,
+            topic=messages.raid_info_channel_topic,
+            reason=messages.raid_info_channel_creation_reason,
+        )
         logging.info("{}/{}: Raids information channel was created".format(self.guild.name, self.channel.name))
 
     async def __send_active_raids_message(self):
@@ -180,8 +195,12 @@ class RaidsInformationChannel:
         Save raids information channel attributes
         """
         await self.__database.settings.set_information_channel_attributes(
-            self.guild.id, self.guild.name, self.channel.id,
-            self.active_raids_message.id, self.yesterday_raids_message.id)
+            self.guild.id,
+            self.guild.name,
+            self.channel.id,
+            self.active_raids_message.id,
+            self.yesterday_raids_message.id,
+        )
 
     def __active_raids_status_embed(self):
         """
@@ -192,7 +211,8 @@ class RaidsInformationChannel:
         embed = Embed(
             title=messages.active_raids_message_title,
             description=messages.active_raids_message_description,
-            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)))
+            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)),
+        )
         bot_as_user = BdoDailyBot.bot.get_user(settings.BOT_ID)
         embed.set_author(
             name=bot_as_user.name,
@@ -207,8 +227,8 @@ class RaidsInformationChannel:
                     else:
                         day = messages.tomorrow
                     field_name = messages.active_raids_message_name.format(
-                        captain_name=active_raid.captain.nickname,
-                        time_leaving=active_raid.time.normal_time_leaving)
+                        captain_name=active_raid.captain.nickname, time_leaving=active_raid.time.normal_time_leaving
+                    )
                     field_message = messages.active_raids_message.format(
                         discord_username=active_raid.captain.user.mention,
                         captain_name=active_raid.captain.nickname,
@@ -217,7 +237,8 @@ class RaidsInformationChannel:
                         server=active_raid.bdo_server,
                         places_left=active_raid.places_left,
                         max_places=active_raid.MAX_RAID_MEMBERS_AMOUNT,
-                        channel_name=raid_channel.channel.mention)
+                        channel_name=raid_channel.channel.mention,
+                    )
                     embed.add_field(name=field_name, value=field_message, inline=False)
         else:
             embed.add_field(name=messages.no_active_raids_name, value=messages.no_active_raids, inline=False)
@@ -243,7 +264,8 @@ class RaidsInformationChannel:
         embed = Embed(
             title=messages.yesterday_raids_message_title,
             description=messages.yesterday_raids_message_description,
-            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)))
+            colour=Colour.from_rgb(randrange(30, 230), randrange(30, 230), randrange(30, 230)),
+        )
         bot_as_user = BdoDailyBot.bot.get_user(settings.BOT_ID)
         embed.set_author(
             name=bot_as_user.name,
@@ -253,8 +275,8 @@ class RaidsInformationChannel:
         if yesterday_raids := await self.__yesterday_raids():
             for last_raid in yesterday_raids:
                 field_name = messages.yesterday_raids_message_name.format(
-                    captain_name=last_raid.captain.nickname,
-                    time_leaving=last_raid.time.normal_time_leaving)
+                    captain_name=last_raid.captain.nickname, time_leaving=last_raid.time.normal_time_leaving
+                )
                 day = messages.today if last_raid.time.time_leaving.day == datetime.now().day else messages.yesterday
                 field_message = messages.yesterday_raids_message.format(
                     discord_username=last_raid.captain.user.mention,
@@ -262,7 +284,8 @@ class RaidsInformationChannel:
                     day=day,
                     time_leaving=last_raid.time.normal_time_leaving,
                     places_left=last_raid.places_left,
-                    max_places=last_raid.MAX_RAID_MEMBERS_AMOUNT)
+                    max_places=last_raid.MAX_RAID_MEMBERS_AMOUNT,
+                )
                 embed.add_field(name=field_name, value=field_message, inline=False)
         else:
             embed.add_field(name=messages.no_yesterday_raids_name, value=messages.no_yesterday_raids, inline=False)

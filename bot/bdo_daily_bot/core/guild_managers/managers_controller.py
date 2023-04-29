@@ -22,6 +22,7 @@ class ManagersController:
     """
     Response for controlling, containing and resending requests to Raid Guild Managers
     """
+
     guilds_managers = {}
     __database = DatabaseManager()
 
@@ -111,13 +112,19 @@ class ManagersController:
                     manager = await cls.get_or_create(channel.guild)
                     manager.add_raid(raid)
             else:
-                logging.warning("Bot initialisation: Raid {}/{}: Channels from the database are empty. "
-                                "Can't load raid raid. Need to manually remove the defect document.".
-                                format(raid.captain.nickname, raid.time.normal_time_leaving))
+                logging.warning(
+                    "Bot initialisation: Raid {}/{}: Channels from the database are empty. "
+                    "Can't load raid raid. Need to manually remove the defect document.".format(
+                        raid.captain.nickname, raid.time.normal_time_leaving
+                    )
+                )
                 continue
             asyncio.ensure_future(cls.__start_raid_flow(raid))
-            logging.info("Bot initialisation: Raid {}/{}: Raid from the database was loaded and started.".
-                         format(raid.captain.nickname, raid.time.kebab_time_leaving))
+            logging.info(
+                "Bot initialisation: Raid {}/{}: Raid from the database was loaded and started.".format(
+                    raid.captain.nickname, raid.time.kebab_time_leaving
+                )
+            )
         logging.info("Bot initialisation: All actual raids was loaded from the database.")
 
     @classmethod
@@ -157,5 +164,8 @@ class ManagersController:
         await raid_to_start.flow.start()
         await cls.remove_raid_from_managers(raid_to_start)
 
-        logging.info("Raid {}/{}: Raid was completely ended."
-                     .format(raid_to_start.captain.nickname, raid_to_start.time.kebab_time_leaving))
+        logging.info(
+            "Raid {}/{}: Raid was completely ended.".format(
+                raid_to_start.captain.nickname, raid_to_start.time.kebab_time_leaving
+            )
+        )

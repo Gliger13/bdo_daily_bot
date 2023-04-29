@@ -3,9 +3,11 @@ Module contain raid class to containing raid attributes and control raid flow
 """
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
-from discord import Guild, TextChannel
+from discord import Guild
+from discord import TextChannel
 
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.raid.raid_item import RaidItem
@@ -21,10 +23,18 @@ class Raid:
     Contain raid attributes and control raid flow.
     Flow is raid life from creation to deleting.
     """
+
     MAX_RAID_MEMBERS_AMOUNT = 20
 
-    def __init__(self, *, captain: RaidMember, bdo_server: str, time_leaving: datetime,
-                 time_reservation_open: datetime = None, reservation_count: int = 1):
+    def __init__(
+        self,
+        *,
+        captain: RaidMember,
+        bdo_server: str,
+        time_leaving: datetime,
+        time_reservation_open: datetime = None,
+        reservation_count: int = 1,
+    ):
         """
         :param captain: raid captain
         :param bdo_server: game server where raid will leave

@@ -1,7 +1,8 @@
 """
 Contain class for storing and processing raid time
 """
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from typing import List
 
 
@@ -9,6 +10,7 @@ class RaidTime:
     """
     Class for storing and processing raid time
     """
+
     __time_to_wait_after_leaving = timedelta(minutes=10)
     __time_to_notify_before_leaving = timedelta(minutes=7)
 
@@ -30,7 +32,7 @@ class RaidTime:
 
         :return: raid time leaving in kebab format
         """
-        return self.time_leaving.strftime('%H-%M')
+        return self.time_leaving.strftime("%H-%M")
 
     @property
     def kebab_time_reservation_open(self) -> str:
@@ -39,7 +41,7 @@ class RaidTime:
 
         :return: raid time leaving in kebab format
         """
-        return self.time_reservation_open.strftime('%H-%M')
+        return self.time_reservation_open.strftime("%H-%M")
 
     @property
     def normal_time_leaving(self) -> str:
@@ -48,7 +50,7 @@ class RaidTime:
 
         :return: raid time leaving in human format
         """
-        return self.time_leaving.strftime('%H:%M')
+        return self.time_leaving.strftime("%H:%M")
 
     @property
     def normal_time_reservation_open(self) -> str:
@@ -57,7 +59,7 @@ class RaidTime:
 
         :return: raid time leaving in human format
         """
-        return self.time_reservation_open.strftime('%H:%M')
+        return self.time_reservation_open.strftime("%H:%M")
 
     @property
     def normal_next_display_time(self) -> str:
@@ -67,7 +69,7 @@ class RaidTime:
         :return: raid time leaving in human format
         """
         if self.secs_to_display_list:
-            return (datetime.now() + timedelta(seconds=self.secs_to_display_list[-1])).strftime('%H:%M')
+            return (datetime.now() + timedelta(seconds=self.secs_to_display_list[-1])).strftime("%H:%M")
         return self.kebab_time_leaving
 
     @property
@@ -77,7 +79,7 @@ class RaidTime:
 
         :return: time when raid channel will be deleted in human format
         """
-        return (self.time_leaving + self.__time_to_wait_after_leaving).strftime('%H:%M')
+        return (self.time_leaving + self.__time_to_wait_after_leaving).strftime("%H:%M")
 
     @property
     def secs_before_collection(self) -> int:

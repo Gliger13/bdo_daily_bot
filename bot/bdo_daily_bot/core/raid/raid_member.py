@@ -1,7 +1,11 @@
 """
 Module contain class for describing raid member
 """
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 from discord import User
 
@@ -46,9 +50,7 @@ class RaidMember:
 
         :return: dict of the member attributes
         """
-        return {"discord_user_id": self.user.id,
-                "discord_name": self.user.name,
-                "nickname": self.nickname}
+        return {"discord_user_id": self.user.id, "discord_name": self.user.name, "nickname": self.nickname}
 
     @property
     def is_registered(self) -> bool:
@@ -73,6 +75,7 @@ class RaidMemberFactory:
     """
     Class for producing raid members
     """
+
     __database = DatabaseManager()
 
     @classmethod
@@ -86,7 +89,7 @@ class RaidMemberFactory:
         :return: raid member model
         """
         if member_attributes := await cls.__database.user.find_user_by_nickname(nickname):
-            user = BdoDailyBot.bot.get_user(member_attributes.get('discord_id'))
+            user = BdoDailyBot.bot.get_user(member_attributes.get("discord_id"))
             return RaidMember(user, nickname)
         return RaidMember(nickname=nickname)
 
@@ -101,7 +104,7 @@ class RaidMemberFactory:
         :return: raid member model
         """
         if member_attributes := await cls.__database.user.get_user_by_id(user.id):
-            return RaidMember(user, member_attributes.get('nickname'))
+            return RaidMember(user, member_attributes.get("nickname"))
         return RaidMember(user=user)
 
     @classmethod
@@ -116,7 +119,7 @@ class RaidMemberFactory:
         :return: raid member model
         """
         if member_attributes := await cls.__database.user.get_user_by_id(user_id):
-            nickname = member_attributes.get('nickname')
+            nickname = member_attributes.get("nickname")
             if user := BdoDailyBot.bot.get_user(user_id):
                 return RaidMember(user, nickname)
             return RaidMember(nickname=nickname)
@@ -132,8 +135,8 @@ class RaidMemberFactory:
         :param attributes: member attributes
         :return: raid member model
         """
-        nickname = attributes.get('nickname')
-        if user := BdoDailyBot.bot.get_user(attributes.get('discord_user_id')):
+        nickname = attributes.get("nickname")
+        if user := BdoDailyBot.bot.get_user(attributes.get("discord_user_id")):
             return RaidMember(user, nickname)
         return RaidMember(nickname=nickname)
 

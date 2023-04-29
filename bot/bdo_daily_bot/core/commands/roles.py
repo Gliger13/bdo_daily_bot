@@ -30,7 +30,7 @@ async def add_role_from_reaction(ctx: ReactionContext):
         logging.info("No guild settings for guild: `{}`".format(ctx.guild.id))
         return
 
-    role_from_reaction = guild_settings.get('role_from_reaction')
+    role_from_reaction = guild_settings.get("role_from_reaction")
     if not role_from_reaction:
         logging.info("No role_from_reaction settings for guild: `{}`".format(ctx.guild.id))
         return
@@ -60,7 +60,7 @@ async def remove_role_from_reaction(ctx: ReactionContext):
     if not guild_settings:
         return
 
-    role_from_reaction = guild_settings.get('role_from_reaction')
+    role_from_reaction = guild_settings.get("role_from_reaction")
 
     if not role_from_reaction:
         return

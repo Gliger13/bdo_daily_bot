@@ -1,13 +1,12 @@
 """Test that the notification activation setting is correct."""
 import pytest
-
 from core.database.user_collection import UserCollection
 from test_framework.asserts.database_asserts.check_user_collection import check_set_notify_on
 from test_framework.scripts.common.data_factory import get_test_data
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('test_data', get_test_data(__file__))
+@pytest.mark.parametrize("test_data", get_test_data(__file__))
 async def test_set_notify_on(user_collection: UserCollection, test_data: dict):
     """
     Test that the notification activation setting is correct.

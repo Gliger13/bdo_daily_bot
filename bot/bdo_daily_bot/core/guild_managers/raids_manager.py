@@ -6,7 +6,10 @@ import logging
 from bisect import bisect_left
 from typing import Optional
 
-from discord import CategoryChannel, Guild, HTTPException, utils
+from discord import CategoryChannel
+from discord import Guild
+from discord import HTTPException
+from discord import utils
 
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.guild_managers.raids_keeper import RaidsKeeper
@@ -21,6 +24,7 @@ class RaidsGuildManager:
     """
     Response for guild raids creation and managing
     """
+
     __database = DatabaseManager()
 
     def __init__(self, guild: Guild):
@@ -82,9 +86,11 @@ class RaidsGuildManager:
         try:
             await raid_channel.create(self.raids_category_channel, new_channel_position)
         except HTTPException as error:
-            logging.error("{}: Raid {}/{}: Can't create channel for raid. "
-                          "Trying reset information and category channel.\n"
-                          "Error: {}".format(self.guild, raid.captain.nickname, raid.time.normal_time_leaving, error))
+            logging.error(
+                "{}: Raid {}/{}: Can't create channel for raid. "
+                "Trying reset information and category channel.\n"
+                "Error: {}".format(self.guild, raid.captain.nickname, raid.time.normal_time_leaving, error)
+            )
             await self.__set_raids_information_channel()
             await self.__set_raids_category_channel()
             await raid_channel.create(self.raids_category_channel, new_channel_position)
@@ -159,7 +165,8 @@ class RaidsGuildManager:
         :return: discord category channel of manager guild
         """
         category_channel = await self.guild.create_category_channel(
-            name=messages.raid_category_channel_name, reason=messages.raid_category_channel_creation_reason)
+            name=messages.raid_category_channel_name, reason=messages.raid_category_channel_creation_reason
+        )
         await self.__database.settings.set_category_channel_id(self.guild.id, self.guild.name, category_channel.id)
         logging.info("{}: Raids category channel was created and saved".format(self.guild.name))
         return category_channel
@@ -171,8 +178,9 @@ class RaidsGuildManager:
         Load category channel id for given guild from database. If not exists
         then create guild category channel and save it in database
         """
-        category_channel_id = await self.__database.settings.get_category_channel_id_by_guild_id(self.guild.id,
-                                                                                                 self.guild.name)
+        category_channel_id = await self.__database.settings.get_category_channel_id_by_guild_id(
+            self.guild.id, self.guild.name
+        )
         category_channel = utils.get(self.guild.categories, id=category_channel_id)
         self.raids_category_channel = category_channel or await self.__create_guild_category_channel()
 
@@ -181,5 +189,6 @@ class RaidsGuildManager:
         Load guild raids information channel or create a new one
         """
         self.raids_information_channel = RaidsInformationChannel(
-            self.guild, self.raids_category_channel, self.active_raids)
+            self.guild, self.raids_category_channel, self.active_raids
+        )
         await self.raids_information_channel.init()

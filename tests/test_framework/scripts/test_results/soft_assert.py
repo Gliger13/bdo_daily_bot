@@ -1,8 +1,10 @@
 """Contain soft assert realisation and formatting test result message"""
 import inspect
-from typing import Any, Optional
+from typing import Any
+from typing import Optional
 
-from test_framework.scripts.test_results.expectation_report import ExpectationReport, TestResult
+from test_framework.scripts.test_results.expectation_report import ExpectationReport
+from test_framework.scripts.test_results.expectation_report import TestResult
 from test_framework.scripts.test_results.test_data import TestData
 
 __FAILED_EXPECTATIONS = {}
@@ -18,7 +20,7 @@ def __get_test_id() -> Optional[int]:
 
     stack = inspect.stack()
     for call in stack:
-        if call[3] == 'runtestprotocol':
+        if call[3] == "runtestprotocol":
             test_id = id(call.frame)
             return test_id
     return None

@@ -41,8 +41,7 @@ async def set_raids_disabled(ctx: Context) -> bool:
 
 
 @command_logging
-async def set_notification_role(ctx: Context, role_name: str, role_id: int,
-                                start_time: time, end_time: time):
+async def set_notification_role(ctx: Context, role_name: str, role_id: int, start_time: time, end_time: time):
     """
     Disable availability to initialize the raids in given guild
 
@@ -53,8 +52,9 @@ async def set_notification_role(ctx: Context, role_name: str, role_id: int,
     :param end_time: end time where not need ping the given role
     :return: True if command success else False
     """
-    await __database.settings.set_notification_role(ctx.guild.name, ctx.guild.id, role_name=role_name, role_id=role_id,
-                                                    start_time=start_time, end_time=end_time)
+    await __database.settings.set_notification_role(
+        ctx.guild.name, ctx.guild.id, role_name=role_name, role_id=role_id, start_time=start_time, end_time=end_time
+    )
     await UsersSender.send_user_set_notification_role(ctx.author, ctx.guild.name, role_name, start_time, end_time)
     return True
 

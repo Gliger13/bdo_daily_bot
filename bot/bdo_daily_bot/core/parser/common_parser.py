@@ -2,7 +2,9 @@
 Module contain class for parsing common input arguments
 """
 import re
-from datetime import datetime, time, timedelta
+from datetime import datetime
+from datetime import time
+from datetime import timedelta
 from enum import Enum
 from re import Match
 from typing import Optional
@@ -17,6 +19,7 @@ class CommandInputTypes(Enum):
     """
     Contain common input types
     """
+
     SELF = "self"
     CTX = "ctx"
     TIME = "time", regex.time
@@ -38,6 +41,7 @@ class CommonCommandInputParser:
     """
     Response for parsing common commands attributes
     """
+
     __database = DatabaseManager()
 
     @classmethod

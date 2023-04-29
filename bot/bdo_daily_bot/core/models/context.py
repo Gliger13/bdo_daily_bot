@@ -3,10 +3,17 @@ Module contain classes for wrapping discord context and listeners
 """
 from abc import ABC
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any
+from typing import Optional
+from typing import Union
 
-from discord import DMChannel, Guild, Message, TextChannel, User
-from discord.ext.commands import Command, Context
+from discord import DMChannel
+from discord import Guild
+from discord import Message
+from discord import TextChannel
+from discord import User
+from discord.ext.commands import Command
+from discord.ext.commands import Context
 from typing_extensions import TypeGuard
 
 from bdo_daily_bot.core.tools.common import PlugCommand
@@ -55,8 +62,10 @@ class ReactionContext(ContextInterface):
         Raise ValueError if instance reaction type not listed in EXPECTED_REACTION_ACTIONS
         """
         if self.reaction_type not in self.EXPECTED_REACTION_ACTIONS:
-            raise ValueError(f"Reaction type can only `REACTION_ADD` or `REACTION_REMOVE` reaction type. "
-                             f"Received `{self.reaction_type}`.")
+            raise ValueError(
+                "Reaction type can only `REACTION_ADD` or `REACTION_REMOVE` reaction type. "
+                f"Received `{self.reaction_type}`."
+            )
 
     def __replace_command(self):
         """

@@ -49,7 +49,7 @@ repos:
         name: "[Auto Style] Reorder imports"
         types: [ python ]
   - repo: https://github.com/jazzband/pip-tools
-    rev: 6.12.3
+    rev: 6.13.0
     hooks:
       - id: pip-compile
         name: "[Auto Dependencies] Pip compile application main requirements"

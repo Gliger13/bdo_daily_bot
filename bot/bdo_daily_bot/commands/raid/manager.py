@@ -3,21 +3,25 @@ Module contain discord cog with name `RaidManager`. Provide commands to
 open and close raid reservation places
 """
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot
+from discord.ext.commands import Context
 
-from bdo_daily_bot.core.commands.raid.manager import close_reservation, open_reservation
+from bdo_daily_bot.core.commands.raid.manager import close_reservation
+from bdo_daily_bot.core.commands.raid.manager import open_reservation
 from bdo_daily_bot.core.commands_reporter.reporter import Reporter
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.logger import log_template
 from bdo_daily_bot.core.parser.common_parser import CommonCommandInputParser
 from bdo_daily_bot.core.raid.raid_member import RaidMemberFactory
-from bdo_daily_bot.messages import command_names, help_text
+from bdo_daily_bot.messages import command_names
+from bdo_daily_bot.messages import help_text
 
 
 class RaidManager(commands.Cog):
     """
     Cog that responsible for management raids
     """
+
     database = DatabaseManager()
 
     def __init__(self, bot: Bot):
@@ -29,8 +33,8 @@ class RaidManager(commands.Cog):
 
     @commands.command(name=command_names.function_command.close_reservation, help=help_text.close_reservation)
     @commands.guild_only()
-    @commands.has_role('Капитан')
-    async def close_reservation(self, ctx: Context, places: int, captain_name: str = '', time_leaving: str = ''):
+    @commands.has_role("Капитан")
+    async def close_reservation(self, ctx: Context, places: int, captain_name: str = "", time_leaving: str = ""):
         """
         Command to close places for joining in the raid
 
@@ -47,8 +51,8 @@ class RaidManager(commands.Cog):
 
     @commands.command(name=command_names.function_command.open_reservation, help=help_text.open_reservation)
     @commands.guild_only()
-    @commands.has_role('Капитан')
-    async def open_reservation(self, ctx: Context, places: int, captain_name='', time_leaving=''):
+    @commands.has_role("Капитан")
+    async def open_reservation(self, ctx: Context, places: int, captain_name="", time_leaving=""):
         """
         Command to open reserved raid places
 
@@ -71,4 +75,4 @@ def setup(bot: Bot):
     :param bot: discord bot to add the cog
     """
     bot.add_cog(RaidManager(bot))
-    log_template.cog_launched('RaidManager')
+    log_template.cog_launched("RaidManager")

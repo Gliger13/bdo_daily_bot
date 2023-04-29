@@ -8,6 +8,7 @@ class CommandFailureReasons(Enum):
     """
     Contains the reasons for the failed commands.
     """
+
     CAPTAIN_NOT_EXIST = "captain_not_exist"
     RAID_NOT_FOUND = "raid_not_found"
     RAID_EXIST = "raid_exist"

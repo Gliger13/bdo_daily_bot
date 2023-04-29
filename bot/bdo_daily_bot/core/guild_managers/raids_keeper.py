@@ -3,7 +3,8 @@ Contain class that contain all active raids
 """
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from bdo_daily_bot.core.raid.raid import Raid
 from bdo_daily_bot.core.raid.raid_item import RaidItem
@@ -15,6 +16,7 @@ class RaidsKeeper:
     """
     Contain and provide all active raids
     """
+
     __raids = []
 
     @classmethod
@@ -61,14 +63,17 @@ class RaidsKeeper:
         """
         raids = cls.get_raids_by_captain_name(captain_name)
         if len(raids) == 1:
-            return messages.raid_parameters_without_number.format(time_leaving=raids[0].time.normal_time_leaving,
-                                                                  server=raids[0].bdo_server)
+            return messages.raid_parameters_without_number.format(
+                time_leaving=raids[0].time.normal_time_leaving, server=raids[0].bdo_server
+            )
         message_parts = []
         for index, raid in enumerate(raids):
-            message_parts.append(messages.raid_parameters.format(number=index + 1,
-                                                                 time_leaving=raid.time.normal_time_leaving,
-                                                                 server=raid.bdo_server))
-        return '\n'.join(message_parts)
+            message_parts.append(
+                messages.raid_parameters.format(
+                    number=index + 1, time_leaving=raid.time.normal_time_leaving, server=raid.bdo_server
+                )
+            )
+        return "\n".join(message_parts)
 
     @classmethod
     def get_by_captain_name_and_time_leaving(cls, captain_name: str, time_leaving: datetime) -> Optional[Raid]:
@@ -104,8 +109,11 @@ class RaidsKeeper:
         if raid_to_remove in cls.__raids:
             cls.__raids.remove(raid_to_remove)
         else:
-            logging.warning("Raid {}/{}: Trying to remove not existed raid. Ignoring."
-                            .format(raid_to_remove.captain.nickname, raid_to_remove.time.normal_time_leaving))
+            logging.warning(
+                "Raid {}/{}: Trying to remove not existed raid. Ignoring.".format(
+                    raid_to_remove.captain.nickname, raid_to_remove.time.normal_time_leaving
+                )
+            )
 
     @classmethod
     def sort_raids_by_time_leaving(cls, raids: List[Raid]) -> List[Raid]:

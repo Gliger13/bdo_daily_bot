@@ -1,7 +1,7 @@
 # Daily Discord Bot BDO
-![Generic badge](https://img.shields.io/badge/version-3.1.3-green.svg) 
-![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot) 
-![Generic badge](https://img.shields.io/badge/python-3.10-blue.svg) 
+![Generic badge](https://img.shields.io/badge/version-3.1.3-green.svg)
+![Generic badge](https://img.shields.io/github/license/Gliger13/bdo_daily_bot)
+![Generic badge](https://img.shields.io/badge/python-3.10-blue.svg)
 [![Discord](https://img.shields.io/discord/726859545082855483)](https://discord.gg/VaEsRTc)
 
 ## Purpose
@@ -9,9 +9,9 @@
 Discord Bot to organize and collect daily sea raids in the game **Black Desert Online[RU]**(BDO).
 
 Discord Bot for Black Desert Online RU community to collect daily sea raids. We
-can specify the raid collection and leaving time. The bot will send an image 
+can specify the raid collection and leaving time. The bot will send an image
 with the raid members every interval. Users can join the raid with one click
-and don't have to worry about anything. 
+and don't have to worry about anything.
 
 ## Content
 
@@ -36,7 +36,7 @@ Arguments with * are required
     - _reservation open_ - at this time users will be able to get into the raid.
     - _reservation count_ - places you can not take.
 
-Maximum number of members in the raid = 20 - _reserrvation count_. 
+Maximum number of members in the raid = 20 - _reserrvation count_.
 When a members successfully enters the raid, the number of remaining seats in the collection message is updated.
 Between the _reservation open_ and _time leaving_ the bot will at some interval send images of the raid composition table similar to this.
 
@@ -77,14 +77,14 @@ The bot does auto-save the raid when it changes.
  - ```!!загрузи_рейд *[captain_name] *[time_leaving]``` - Load raid.
 
 **Statistics**
- - ```!!стат [name]``` - Show statistics that the bot knows about user. 
+ - ```!!стат [name]``` - Show statistics that the bot knows about user.
  - ```!!сервер_стат``` - Show statistics that the bot knows about user.
 
 ## Additional features
 
 **Custom help**
  - ```!!help```
- 
+
 **Admin**
  - ```!!удалять_тут``` - Bot specify a channel where can remove messages.
  - ```!!не_удалять``` - Bot deny users use remove messages command in this channel.

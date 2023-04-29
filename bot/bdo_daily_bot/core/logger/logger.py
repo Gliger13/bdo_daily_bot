@@ -22,7 +22,7 @@ class BotLogger(logging.Logger):
         """
         Set custom logger as root logger
         """
-        logger = BotLogger('bot_logger')
+        logger = BotLogger("bot_logger")
         logging.root = logger
 
     @classmethod
@@ -30,7 +30,7 @@ class BotLogger(logging.Logger):
         """
         Write initial line of the log file
         """
-        with open(ProjectPathFactory.get_logs_path(), 'a') as file:
+        with open(ProjectPathFactory.get_logs_path(), "a") as file:
             demarcation_line = f"{'Level':=^8}=|={'Time':=^23}=|={'Message':=^33}\n"
             file.write(demarcation_line)
 
@@ -55,7 +55,7 @@ class BotLogger(logging.Logger):
         """
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG)
-        console_format = logging.Formatter('%(asctime)s   %(message)s', "%H:%M:%S")
+        console_format = logging.Formatter("%(asctime)s   %(message)s", "%H:%M:%S")
         console_handler.setFormatter(console_format)
         return console_handler
 
@@ -67,15 +67,15 @@ class BotLogger(logging.Logger):
         :return: log formatted file handler
         """
         file_handler = logging.FileHandler(ProjectPathFactory.get_logs_path())
-        file_format = logging.Formatter('[%(levelname)-8s] %(asctime)s | %(message)s', "%d.%m.%y %H:%M:%S")
+        file_format = logging.Formatter("[%(levelname)-8s] %(asctime)s | %(message)s", "%d.%m.%y %H:%M:%S")
         file_handler.setFormatter(file_format)
         file_handler.setLevel(logging.DEBUG)
         return file_handler
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     BotLogger.set_default()
-    logging.info('Some information')
-    logging.warning('Some warning')
-    logging.error('Some error')
-    logging.critical('Some critical error')
+    logging.info("Some information")
+    logging.warning("Some warning")
+    logging.error("Some error")
+    logging.critical("Some critical error")

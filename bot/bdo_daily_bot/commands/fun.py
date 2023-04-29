@@ -6,19 +6,23 @@ import random
 import re
 
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
+from discord.ext.commands import Bot
+from discord.ext.commands import Context
 
 from bdo_daily_bot.core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from bdo_daily_bot.core.commands_reporter.reporter import Reporter
 from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.core.logger import log_template
-from bdo_daily_bot.messages import command_names, help_text, messages
+from bdo_daily_bot.messages import command_names
+from bdo_daily_bot.messages import help_text
+from bdo_daily_bot.messages import messages
 
 
 class Fun(commands.Cog):
     """
     Cog that contain all an useless(fun) bot command
     """
+
     database = DatabaseManager()
 
     def __init__(self, bot: Bot):
@@ -29,7 +33,7 @@ class Fun(commands.Cog):
         self.reporter = Reporter()
 
     @commands.command(name=command_names.function_command.judge_him, help=help_text.judge_him)
-    async def judge_him(self, ctx: Context, username:str = ''):
+    async def judge_him(self, ctx: Context, username: str = ""):
         """
         Command to send a command where the bot begins to judge the person.
 
@@ -45,15 +49,22 @@ class Fun(commands.Cog):
             username = member.nick if member else ""
 
         bot_msg = await ctx.send(f"Я осуждаю {username}!")
-        judge_messages = ["Фу таким быть", f"Я осуждаю {username}!", "Я печенька", f"Я осуждаю {username}!",
-                          "Ай-яй таким быть", "Меня заставляют это говорить!", "Ууууу, таким быть",
-                          f"Я осуждаю {username}!"]
+        judge_messages = [
+            "Фу таким быть",
+            f"Я осуждаю {username}!",
+            "Я печенька",
+            f"Я осуждаю {username}!",
+            "Ай-яй таким быть",
+            "Меня заставляют это говорить!",
+            "Ууууу, таким быть",
+            f"Я осуждаю {username}!",
+        ]
         for message in judge_messages:
             await asyncio.sleep(10)
             await bot_msg.edit(content=message)
 
     @commands.command(name=command_names.function_command.where, help=help_text.where)
-    @commands.has_role('Капитан')
+    @commands.has_role("Капитан")
     async def where(self, ctx: Context, name: str):
         """
         Command to send a message with answer of the strange question
@@ -61,14 +72,14 @@ class Fun(commands.Cog):
         :param ctx: discord command context
         :param name: person username
         """
-        with_who = ['у Mandeson(pornhub)']
-        woods = ['На маленькой ', 'На высокой ', 'На большой ', 'На средней', 'На пиратской ', 'На милой ']
+        with_who = ["у Mandeson(pornhub)"]
+        woods = ["На маленькой ", "На высокой ", "На большой ", "На средней", "На пиратской ", "На милой "]
         random_index1 = random.randrange(0, len(with_who))
         random_index2 = random.randrange(0, len(woods))
         name = name.lower()
-        if name in ['ldov10', 'bipi']:
-            await ctx.send(woods[random_index2] + 'мачте ' + with_who[random_index1])
-        elif name == 'таня':
+        if name in ["ldov10", "bipi"]:
+            await ctx.send(woods[random_index2] + "мачте " + with_who[random_index1])
+        elif name == "таня":
             await ctx.send("На своей мачте")
         else:
             await ctx.send("В море наверное")
@@ -85,7 +96,7 @@ class Fun(commands.Cog):
         """
         if number == 66:
             # Was used to start a revolution... Was successful...
-            await ctx.channel.send('Хорошая попытка, уже был бунт')
+            await ctx.channel.send("Хорошая попытка, уже был бунт")
 
         if number == 12 and ctx.author.id == self.bot.owner_id:
             # Bot will leave guild in where order was given
@@ -130,7 +141,7 @@ class Fun(commands.Cog):
         :param text: content of the message that the bot will send
         """
         channel = self.bot.get_channel(channel_id)
-        await channel.send(' '.join(text))
+        await channel.send(" ".join(text))
         await self.reporter.report_success_command(ctx)
 
     @commands.command(name=command_names.function_command.update_specific_roles, help=help_text.update_specific_roles)
@@ -142,19 +153,18 @@ class Fun(commands.Cog):
 
         :param ctx: discord command context
         """
-        discord_users = await self.database.user.collection.find(
-            {'entries': {'$gt': 15}},
-            {'discord_id': 1}
-        ).to_list(length=None)
+        discord_users = await self.database.user.collection.find({"entries": {"$gt": 15}}, {"discord_id": 1}).to_list(
+            length=None
+        )
 
         discord_users_exists = []
         for user in discord_users:
-            member = ctx.guild.get_member(user.get('discord_id'))
+            member = ctx.guild.get_member(user.get("discord_id"))
             if member:
                 discord_users_exists.append(member)
 
-        specific_role_1 = [role for role in ctx.guild.roles if role.name == 'Бартерёнок'].pop()
-        specific_role_2 = [role for role in ctx.guild.roles if role.name == 'Бывалый бартерист'].pop()
+        specific_role_1 = [role for role in ctx.guild.roles if role.name == "Бартерёнок"].pop()
+        specific_role_2 = [role for role in ctx.guild.roles if role.name == "Бывалый бартерист"].pop()
 
         members_with_role1 = 0
         members_with_role2 = 0
@@ -170,9 +180,10 @@ class Fun(commands.Cog):
                 members_with_role2 += 1
 
         message = messages.upgrade_role.format(
-            all_users=len(discord_users), exist_users=len(discord_users_exists),
+            all_users=len(discord_users),
+            exist_users=len(discord_users_exists),
             users_get_role=len(discord_users_exists) - members_with_role2,
-            users_upgrade_role=members_with_role1
+            users_upgrade_role=members_with_role1,
         )
 
         await ctx.send(message)
@@ -186,4 +197,4 @@ def setup(bot: Bot):
     :param bot: discord bot to add the cog
     """
     bot.add_cog(Fun(bot))
-    log_template.cog_launched('Fun')
+    log_template.cog_launched("Fun")

@@ -1,13 +1,17 @@
 """Contain class and function for creating report tables and reports"""
 import logging
 from enum import Enum
-from typing import Any, List, Union, Tuple
+from typing import Any
+from typing import List
+from typing import Tuple
+from typing import Union
 
 from tabulate import tabulate
 
 
 class TestResultAttributes(Enum):
     """Contain attributes of test result"""
+
     CHECK_MESSAGE = "Check message"
     RESOURCE_TYPE = "Resource type"
     RESOURCE_NAME = "Resource name"
@@ -20,9 +24,17 @@ class TestResultAttributes(Enum):
 class TestResult:
     """Responsible for containing test result attributes"""
 
-    def __init__(self, *, check_message: str = "",
-                 resource_type: str = "", resource_name: str = "", resource_id: Union[int, str] = "",
-                 expected_result: Any = True, actual_result: Any = False, difference: Any = ""):
+    def __init__(
+        self,
+        *,
+        check_message: str = "",
+        resource_type: str = "",
+        resource_name: str = "",
+        resource_id: Union[int, str] = "",
+        expected_result: Any = True,
+        actual_result: Any = False,
+        difference: Any = "",
+    ):
         """
         :param check_message: message of the test check
         :param resource_type: resource type, e.g. 'channel'
@@ -56,13 +68,15 @@ class TestResult:
 
         :return: test report message in one line
         """
-        return f"{TestResultAttributes.CHECK_MESSAGE.value}: {self.check_message}, " \
-               f"{TestResultAttributes.RESOURCE_TYPE.value}: {self.resource_type}, " \
-               f"{TestResultAttributes.RESOURCE_NAME.value}: {self.resource_name}, " \
-               f"{TestResultAttributes.RESOURCE_ID.value}: {self.resource_id}, " \
-               f"{TestResultAttributes.ACTUAL_RESULT.value}: {self.actual_result}, " \
-               f"{TestResultAttributes.EXPECTED_RESULT.value}: {self.expected_result}, " \
-               f"{TestResultAttributes.DIFFERENCE.value}: {self.difference}."
+        return (
+            f"{TestResultAttributes.CHECK_MESSAGE.value}: {self.check_message}, "
+            f"{TestResultAttributes.RESOURCE_TYPE.value}: {self.resource_type}, "
+            f"{TestResultAttributes.RESOURCE_NAME.value}: {self.resource_name}, "
+            f"{TestResultAttributes.RESOURCE_ID.value}: {self.resource_id}, "
+            f"{TestResultAttributes.ACTUAL_RESULT.value}: {self.actual_result}, "
+            f"{TestResultAttributes.EXPECTED_RESULT.value}: {self.expected_result}, "
+            f"{TestResultAttributes.DIFFERENCE.value}: {self.difference}."
+        )
 
     def get_report_list(self) -> List[str]:
         """
@@ -70,8 +84,15 @@ class TestResult:
 
         :return: list of test report attributes values
         """
-        return [self.check_message, self.resource_type, self.resource_name, self.resource_id,
-                self.expected_result, self.actual_result, self.difference]
+        return [
+            self.check_message,
+            self.resource_type,
+            self.resource_name,
+            self.resource_id,
+            self.expected_result,
+            self.actual_result,
+            self.difference,
+        ]
 
 
 class ExpectationReport:

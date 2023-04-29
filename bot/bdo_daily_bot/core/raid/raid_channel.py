@@ -4,14 +4,24 @@ Contain class for managing and creation raid channels
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from discord import CategoryChannel, Forbidden, Guild, HTTPException, Message, NotFound, TextChannel
+from discord import CategoryChannel
+from discord import Forbidden
+from discord import Guild
+from discord import HTTPException
+from discord import Message
+from discord import NotFound
+from discord import TextChannel
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.raid.raid import Raid
-from bdo_daily_bot.core.raid.raid_messages import RaidCollectionMessage, RaidLeaveMessage, RaidReservationMessage, \
-    RaidTableMessage
+from bdo_daily_bot.core.raid.raid_messages import RaidCollectionMessage
+from bdo_daily_bot.core.raid.raid_messages import RaidLeaveMessage
+from bdo_daily_bot.core.raid.raid_messages import RaidReservationMessage
+from bdo_daily_bot.core.raid.raid_messages import RaidTableMessage
 from bdo_daily_bot.messages import messages
 
 
@@ -54,12 +64,18 @@ class RaidChannel:
         :param raid_category: discord raid category channel to be assigned to the new channel
         :param position: position of the new raid channel
         """
-        self.channel = await self.guild.create_text_channel(name=self.name, category=raid_category,
-                                                            position=position, topic=messages.raid_channel_topic,
-                                                            reason=messages.raid_channel_creation_reason)
-        logging.info("{}/{}: Raid {}/{}: Raid channel was created".
-                     format(self.guild.name, self.channel.name, self.raid.captain.nickname,
-                            self.raid.time.normal_time_leaving))
+        self.channel = await self.guild.create_text_channel(
+            name=self.name,
+            category=raid_category,
+            position=position,
+            topic=messages.raid_channel_topic,
+            reason=messages.raid_channel_creation_reason,
+        )
+        logging.info(
+            "{}/{}: Raid {}/{}: Raid channel was created".format(
+                self.guild.name, self.channel.name, self.raid.captain.nickname, self.raid.time.normal_time_leaving
+            )
+        )
 
     async def delete(self):
         """
@@ -67,21 +83,33 @@ class RaidChannel:
         """
         try:
             await self.channel.delete()
-            logging.info("{}/{}: Raid {}/{}: Raid channel was deleted".
-                         format(self.guild.name, self.channel.name, self.raid.captain.nickname,
-                                self.raid.time.normal_time_leaving))
+            logging.info(
+                "{}/{}: Raid {}/{}: Raid channel was deleted".format(
+                    self.guild.name, self.channel.name, self.raid.captain.nickname, self.raid.time.normal_time_leaving
+                )
+            )
         except NotFound:
-            logging.debug("{}/{}: Raid {}/{}: Failed to delete channel. Channel not found".
-                          format(self.guild.name, self.channel.name, self.raid.captain.nickname,
-                                 self.raid.time.normal_time_leaving))
+            logging.debug(
+                "{}/{}: Raid {}/{}: Failed to delete channel. Channel not found".format(
+                    self.guild.name, self.channel.name, self.raid.captain.nickname, self.raid.time.normal_time_leaving
+                )
+            )
         except Forbidden:
-            logging.warning("{}/{}: Raid {}/{}: Failed to delete channel. Forbidden".
-                            format(self.guild.name, self.channel.name, self.raid.captain.nickname,
-                                   self.raid.time.normal_time_leaving))
+            logging.warning(
+                "{}/{}: Raid {}/{}: Failed to delete channel. Forbidden".format(
+                    self.guild.name, self.channel.name, self.raid.captain.nickname, self.raid.time.normal_time_leaving
+                )
+            )
         except HTTPException as error:
-            logging.warning("{}/{}: Raid {}/{}: Failed to delete channel. HTTPException.\nError: {}".
-                            format(self.guild.name, self.channel.name, self.raid.captain.nickname,
-                                   self.raid.time.normal_time_leaving, error))
+            logging.warning(
+                "{}/{}: Raid {}/{}: Failed to delete channel. HTTPException.\nError: {}".format(
+                    self.guild.name,
+                    self.channel.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                    error,
+                )
+            )
 
     async def send_reservation_message(self):
         """
@@ -142,7 +170,7 @@ class RaidChannel:
             "channel_id": self.channel.id if self.channel else None,
             "reservation_message_id": self.reservation_message.message.id if self.reservation_message else None,
             "collection_message_id": self.collection_message.message.id if self.collection_message else None,
-            "table_message_id": self.table_message.message.id if self.table_message else None
+            "table_message_id": self.table_message.message.id if self.table_message else None,
         }  # self.table_message.message mb empty. Framework Error
 
     @classmethod
@@ -181,11 +209,15 @@ class RaidChannel:
         """
         try:
             await expired_channel.delete(reason="Рейд уже был отвезён")
-            logging.info("{}/{}: Expired raid channel was deleted.".
-                         format(expired_channel.guild.name, expired_channel.name))
+            logging.info(
+                "{}/{}: Expired raid channel was deleted.".format(expired_channel.guild.name, expired_channel.name)
+            )
         except NotFound:
-            logging.debug("{}/{}: Failed to delete expired raid channel. Not Found".
-                          format(expired_channel.guild.name, expired_channel.name))
+            logging.debug(
+                "{}/{}: Failed to delete expired raid channel. Not Found".format(
+                    expired_channel.guild.name, expired_channel.name
+                )
+            )
 
     @classmethod
     async def delete_channels_by_channels_info(cls, channels_info: Optional[List[Dict[str, int]]]):
@@ -195,13 +227,14 @@ class RaidChannel:
         :param channels_info: list of dict of the raid channels information
         """
         for channel_info in channels_info:
-            expired_channel = cls.get_channel_by_id(channel_info.get('channel_id'))
+            expired_channel = cls.get_channel_by_id(channel_info.get("channel_id"))
             if expired_channel:
                 await cls.delete_expired_channel(expired_channel)
 
     @classmethod
-    async def get_channels_from_channels_info(cls, channels_info: Optional[List[Dict[str, int]]],
-                                              raid: Raid) -> List[RaidChannel]:
+    async def get_channels_from_channels_info(
+        cls, channels_info: Optional[List[Dict[str, int]]], raid: Raid
+    ) -> List[RaidChannel]:
         """
         Transform channels information list of dicts to list of the raid channels
 
@@ -214,25 +247,25 @@ class RaidChannel:
             return raid_channels
 
         for channel_info in channels_info:
-            channel = cls.get_channel_by_id(channel_info.get('channel_id'))
+            channel = cls.get_channel_by_id(channel_info.get("channel_id"))
             if not channel:
                 continue
             raid_channel = RaidChannel(channel.guild, raid)
             raid_channel.channel = channel
 
-            reservation_message_id = channel_info.get('reservation_message_id')
+            reservation_message_id = channel_info.get("reservation_message_id")
             message = await cls.get_message_from_channel_by_id(channel, reservation_message_id)
             if message:
                 raid_channel.reservation_message = RaidReservationMessage(channel, raid)
                 raid_channel.reservation_message.message = message
 
-            collection_message_id = channel_info.get('collection_message_id')
+            collection_message_id = channel_info.get("collection_message_id")
             message = await cls.get_message_from_channel_by_id(channel, collection_message_id)
             if message:
                 raid_channel.collection_message = RaidCollectionMessage(channel, raid)
                 raid_channel.collection_message.message = message
 
-            table_message_id = channel_info.get('table_message_id')
+            table_message_id = channel_info.get("table_message_id")
             message = await cls.get_message_from_channel_by_id(channel, table_message_id)
             if message:
                 raid_channel.table_message = RaidTableMessage(channel, raid)

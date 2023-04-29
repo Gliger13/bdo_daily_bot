@@ -5,39 +5,69 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from enum import Enum
 from functools import cached_property
-from typing import Any, Dict, List, Match, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Match
+from typing import Optional
+from typing import Union
 
 from discord.ext.commands import Context
 
 from bdo_daily_bot.core.database.manager import DatabaseManager
-from bdo_daily_bot.core.parser.common_parser import CommandInputTypes, CommonCommandInputParser
+from bdo_daily_bot.core.parser.common_parser import CommandInputTypes
+from bdo_daily_bot.core.parser.common_parser import CommonCommandInputParser
 from bdo_daily_bot.core.raid.raid_item import RaidItem
 from bdo_daily_bot.core.users_interactor.senders import UsersSender
-from bdo_daily_bot.messages import logger_msgs, messages
+from bdo_daily_bot.messages import logger_msgs
+from bdo_daily_bot.messages import messages
 
 
 class RaidInputAttributes(Enum):
     """
     Contain specific raid input attributes properties
     """
+
     SELF = "self", CommandInputTypes.SELF
     CTX = "ctx", CommandInputTypes.CTX
     TIME_LEAVING = "time_leaving", CommandInputTypes.TIME, False, messages.time_leaving, messages.time_leaving_example
-    TIME_RESERVATION_OPEN = "time_reservation_open", CommandInputTypes.TIME, True, messages.time_reservation_open, \
-                            messages.time_reservation_open_example
+    TIME_RESERVATION_OPEN = (
+        "time_reservation_open",
+        CommandInputTypes.TIME,
+        True,
+        messages.time_reservation_open,
+        messages.time_reservation_open_example,
+    )
     CAPTAIN_NAME = "captain_name", CommandInputTypes.NAME, False, messages.captain_name, messages.captain_name_example
-    RESERVATION_AMOUNT = "reservation_amount", CommandInputTypes.NUMBER, True, messages.reservation_amount, \
-                         messages.reservation_amount_example
+    RESERVATION_AMOUNT = (
+        "reservation_amount",
+        CommandInputTypes.NUMBER,
+        True,
+        messages.reservation_amount,
+        messages.reservation_amount_example,
+    )
     GAME_SERVER = "game_server", CommandInputTypes.SERVER, False, messages.game_server, messages.game_server_example
-    START_TIME = "start_time", CommandInputTypes.SIMPLE_TIME, False, messages.time_leaving, \
-                 messages.time_leaving_example
+    START_TIME = (
+        "start_time",
+        CommandInputTypes.SIMPLE_TIME,
+        False,
+        messages.time_leaving,
+        messages.time_leaving_example,
+    )
     END_TIME = "end_time", CommandInputTypes.SIMPLE_TIME, False, messages.time_leaving, messages.time_leaving_example
 
-    def __init__(self, attribute_name: str, input_type: CommandInputTypes, can_be_empty: bool = False,
-                 human_type: str = None, human_example: str = None):
+    def __init__(
+        self,
+        attribute_name: str,
+        input_type: CommandInputTypes,
+        can_be_empty: bool = False,
+        human_type: str = None,
+        human_example: str = None,
+    ):
         """
         :param attribute_name: attribute name in command
         :param input_type: input type
@@ -90,8 +120,7 @@ class CommandInputParameter(CommonCommandInputParser):
         :param: parsed input
         """
         if not self.attribute:
-            logging.error("Command input argument not found for key: '{}', value: '{}'".
-                          format(self.key, self.value))
+            logging.error("Command input argument not found for key: '{}', value: '{}'".format(self.key, self.value))
             return None
         if not self.value:
             return self.value
@@ -121,6 +150,7 @@ class RaidInputParser:
     """
     Responsible for parsing raid input parameters
     """
+
     __database = DatabaseManager()
 
     @classmethod
@@ -191,15 +221,17 @@ class RaidInputParser:
     async def __log_parsing_errors(cls, ctx: Context, wrong_input_parameters: List[Optional[CommandInputParameter]]):
         all_wrong_parameters_user_message = messages.wrong_input_message_start
         all_wrong_parameters_log_message = logger_msgs.wrong_input_log_message_start.format(
-            user=ctx.author, command_name=ctx.command)
+            user=ctx.author, command_name=ctx.command
+        )
         for wrong_input_parameter in wrong_input_parameters:
             all_wrong_parameters_user_message += messages.wrong_input_message_template.format(
                 input_name=wrong_input_parameter.attribute.human_type,
                 input_example=wrong_input_parameter.attribute.human_example,
-                actual_value=wrong_input_parameter.value)
+                actual_value=wrong_input_parameter.value,
+            )
             all_wrong_parameters_log_message += logger_msgs.wrong_input_log_message_template.format(
-                input_name=wrong_input_parameter.attribute.human_type,
-                actual_value=wrong_input_parameter.value)
+                input_name=wrong_input_parameter.attribute.human_type, actual_value=wrong_input_parameter.value
+            )
 
         logging.info(all_wrong_parameters_log_message)
         await UsersSender.send_to_user(ctx.author, all_wrong_parameters_user_message)
@@ -208,35 +240,39 @@ class RaidInputParser:
     async def __log_empty_values(cls, validated_input: Dict[str, CommandInputParameter]):
         ctx = validated_input.get(RaidInputAttributes.CTX.attribute_name).value
         all_empty_parameters_user_messages = [messages.empty_input_parameter_message_start]
-        all_empty_parameters_log_messages = [logger_msgs.empty_input_message_start.format(
-            user=ctx.author.name, command_name=ctx.command)]
+        all_empty_parameters_log_messages = [
+            logger_msgs.empty_input_message_start.format(user=ctx.author.name, command_name=ctx.command)
+        ]
         for validated_parameter in validated_input.values():
             if not validated_parameter.parsed_value:
                 empty_parameter_user_message = messages.empty_input_message_template.format(
                     input_name=validated_parameter.attribute.human_type,
-                    input_example=validated_parameter.attribute.human_example)
+                    input_example=validated_parameter.attribute.human_example,
+                )
                 all_empty_parameters_user_messages.append(empty_parameter_user_message)
 
                 empty_parameter_log_message = logger_msgs.empty_input_message_template.format(
-                    user=ctx.author, input_name=validated_parameter.attribute.human_type)
+                    user=ctx.author, input_name=validated_parameter.attribute.human_type
+                )
                 all_empty_parameters_log_messages.append(empty_parameter_log_message)
 
         logging.info("\n".join(all_empty_parameters_log_messages))
         await UsersSender.send_to_user(ctx.author, "\n".join(all_empty_parameters_user_messages))
 
     @classmethod
-    async def __try_fill_missed_raid_input(cls, validated_input: Dict[str, CommandInputParameter]) \
-            -> Dict[str, CommandInputParameter]:
+    async def __try_fill_missed_raid_input(
+        cls, validated_input: Dict[str, CommandInputParameter]
+    ) -> Dict[str, CommandInputParameter]:
         for validated_parameter in validated_input.values():
             if validated_parameter.parsed_value:
                 continue
             if validated_parameter.attribute.input_type == CommandInputTypes.NAME:
                 validated_parameter.parsed_value = await cls.__get_nickname_from_database(validated_input)
-            elif validated_parameter.attribute.attribute_name == \
-                    RaidInputAttributes.TIME_RESERVATION_OPEN.attribute_name:
+            elif (
+                validated_parameter.attribute.attribute_name == RaidInputAttributes.TIME_RESERVATION_OPEN.attribute_name
+            ):
                 validated_parameter.parsed_value = cls.__get_default_time_reservation_open()
-            elif validated_parameter.attribute.attribute_name == \
-                    RaidInputAttributes.RESERVATION_AMOUNT.attribute_name:
+            elif validated_parameter.attribute.attribute_name == RaidInputAttributes.RESERVATION_AMOUNT.attribute_name:
                 validated_parameter.parsed_value = 1
         return validated_input
 

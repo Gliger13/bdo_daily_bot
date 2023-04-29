@@ -1,16 +1,20 @@
 """Contain asserts to check discord role permissions in every guild channel"""
-from typing import Optional, List, Tuple
+from typing import List
+from typing import Optional
+from typing import Tuple
 
-from discord import TextChannel, Role
-
+from discord import Role
+from discord import TextChannel
 from test_framework.asserts.discord.check_guild_roles import soft_check_roles
 from test_framework.models.test_member import TestMember
 from test_framework.scripts.test_results.expectation_report import TestResult
-from test_framework.scripts.test_results.soft_assert import assert_expectations, expect
+from test_framework.scripts.test_results.soft_assert import assert_expectations
+from test_framework.scripts.test_results.soft_assert import expect
 
 
-async def soft_check_role_permissions_in_channel(guild_channel: TextChannel, role: Role,
-                                                 expected_permission: List[Tuple[str, bool]]):
+async def soft_check_role_permissions_in_channel(
+    guild_channel: TextChannel, role: Role, expected_permission: List[Tuple[str, bool]]
+):
     """
     Check that role have correct permission in discord channel
 
@@ -22,17 +26,22 @@ async def soft_check_role_permissions_in_channel(guild_channel: TextChannel, rol
     for permission, enabled in expected_permission:
         # noinspection PyTypeChecker
         permission_enabled = getattr(guild_channel.permissions_for(test_member), permission)
-        expect(permission_enabled == enabled,
-               TestResult(check_message=f"Role {role.name} have correct {permission} permission in channel",
-                          resource_type="Channel",
-                          resource_name=guild_channel.name,
-                          resource_id=guild_channel.id,
-                          actual_result=permission_enabled,
-                          expected_result=enabled))
+        expect(
+            permission_enabled == enabled,
+            TestResult(
+                check_message=f"Role {role.name} have correct {permission} permission in channel",
+                resource_type="Channel",
+                resource_name=guild_channel.name,
+                resource_id=guild_channel.id,
+                actual_result=permission_enabled,
+                expected_result=enabled,
+            ),
+        )
 
 
-async def soft_check_role_permissions_in_channels(guild_channels: List[Optional[TextChannel]], role: Role,
-                                                  expected_permissions: List[Tuple[str, bool]]):
+async def soft_check_role_permissions_in_channels(
+    guild_channels: List[Optional[TextChannel]], role: Role, expected_permissions: List[Tuple[str, bool]]
+):
     """
     Soft check that role have correct permissions on every channel
 
@@ -44,8 +53,12 @@ async def soft_check_role_permissions_in_channels(guild_channels: List[Optional[
         await soft_check_role_permissions_in_channel(channel, role, expected_permissions)
 
 
-async def check_roles_permissions(test_data: dict, guild_channels: List[Optional[TextChannel]],
-                                  roles: List[Optional[Role]], expected_permissions: List[Tuple[str, bool]]):
+async def check_roles_permissions(
+    test_data: dict,
+    guild_channels: List[Optional[TextChannel]],
+    roles: List[Optional[Role]],
+    expected_permissions: List[Tuple[str, bool]],
+):
     """
     Check that role have correct permissions on every channel
 

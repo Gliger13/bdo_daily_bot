@@ -10,6 +10,7 @@ class RegistrationController:
     """
     Response for checking and registering discord users
     """
+
     __database = DatabaseManager()
 
     @classmethod

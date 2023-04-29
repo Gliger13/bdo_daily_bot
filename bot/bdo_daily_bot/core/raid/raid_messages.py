@@ -2,10 +2,14 @@
 Module contain raid messages classes for sending, updating and deleting
 """
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 
 import discord
-from discord import Forbidden, HTTPException, NotFound, TextChannel
+from discord import Forbidden
+from discord import HTTPException
+from discord import NotFound
+from discord import TextChannel
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.raid.raid import Raid
@@ -44,17 +48,36 @@ class RaidMessage(ABC):
         """
         try:
             self.message = await self.channel.send(await self.text)
-            logging.info("{}/{}/{}: Raid {}/{}: Message was send".
-                         format(self.type, self.channel.name, self.channel.guild.name,
-                                self.raid.captain.nickname, self.raid.time.normal_time_leaving))
+            logging.info(
+                "{}/{}/{}: Raid {}/{}: Message was send".format(
+                    self.type,
+                    self.channel.name,
+                    self.channel.guild.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                )
+            )
         except Forbidden:
-            logging.warning("{}/{}/{}: Raid {}/{}: Failed to send message to channel. Forbidden.".
-                            format(self.type, self.channel.name, self.channel.guild.name,
-                                   self.raid.captain.nickname, self.raid.time.normal_time_leaving))
+            logging.warning(
+                "{}/{}/{}: Raid {}/{}: Failed to send message to channel. Forbidden.".format(
+                    self.type,
+                    self.channel.name,
+                    self.channel.guild.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                )
+            )
         except HTTPException as error:
-            logging.warning("{}/{}/{}: Raid {}/{}: Failed to send message to channel. HTTPException.\nError: {}".
-                            format(self.type, self.channel.name, self.channel.guild.name,
-                                   self.raid.captain.nickname, self.raid.time.normal_time_leaving, error))
+            logging.warning(
+                "{}/{}/{}: Raid {}/{}: Failed to send message to channel. HTTPException.\nError: {}".format(
+                    self.type,
+                    self.channel.name,
+                    self.channel.guild.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                    error,
+                )
+            )
 
     async def delete(self):
         """
@@ -62,21 +85,46 @@ class RaidMessage(ABC):
         """
         try:
             await self.message.delete()
-            logging.info("{}/{}/{}: Raid {}/{}: Message was deleted".
-                         format(self.type, self.channel.guild.name, self.channel.name,
-                                   self.raid.captain.nickname, self.raid.time.normal_time_leaving))
+            logging.info(
+                "{}/{}/{}: Raid {}/{}: Message was deleted".format(
+                    self.type,
+                    self.channel.guild.name,
+                    self.channel.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                )
+            )
         except NotFound:
-            logging.warning("{}/{}/{}: Raid {}/{}: Failed to delete message. Message not found.".
-                            format(self.type, self.channel.guild.name, self.channel.name,
-                                   self.raid.captain.nickname, self.raid.time.normal_time_leaving))
+            logging.warning(
+                "{}/{}/{}: Raid {}/{}: Failed to delete message. Message not found.".format(
+                    self.type,
+                    self.channel.guild.name,
+                    self.channel.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                )
+            )
         except Forbidden:
-            logging.warning("{}/{}/{}: Raid {}/{}: Failed to delete message. Forbidden.".
-                            format(self.type, self.channel.guild.name, self.channel.name,
-                                   self.raid.captain.nickname, self.raid.time.normal_time_leaving))
+            logging.warning(
+                "{}/{}/{}: Raid {}/{}: Failed to delete message. Forbidden.".format(
+                    self.type,
+                    self.channel.guild.name,
+                    self.channel.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                )
+            )
         except HTTPException as error:
-            logging.warning("{}/{}/{}: Raid {}/{}: Failed to delete message. Message not found.\nError: {}".
-                            format(self.type, self.channel.guild.name, self.channel.name,
-                                   self.raid.captain.nickname, self.raid.time.normal_time_leaving, error))
+            logging.warning(
+                "{}/{}/{}: Raid {}/{}: Failed to delete message. Message not found.\nError: {}".format(
+                    self.type,
+                    self.channel.guild.name,
+                    self.channel.name,
+                    self.raid.captain.nickname,
+                    self.raid.time.normal_time_leaving,
+                    error,
+                )
+            )
 
     async def update(self):
         """
@@ -85,11 +133,15 @@ class RaidMessage(ABC):
         if self.message:
             try:
                 await self.message.edit(content=await self.text)
-                logging.info("{}/{}/{}: Message was edited".
-                             format(self.type, self.channel.guild.name, self.channel.name))
+                logging.info(
+                    "{}/{}/{}: Message was edited".format(self.type, self.channel.guild.name, self.channel.name)
+                )
             except NotFound:
-                logging.info("{}/{}/{}: Message was not edited. Not found. Sending new".
-                             format(self.type, self.channel.guild.name, self.channel.name))
+                logging.info(
+                    "{}/{}/{}: Message was not edited. Not found. Sending new".format(
+                        self.type, self.channel.guild.name, self.channel.name
+                    )
+                )
                 await self.send()
         else:
             await self.send()
@@ -111,8 +163,11 @@ class RaidMessage(ABC):
         if self.channel:
             self.message = await self.channel.fetch_message(message_id)
         else:
-            logging.error("{}: Raid {}/{}: Can't set message. Missed channel"
-                          .format(self.type, self.raid.captain.nickname, self.raid.time.normal_time_leaving))
+            logging.error(
+                "{}: Raid {}/{}: Can't set message. Missed channel".format(
+                    self.type, self.raid.captain.nickname, self.raid.time.normal_time_leaving
+                )
+            )
 
 
 class RaidReservationMessage(RaidMessage):
@@ -134,8 +189,10 @@ class RaidReservationMessage(RaidMessage):
         Content of the raid collection message to send
         """
         return messages.reservation_started_soon.format(
-            captain_name=self.raid.captain.nickname, time_leaving=self.raid.time.normal_time_leaving,
-            time_reservation_open=self.raid.time.normal_time_reservation_open)
+            captain_name=self.raid.captain.nickname,
+            time_leaving=self.raid.time.normal_time_leaving,
+            time_reservation_open=self.raid.time.normal_time_reservation_open,
+        )
 
 
 class RaidCollectionMessage(RaidMessage):
@@ -159,9 +216,11 @@ class RaidCollectionMessage(RaidMessage):
         :return: filled raid collection message content
         """
         message = messages.collection_start.format(
-            captain=self.raid.captain.user.mention, captain_name=self.raid.captain.nickname,
+            captain=self.raid.captain.user.mention,
+            captain_name=self.raid.captain.nickname,
             time_leaving=self.raid.time.normal_time_leaving,
-            server=self.raid.bdo_server, places_left=self.raid.places_left,
+            server=self.raid.bdo_server,
+            places_left=self.raid.places_left,
             display_table_time=self.raid.time.normal_next_display_time,
         )
         if mentions_string := await RaidNotifier.role_mentions_string(self.channel.guild, self.raid.time.time_leaving):
@@ -229,5 +288,8 @@ class RaidLeaveMessage(RaidMessage):
         """
         Content of the raid collection message to send
         """
-        return messages.collection_end.format(server=self.raid.bdo_server, captain_name=self.raid.captain.nickname,
-                                              time_to_delete_channel=self.raid.time.normal_time_channel_deleting)
+        return messages.collection_end.format(
+            server=self.raid.bdo_server,
+            captain_name=self.raid.captain.nickname,
+            time_to_delete_channel=self.raid.time.normal_time_channel_deleting,
+        )

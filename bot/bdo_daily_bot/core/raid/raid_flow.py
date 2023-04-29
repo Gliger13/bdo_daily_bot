@@ -15,6 +15,7 @@ class RaidFlow:
     """
     Response for controlling raid flow
     """
+
     __database = DatabaseManager()
 
     def __init__(self, raid: Raid):
@@ -76,8 +77,11 @@ class RaidFlow:
         RaidsKeeper.remove_raid(self.raid)
         await self.__remove_all_channels()
         await self.update_raids_information_channels()
-        logging.debug("Raid with captain {} and time leaving {} completely removed".format(
-            self.raid.captain.nickname, self.raid.time.kebab_time_leaving))
+        logging.debug(
+            "Raid with captain {} and time leaving {} completely removed".format(
+                self.raid.captain.nickname, self.raid.time.kebab_time_leaving
+            )
+        )
 
     async def update(self):
         """

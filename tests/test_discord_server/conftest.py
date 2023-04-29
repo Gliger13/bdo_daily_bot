@@ -1,6 +1,6 @@
+from test_framework.fixtures.common.test_data import *
 from test_framework.fixtures.discord.common import *
 from test_framework.fixtures.discord.roles import *
-from test_framework.fixtures.common.test_data import *
 
 
 @pytest.fixture(scope="session")

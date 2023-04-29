@@ -2,11 +2,13 @@
 Module contain class for picking raid from list of the raids
 """
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from discord.ext.commands import Context
 
-from bdo_daily_bot.core.command_gates.common import log_gate_check_branched, log_gate_check_failed
+from bdo_daily_bot.core.command_gates.common import log_gate_check_branched
+from bdo_daily_bot.core.command_gates.common import log_gate_check_failed
 from bdo_daily_bot.core.guild_managers.raids_keeper import RaidsKeeper
 from bdo_daily_bot.core.raid.raid import Raid
 from bdo_daily_bot.core.raid.raid_member import RaidMember
@@ -21,8 +23,9 @@ class RaidPicker:
     """
 
     @classmethod
-    async def pick_raid(cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember,
-                        time_leaving: Optional[datetime]) -> Optional[Raid]:
+    async def pick_raid(
+        cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember, time_leaving: Optional[datetime]
+    ) -> Optional[Raid]:
         """
         Pick raid from captain raids. Ask user if needed
 
@@ -39,8 +42,14 @@ class RaidPicker:
         return await cls.pick_raid_by_multiply_raids(ctx, user_interactor, captain, captain_raids, time_leaving)
 
     @classmethod
-    async def pick_raid_by_single_raid(cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember,
-                                       raid: Raid, time_leaving: Optional[datetime]) -> Optional[Raid]:
+    async def pick_raid_by_single_raid(
+        cls,
+        ctx: Context,
+        user_interactor: RaidMember,
+        captain: RaidMember,
+        raid: Raid,
+        time_leaving: Optional[datetime],
+    ) -> Optional[Raid]:
         """
         Try pick raid by the given time leaving or asking user
 
@@ -60,8 +69,14 @@ class RaidPicker:
         return raid
 
     @classmethod
-    async def pick_raid_by_multiply_raids(cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember,
-                                          raids: List[Raid], time_leaving: Optional[datetime]) -> Optional[Raid]:
+    async def pick_raid_by_multiply_raids(
+        cls,
+        ctx: Context,
+        user_interactor: RaidMember,
+        captain: RaidMember,
+        raids: List[Raid],
+        time_leaving: Optional[datetime],
+    ) -> Optional[Raid]:
         """
         Pick one of the captain raids
 
@@ -78,8 +93,9 @@ class RaidPicker:
         return await cls.__check_what_raid_user_want(ctx, user_interactor, captain, raids)
 
     @classmethod
-    async def pick_raid_by_time_leaving(cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember,
-                                        raids: List[Raid], time_leaving: datetime) -> Optional[Raid]:
+    async def pick_raid_by_time_leaving(
+        cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember, raids: List[Raid], time_leaving: datetime
+    ) -> Optional[Raid]:
         """
         Try pick raid by the given time leaving or asking user
 
@@ -94,23 +110,28 @@ class RaidPicker:
             if raid.time.time_leaving == time_leaving:
                 return raid
 
-        wrong_time_leaving = time_leaving.strftime('%H:%M')
+        wrong_time_leaving = time_leaving.strftime("%H:%M")
         raids_time_leaving = [raid.time.normal_time_leaving for raid in raids]
         if user_interactor == captain:
-            logging_message = f"User give wrong raid time leaving `{wrong_time_leaving}, " \
-                              f"expected one of `{raids_time_leaving}`"
+            logging_message = (
+                f"User give wrong raid time leaving `{wrong_time_leaving}, expected one of `{raids_time_leaving}`"
+            )
             await UsersSender.send_user_get_raid_from_raids_by_wrong_time(user_interactor.user, wrong_time_leaving)
         else:
-            logging_message = f"User give wrong raid time leaving `{wrong_time_leaving}` to get raid of " \
-                              f"capitan `{captain.nickname}`, expected one of `{raids_time_leaving}`"
+            logging_message = (
+                f"User give wrong raid time leaving `{wrong_time_leaving}` to get raid of "
+                f"capitan `{captain.nickname}`, expected one of `{raids_time_leaving}`"
+            )
             await UsersSender.send_user_get_captain_raid_from_raids_by_wrong_time(
-                user_interactor.user, captain.nickname, wrong_time_leaving)
+                user_interactor.user, captain.nickname, wrong_time_leaving
+            )
         log_gate_check_branched(ctx, logging_message)
         return None
 
     @classmethod
-    async def __check_what_raid_user_want(cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember,
-                                          raids: List[Raid]) -> Optional[Raid]:
+    async def __check_what_raid_user_want(
+        cls, ctx: Context, user_initiator: RaidMember, captain: RaidMember, raids: List[Raid]
+    ) -> Optional[Raid]:
         """
         Check which raid the user wants to show
 
@@ -122,7 +143,8 @@ class RaidPicker:
         raids_messages = []
         for raid in raids:
             raid_message = messages.raid_parameters_without_number.format(
-                time_leaving=raid.time.normal_time_leaving, server=raid.bdo_server)
+                time_leaving=raid.time.normal_time_leaving, server=raid.bdo_server
+            )
             raids_messages.append(raid_message)
 
         if user_initiator == captain:
@@ -140,8 +162,9 @@ class RaidPicker:
         return None
 
     @classmethod
-    async def __check_captain_raids_exist(cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember,
-                                          captain_raids: Optional[List[Raid]]) -> bool:
+    async def __check_captain_raids_exist(
+        cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember, captain_raids: Optional[List[Raid]]
+    ) -> bool:
         """
         Check that captain raids exist
 
@@ -162,8 +185,9 @@ class RaidPicker:
         return True
 
     @classmethod
-    async def __check_user_want_raid_by_wrong_time(cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember,
-                                                   raid: Raid, time_leaving: datetime) -> bool:
+    async def __check_user_want_raid_by_wrong_time(
+        cls, ctx: Context, user_interactor: RaidMember, captain: RaidMember, raid: Raid, time_leaving: datetime
+    ) -> bool:
         """
         Check that user want raid by the wrong given time leaving
 
@@ -174,17 +198,20 @@ class RaidPicker:
         :param time_leaving: time leaving to check
         :return: True if user want raid by the wrong given time leaving else False
         """
-        wrong_time_leaving = time_leaving.strftime('%H:%M')
+        wrong_time_leaving = time_leaving.strftime("%H:%M")
         if user_interactor == captain:
             question = messages.user_want_this_raid.format(
-                correct_time_leaving=raid.time.normal_time_leaving, wrong_time_leaving=wrong_time_leaving)
+                correct_time_leaving=raid.time.normal_time_leaving, wrong_time_leaving=wrong_time_leaving
+            )
             if not await UsersChoicer.ask_yes_or_no(user_interactor.user, question):
                 log_gate_check_failed(ctx, "User doesn't want it's raid by the wrong time leaving")
                 return False
         else:
             question = messages.captain_want_this_raid.format(
-                captain_name=captain.nickname, correct_time_leaving=raid.time.normal_time_leaving,
-                wrong_time_leaving=wrong_time_leaving)
+                captain_name=captain.nickname,
+                correct_time_leaving=raid.time.normal_time_leaving,
+                wrong_time_leaving=wrong_time_leaving,
+            )
             if not await UsersChoicer.ask_yes_or_no(user_interactor.user, question):
                 logging_message = f"User doesn't want captain `{captain.nickname}` raid by the wrong time leaving"
                 log_gate_check_failed(ctx, logging_message)

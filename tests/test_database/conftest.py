@@ -20,4 +20,4 @@ def event_loop():
 @pytest.mark.asyncio
 async def clear_database():
     """Clear up the database after each test."""
-    await AsyncIOMotorClient().drop_database('test_discord')
+    await AsyncIOMotorClient().drop_database("test_discord")

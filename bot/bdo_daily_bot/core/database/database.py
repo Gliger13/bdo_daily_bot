@@ -1,7 +1,8 @@
 """Module contain class to wrap MongoDB"""
 import logging
 
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from bdo_daily_bot.core.tools.common import MetaSingleton
 from bdo_daily_bot.settings import settings
@@ -13,6 +14,7 @@ class Database(metaclass=MetaSingleton):
 
     Responsible for responding the database and connecting to the database.
     """
+
     _cluster = None  # MongoDB cluster
 
     def _connect(self) -> AsyncIOMotorDatabase:
@@ -25,9 +27,9 @@ class Database(metaclass=MetaSingleton):
         :return: Mongo database
         """
         if not self._cluster:
-            logging.debug('Bot initialization: Initialisation database.')
+            logging.debug("Bot initialization: Initialisation database.")
             self._cluster = AsyncIOMotorClient(settings.BD_STRING)[settings.CLUSTER_NAME]
-            logging.debug('Bot initialization: Database connected.')
+            logging.debug("Bot initialization: Database connected.")
         return self._cluster
 
     @property

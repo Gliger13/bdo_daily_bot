@@ -3,8 +3,10 @@ Module contain collection for archive old raids
 """
 import dataclasses
 import logging
-from datetime import datetime, timedelta
-from typing import List, Optional
+from datetime import datetime
+from datetime import timedelta
+from typing import List
+from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -13,11 +15,12 @@ from bdo_daily_bot.core.raid.raid_item import RaidItem
 from bdo_daily_bot.core.tools.common import MetaSingleton
 from bdo_daily_bot.settings import settings
 
-UNNECESSARY_RAID_ATTRIBUTES = ['channels_info']
+UNNECESSARY_RAID_ATTRIBUTES = ["channels_info"]
 
 
 class RaidArchiveCollection(metaclass=MetaSingleton):
     """Responsible for working with the raid archive MongoDB collection."""
+
     _collection = None  # Contain database raid archive collection
 
     @property
@@ -32,7 +35,7 @@ class RaidArchiveCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.RAID_ARCHIVE_COLLECTION]
-            logging.debug('Bot initialization: Collection {} connected'.format(settings.RAID_ARCHIVE_COLLECTION))
+            logging.debug("Bot initialization: Collection {} connected".format(settings.RAID_ARCHIVE_COLLECTION))
         return self._collection
 
     async def archive(self, raid_item: RaidItem):
@@ -51,8 +54,12 @@ class RaidArchiveCollection(metaclass=MetaSingleton):
 
         :return: list of the raid item with time leaving more then a day ago
         """
-        find_cursor = self.collection.find({
-            "time_leaving": {
-                "$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
-            }}, {'_id': 0})
+        find_cursor = self.collection.find(
+            {
+                "time_leaving": {
+                    "$gte": datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+                }
+            },
+            {"_id": 0},
+        )
         return [RaidItem(**document) async for document in find_cursor]

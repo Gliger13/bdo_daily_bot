@@ -1,7 +1,6 @@
 """
 Module contain core logic for raid joining commands
 """
-
 from bdo_daily_bot.core.command_gates.raid_gate import RaidGate
 from bdo_daily_bot.core.commands.common import command_logging
 from bdo_daily_bot.core.database.manager import DatabaseManager

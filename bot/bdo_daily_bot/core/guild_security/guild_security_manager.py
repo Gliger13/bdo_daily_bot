@@ -5,13 +5,19 @@ Module contain classes to protect guilds against bad peoples as spammers.
 import asyncio
 import logging
 from collections import defaultdict
-from typing import DefaultDict, Dict, Final, NewType, Set, Tuple
+from typing import DefaultDict
+from typing import Dict
+from typing import Final
+from typing import NewType
+from typing import Set
+from typing import Tuple
 
 from discord import Message
 
 from bdo_daily_bot.bot import BdoDailyBot
 from bdo_daily_bot.core.guild_managment.punishments import Punishments
-from bdo_daily_bot.core.users_interactor.senders import ChannelsSender, UsersSender
+from bdo_daily_bot.core.users_interactor.senders import ChannelsSender
+from bdo_daily_bot.core.users_interactor.senders import UsersSender
 from bdo_daily_bot.settings import settings
 
 
@@ -19,6 +25,7 @@ class MessageContainer:
     """
     Container to store discord messages information for some time
     """
+
     MESSAGE_LIFECYCLE_IN_SECONDS: Final[int] = 60
 
     # Structure: {"user_id": {"message_hash": [("channel_id", "message_id"), ]}}
@@ -97,6 +104,7 @@ class GuildSecurityManager:
     """
     Manager to manage guild security
     """
+
     SPAM_MESSAGES_AMOUNT_TO_PREVENT: Final[int] = 4
 
     @classmethod

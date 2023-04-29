@@ -4,7 +4,8 @@ Contain raid collection for storing and processing raid items
 import dataclasses
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -16,6 +17,7 @@ from bdo_daily_bot.settings import settings
 
 class RaidCollection(metaclass=MetaSingleton):
     """Responsible for working with the raid MongoDB collection."""
+
     _collection = None  # Contain database raid collection
 
     @property
@@ -31,7 +33,7 @@ class RaidCollection(metaclass=MetaSingleton):
         """
         if not self._collection:
             self._collection = Database().database[settings.RAID_COLLECTION]
-            logging.debug('Bot initialization: Collection {} connected'.format(settings.RAID_COLLECTION))
+            logging.debug("Bot initialization: Collection {} connected".format(settings.RAID_COLLECTION))
         return self._collection
 
     async def create_raid(self, raid_item: RaidItem):
@@ -56,7 +58,7 @@ class RaidCollection(metaclass=MetaSingleton):
 
         :return: list of all raid items from database
         """
-        return [RaidItem(**document) async for document in self.collection.find({}, {'_id': 0})]
+        return [RaidItem(**document) async for document in self.collection.find({}, {"_id": 0})]
 
     async def get_by_captain_name_and_time_leaving(self, captain_name: str, time_leaving: datetime) -> Optional[dict]:
         """
@@ -66,7 +68,7 @@ class RaidCollection(metaclass=MetaSingleton):
         :param time_leaving: time leaving of raid document to find
         :return: founded single document
         """
-        return await self.collection.find_one({'captain_name': captain_name, 'time_leaving': time_leaving})
+        return await self.collection.find_one({"captain_name": captain_name, "time_leaving": time_leaving})
 
     async def update(self, raid_item: RaidItem):
         """
@@ -102,5 +104,8 @@ class RaidCollection(metaclass=MetaSingleton):
         expired_raid_items = await self.get_expired_raids_items()
         for raid_item in expired_raid_items:
             await self.delete(raid_item)
-            logging.info("Bot initialization: Raid {}/{} Raid was expired and deleted from the database.".
-                         format(raid_item.captain_name, raid_item.time_leaving))
+            logging.info(
+                "Bot initialization: Raid {}/{} Raid was expired and deleted from the database.".format(
+                    raid_item.captain_name, raid_item.time_leaving
+                )
+            )

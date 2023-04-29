@@ -1,8 +1,8 @@
 """Contain asserts for discord guild roles"""
-from typing import Optional, List
+from typing import List
+from typing import Optional
 
 from discord import Role
-
 from test_framework.scripts.test_results.soft_assert import expect
 
 

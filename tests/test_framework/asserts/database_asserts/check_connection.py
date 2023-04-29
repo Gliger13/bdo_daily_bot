@@ -11,8 +11,8 @@ def check_connection(database_test_data: dict):
     :type database_test_data: dict
     """
     _, data, expected_data = parse_test_sample(database_test_data)
-    database_string = data['database_string']
-    connection_status = expected_data['connection_status']
+    database_string = data["database_string"]
+    connection_status = expected_data["connection_status"]
 
-    assert_message = 'Database connection problems, should be no connection problems.'
+    assert_message = "Database connection problems, should be no connection problems."
     assert is_database_connection_exist(database_string) == connection_status, assert_message

@@ -14,7 +14,7 @@ This repository contains docker configuration, scripts and information for deplo
     ```bash
     wget https://raw.githubusercontent.com/Gliger13/bdo_daily_bot/master/bot_deployment/bot_deployer.sh
     ```
-- Install bot_deployer script 
+- Install bot_deployer script
     ```bash
     bash bot_deployer.sh install
     ```

@@ -1,6 +1,5 @@
 #! /usr/local/bin/python3
 # -*- coding: utf-8 -*-
-
 """Contain entry point for run bot"""
 import logging
 
@@ -18,6 +17,7 @@ class BdoDailyBot(metaclass=MetaSingleton):
     """
     Discord Black Desert Online Daily bot. Contain methods to initialize and run bot.
     """
+
     bot: Bot
 
     def __init__(self):
