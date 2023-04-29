@@ -1,0 +1,73 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: check-ast
+        name: "[Check Syntax] Check python files syntax"
+        types: [ python ]
+      - id: check-yaml
+        name: "[Check Syntax] Check yaml files syntax"
+        args: [ --unsafe ]
+        types: [ yaml ]
+      - id: check-toml
+        name: "[Check Syntax] Check toml files syntax"
+        types: [ toml ]
+      - id: trailing-whitespace
+        name: "[Auto Style] Fix trailing whitespace"
+      - id: end-of-file-fixer
+        name: "[Auto Style] Fix end of files"
+      - id: check-added-large-files
+        name: "[Check] Check no large files added"
+      - id: check-docstring-first
+        name: "[Check Style] Check python modules have docstrings"
+        types: [ python ]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.1
+    hooks:
+      - id: gitleaks
+        name: "[Security] Check for secrets leaks"
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        name: "[Auto Style] Apply black code style"
+        args:
+          - .
+          - --line-length=120
+          - --target-version=py311
+          - --preview
+        types: [ python ]
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v3.9.0
+    hooks:
+      - id: reorder-python-imports
+        args:
+         - --application-directories
+         - .:bot
+        name: "[Auto Style] Reorder imports"
+        types: [ python ]
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 6.12.3
+    hooks:
+      - id: pip-compile
+        name: "[Auto Dependencies] Pip compile application main requirements"
+        files: ^bot/(requirements\.txt)|(pyproject\.toml)$
+        args:
+          - --generate-hashes
+          - --output-file=bot/requirements.txt
+          - --resolver=backtracking
+          - --quiet
+          - bot/pyproject.toml
+      - id: pip-compile
+        name: "[Auto Dependencies] Pip compile application dev requirements"
+        files: ^bot/(dev-requirements\.txt)|(pyproject\.toml)$
+        args:
+          - --generate-hashes
+          - --output-file=bot/dev-requirements.txt
+          - --resolver=backtracking
+          - --quiet
+          - --extra=dev
+          - --allow-unsafe
+          - bot/pyproject.toml
