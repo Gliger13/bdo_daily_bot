@@ -7,7 +7,6 @@ from typing import Optional
 
 from discord import Forbidden
 from discord import HTTPException
-from discord import InvalidArgument
 from discord import Message
 from discord import NotFound
 from discord import TextChannel
@@ -138,12 +137,6 @@ async def add_reaction(message: Message, emoji: str):
     except NotFound:
         logging.debug(
             "{}/{}: Can't add reaction `{}` to the message. Message not found.\nMessage content: {}".format(
-                message.guild, message.channel, emoji, message.author, message.content
-            )
-        )
-    except InvalidArgument:
-        logging.warning(
-            "{}/{}: Can't add reaction `{}` to the message. Invalid emoji.\nMessage content: {}".format(
                 message.guild, message.channel, emoji, message.author, message.content
             )
         )

@@ -1,0 +1,40 @@
+[project]
+name = "bdo_daily_bot"
+version = "4.0.0"
+description = "Discord Bot for organizing and collecting daily sea raids for the game Black Desert Online[RU](BDO)"
+readme = "README.md"
+requires-python = ">=3.11"
+maintainers = [
+    {name = "Andrei Zaneuski", email = "zanevskiyandrey@gmail.com"}
+]
+
+dependencies = [
+    "discord-py-slash-command==3.0.3",  # Legacy usage
+    "discord.py==1.7.3",  # Legacy usage
+    "motor",
+    "numpy",
+    "opencv-python",
+    "Pillow",
+    "pymongo",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "mypy",
+    "pip-tools",
+    "pre-commit",
+    "pylint"
+]
+
+[tool.setuptools.package-data]
+"bdo_daily_bot.settings" = ["font_table.ttf"]
+
+[tool.setuptools.packages.find]
+include = ["bdo_daily_bot*"]
+
+[project.scripts]
+run_bot = "bdo_daily_bot.bot:run_bot"
+
+[project.urls]
+repository = "https://github.com/Gliger13/bdo_daily_bot"

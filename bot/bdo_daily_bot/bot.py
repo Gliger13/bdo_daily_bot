@@ -53,6 +53,11 @@ class BdoDailyBot(metaclass=MetaSingleton):
                 logging.critical("Cog {} not loaded".format(cog_path))
 
 
+def run_bot() -> None:
+    """Run Bdo Discord Daily bot"""
+    BdoDailyBot().run()
+
+
 if __name__ == "__main__":
     BotLogger.set_default()
-    BdoDailyBot().run()
+    run_bot()
