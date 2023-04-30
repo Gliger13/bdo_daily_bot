@@ -16,20 +16,29 @@ from bdo_daily_bot.core.logger.logger import BotLogger
 from bdo_daily_bot.core.tools.common import MetaSingleton
 from bdo_daily_bot.core.tools.path_factory import ProjectPathFactory
 from bdo_daily_bot.errors.errors import BotConfigError
-from bdo_daily_bot.settings import settings
 
 
 class BdoDailyBot(metaclass=MetaSingleton):
-    """
-    Discord Black Desert Online Daily bot. Contain methods to initialize and run bot.
+    """Discord Black Desert Online Daily bot.
+
+    Contain methods to initialize and start the bot.
     """
 
     def __init__(self) -> None:
+        """Initialize and configure bot."""
         self.bot = self.__create_bot_client()
         self.__load_cogs()
 
+    def start(self) -> None:
+        """Run discord bot event loop"""
+        self.bot.start()
+
     @classmethod
     def __create_bot_client(cls) -> Client:
+        """Create and return bot client.
+
+        :return: initialized and configured discord bot client.
+        """
         intents = Intents.new(
             guilds=True,
             guild_members=True,
@@ -50,28 +59,20 @@ class BdoDailyBot(metaclass=MetaSingleton):
         )
         return bot
 
-    def run(self):
-        """
-        Run discord bot event loop
-        """
-        self.bot.run(settings.TOKEN)
-
-    def __load_cogs(self):
-        """
-        Load all cogs extensions
-        """
-        for cog_path in ProjectPathFactory.get_all_cogs_with_extensions():
+    def __load_cogs(self) -> None:
+        """Load all discord cogs extensions."""
+        for cog_path in ProjectPathFactory.get_all_cog_paths():
             try:
                 self.bot.load_extension(cog_path)
             except (discord.ClientException, ModuleNotFoundError):
-                logging.critical("Cog {} not loaded".format(cog_path))
+                logging.critical("Cog %s not loaded", cog_path)
 
 
-def run_bot() -> None:
-    """Run Bdo Discord Daily bot"""
-    BdoDailyBot().run()
+def start_bot() -> None:
+    """Run Bdo Discord Daily bot."""
+    BdoDailyBot().start()
 
 
 if __name__ == "__main__":
     BotLogger.set_default()
-    run_bot()
+    start_bot()
