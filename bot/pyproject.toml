@@ -4,19 +4,25 @@ version = "4.0.0"
 description = "Discord Bot for organizing and collecting daily sea raids for the game Black Desert Online[RU](BDO)"
 readme = "README.md"
 requires-python = ">=3.11"
-maintainers = [
-    {name = "Andrei Zaneuski", email = "zanevskiyandrey@gmail.com"}
+keywords = ["bdo", "discord", "bot"]
+authors = [{name = "Andrei Zaneuski", email = "zanevskiyandrey@gmail.com"}]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Version Control :: Git",
 ]
 
 dependencies = [
-    "discord-py-slash-command==3.0.3",  # Legacy usage
-    "discord.py==1.7.3",  # Legacy usage
-    "motor",
-    "numpy",
-    "opencv-python",
-    "Pillow",
-    "pymongo",
+  "discord.py",
+  "discord-py-interactions",
+  "pyyaml",
+  "motor",
+  "numpy",
+  "opencv-python",
+  "Pillow",
+  "pymongo",
 ]
+
 
 [project.optional-dependencies]
 dev = [

@@ -44,7 +44,7 @@ aiohttp==3.7.4.post0 \
     --hash=sha256:fe60131d21b31fd1a14bd43e6bb88256f69dfc3188b3a89d736d6c71ed43ec95
     # via
     #   discord-py
-    #   discord-py-slash-command
+    #   discord-py-interactions
 astroid==2.15.4 \
     --hash=sha256:a1b8543ef9d36ea777194bc9b17f5f8678d2c56ee6a45b2c2f17eec96f242347 \
     --hash=sha256:c81e1c7fbac615037744d067a9bb5f9aeb655edf59b63ee8b59585475d6f80d8
@@ -56,7 +56,9 @@ async-timeout==3.0.1 \
 attrs==23.1.0 \
     --hash=sha256:1f28b4522cdc2fb4256ac1a020c78acf9cba2c6b461ccd2c126f3aa8e8335d04 \
     --hash=sha256:6279836d581513a26f1bf235f9acd333bc9115683f14f7e8fae46c98fc50e015
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   discord-py-interactions
 black==23.3.0 \
     --hash=sha256:064101748afa12ad2291c2b91c960be28b817c0c7eaa35bec09cc63aa56493c5 \
     --hash=sha256:0945e13506be58bf7db93ee5853243eb368ace1c08a24c65ce108986eac65915 \
@@ -109,13 +111,15 @@ dill==0.3.6 \
 discord-py==1.7.3 \
     --hash=sha256:462cd0fe307aef8b29cbfa8dd613e548ae4b2cb581d46da9ac0d46fb6ea19408 \
     --hash=sha256:c6f64db136de0e18e090f6752ea68bdd4ab0a61b82dfe7acecefa22d6477bb0c
-    # via
-    #   bdo-daily-bot (bot/pyproject.toml)
-    #   discord-py-slash-command
-discord-py-slash-command==3.0.3 \
-    --hash=sha256:a9a220492e1a32fc66a20aebe49ccb6d6308a504d79627096f4e9443fdd8978e \
-    --hash=sha256:e6a83a0bd656ad96859483450ade1a4e760b3351e612a9639fd6acf14abe1676
     # via bdo-daily-bot (bot/pyproject.toml)
+discord-py-interactions==5.1.0 \
+    --hash=sha256:9f648019324eb9f8f7325d0c85ef7c647a719d8fae71b61a95439973084ca1f0 \
+    --hash=sha256:c3cb9305998143aeb3543ab111798aabdd400213aa9b19ff545491eb994d6d94
+    # via bdo-daily-bot (bot/pyproject.toml)
+discord-typings==0.5.1 \
+    --hash=sha256:1a4fb1e00201416ae94ca64ca5935d447c005e0475b1ec274c1a6e09072db70e \
+    --hash=sha256:55ebdb6d6f0f47df774a0c31193ba6a45de14625fab9c6fbd43bfe87bb8c0128
+    # via discord-py-interactions
 distlib==0.3.6 \
     --hash=sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46 \
     --hash=sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e
@@ -124,6 +128,9 @@ dnspython==2.3.0 \
     --hash=sha256:224e32b03eb46be70e12ef6d64e0be123a64e621ab4c0822ff6d450d52a540b9 \
     --hash=sha256:89141536394f909066cabd112e3e1a37e4e654db00a25308b0f130bc3152eb46
     # via pymongo
+emoji==2.2.0 \
+    --hash=sha256:a2986c21e4aba6b9870df40ef487a17be863cb7778dcf1c01e25917b7cd210bb
+    # via discord-py-interactions
 filelock==3.12.0 \
     --hash=sha256:ad98852315c2ab702aeb628412cbf7e95b7ce8c3bf9565670b4eaecf1db370a9 \
     --hash=sha256:fc03ae43288c013d2ea83c8597001b1129db351aad9c57fe2409327916b8e718
@@ -563,7 +570,13 @@ pyyaml==6.0 \
     --hash=sha256:dbad0e9d368bb989f4515da330b88a057617d16b6a8245084f1b05400f24609f \
     --hash=sha256:e61ceaab6f49fb8bdfaa0f92c4b57bcfbea54c09277b1b4f7ac376bfb7a7c174 \
     --hash=sha256:f84fbc98b019fef2ee9a1cb3ce93e3187a6df0b2538a651bfb890254ba9f90b5
-    # via pre-commit
+    # via
+    #   bdo-daily-bot (bot/pyproject.toml)
+    #   pre-commit
+tomli==2.0.1 \
+    --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
+    --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
+    # via discord-py-interactions
 tomlkit==0.11.8 \
     --hash=sha256:8c726c4c202bdb148667835f68d68780b9a003a9ec34167b6c673b38eff2a171 \
     --hash=sha256:9330fc7faa1db67b541b28e62018c17d20be733177d290a13b24c62d1614e0c3
@@ -573,6 +586,7 @@ typing-extensions==4.5.0 \
     --hash=sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4
     # via
     #   aiohttp
+    #   discord-typings
     #   mypy
 virtualenv==20.23.0 \
     --hash=sha256:6abec7670e5802a528357fdc75b26b9f57d5d92f29c5462ba0fbe45feacc685e \
