@@ -3,8 +3,8 @@ import pytest
 from test_framework.asserts.database_asserts.check_captain_collection import check_create_captain
 from test_framework.scripts.common.data_factory import get_test_data
 
-from bdo_daily_bot.core.database.captain_collection import CaptainCollection
-from bdo_daily_bot.core.database.user_collection import UserCollection
+from bdo_daily_bot.core.database.mongo.captain_collection import CaptainCollection
+from bdo_daily_bot.core.database.mongo.user_collection import UserCollection
 
 
 @pytest.mark.asyncio

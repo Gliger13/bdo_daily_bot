@@ -3,7 +3,6 @@ from typing import List
 from typing import Optional
 
 from bdo_daily_bot.config.variables import EnvironmentVariables
-from bdo_daily_bot.errors.errors import BotConfigError
 
 
 class Config:

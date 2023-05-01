@@ -1,0 +1,73 @@
+common:
+  ...
+commands:
+  raid:
+    subcommands:
+      create:
+        messages:
+          not_all_args_provided:
+            ru-RU:
+              - ""
+              - ""
+            en-US:
+              - ""
+              - ""
+  user:
+    subcommands:
+      errors:
+        messages:
+          panic:
+            ru-RU:
+              - "Что-то пошло не так. Попробуй ещё раз."
+              - "Что-то пошло не так. Кажется твоя сила что-то сломала."
+            en-US:
+              - "Something went wrong. Try again later."
+              - "Something went wrong. Your power broke something."
+      create:
+        messages:
+          created:
+            ru-RU:
+              - "Пользователь зарегистрирован. Теперь можно попасть в рейд через сердечко."
+              - "Пользователь зарегистрирован. Тыкни на сердечко под любым рейдом, чтобы попасть в него."
+            en-US:
+              - "User registered. Now you can join raids HYPERS."
+              - "User registered. Good luck."
+          conflict:
+            ru-RU:
+              - "Пользователь с такой игровой фамилией уже существует. Ты пытаешься сделать что-то плохое? STARE."
+              - "Пользователь с такой игровой фамилией уже существует. Кто-то тебя уже опередил, пора пинать админов."
+            en-US:
+              - "User with the given game surname already registered. Are you trying to do bad things? STARE."
+              - "User with the given game surname already registered. Someone was faster than you. Time to punch mods."
+          updated:
+            ru-RU:
+              - "Ты уже зарегистрирован у меня, но я обновил твою игровую фамилию."
+            en-US:
+              - "You're already registered, but I have updated your game nickname."
+          not_changed:
+            ru-RU:
+              - "Ты уже зарегистрирован у меня с точно такой же фамилией. Сердечко уже тебя ждёт."
+            en-US:
+              - "You're already registered with the same game surname"
+          bad_request:
+            ru-RU:
+              - "Никнейм неправильный. Попробуй ещё раз, теперь настоящий."
+            en-US:
+              - "Bad game surname. Try one again with the real one."
+      read:
+        messages:
+          not_found_by_id:
+            ru-RU:
+              - "Я не знаю такого пользователя."
+            en-US:
+              - "I don't know this guy"
+          not_found_by_name:
+            ru-RU:
+              - "Я не знаю такого пользователя с таким именим."
+            en-US:
+              - "I don't know a guy with this name."
+          bad_request:
+            ru-RU:
+              - "Это точно игровая фамилия? Ты меня проверить решил?"
+            en-US:
+              - "Is it game surname? Are you sure?"

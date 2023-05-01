@@ -4,7 +4,7 @@ Module contain logger messages
 # Will be moved in yaml like files
 # pylint: disable=invalid-name
 # ============================== log_template ===============================
-from discord.ext.commands import errors
+# from discord.ext.commands import errors
 
 pm_name = "Приват"
 
@@ -112,16 +112,16 @@ already_registered = "Уже зарегистрирован"
 
 # ============================== Errors ===============================
 
-errors_name = {
-    errors.BadArgument: "Плохие аргументы",
-    errors.CheckFailure: "Проверка провалена",
-    errors.MissingRequiredArgument: "Нету необходимых аргументов",
-    errors.CommandNotFound: "Команда не найдена",
-    errors.PrivateMessageOnly: "Только в приватные сообщения",
-    errors.NoPrivateMessage: "Только не в приватные сообщения",
-    errors.BotMissingPermissions: "У бота нету необходимых прав",
-    errors.UserInputError: "Проблема пользовательского ввода",
-}
+# errors_name = {
+#     errors.BadArgument: "Плохие аргументы",
+#     errors.CheckFailure: "Проверка провалена",
+#     errors.MissingRequiredArgument: "Нету необходимых аргументов",
+#     errors.CommandNotFound: "Команда не найдена",
+#     errors.PrivateMessageOnly: "Только в приватные сообщения",
+#     errors.NoPrivateMessage: "Только не в приватные сообщения",
+#     errors.BotMissingPermissions: "У бота нету необходимых прав",
+#     errors.UserInputError: "Проблема пользовательского ввода",
+# }
 
 # ===========================================================================
 

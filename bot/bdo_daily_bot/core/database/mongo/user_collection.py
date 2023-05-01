@@ -2,11 +2,12 @@
 import logging
 from typing import Any
 from typing import Dict
+from typing import Iterable
 from typing import List
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from bdo_daily_bot.core.database.database import Database
+from bdo_daily_bot.core.database.mongo.database import Database
 from bdo_daily_bot.core.tools.common import MetaSingleton
 from bdo_daily_bot.settings import settings
 
@@ -53,7 +54,7 @@ class UserCollection(metaclass=MetaSingleton):
         :return: User database collection.
         :rtype: AsyncIOMotorCollection
         """
-        if not self._collection:
+        if self._collection is None:
             self._collection = Database().database[settings.USER_COLLECTION]
             logging.debug("Bot initialization: Collection {} connected".format(settings.USER_COLLECTION))
         return self._collection
@@ -79,7 +80,7 @@ class UserCollection(metaclass=MetaSingleton):
         :return: Search results.
         :rtype: dict
         """
-        return await self.collection.find_one({"discord_id": discord_id})
+        return await self.collection.find_one({"discord_id": discord_id}, {"_id": 0})
 
     async def get_user_nickname(self, discord_id: int) -> str or None:
         """
@@ -104,7 +105,7 @@ class UserCollection(metaclass=MetaSingleton):
         """
         return await self.collection.find_one({"nickname": nickname})
 
-    async def register_user(self, discord_id: int, discord_user: str, nickname: str):
+    async def register_user(self, discord_id: int, discord_user: str, nickname: str) -> None:
         """
         Registers user data in the user database collection.
 
@@ -233,7 +234,7 @@ class UserCollection(metaclass=MetaSingleton):
 
         return user_document.get("first_notification", False)
 
-    async def get_users_by_nicknames(self, nicknames_list: List[str]) -> List[Dict[str, Any]]:
+    async def get_users_by_nicknames(self, nicknames_list: Iterable[str]) -> List[Dict[str, Any]]:
         """
         Returns a list of users documents based on their game nicknames.
 
@@ -241,6 +242,7 @@ class UserCollection(metaclass=MetaSingleton):
         :return: users documents
         """
         users_documents_cursor = self.collection.find(
-            {"nickname": {"$in": nicknames_list}}, {"discord_id": 1, "not_notify": 1, "first_notification": 1, "_id": 0}
+            {"nickname": {"$in": list(nicknames_list)}},
+            {"discord_id": 1, "not_notify": 1, "first_notification": 1, "_id": 0},
         )
         return [document async for document in users_documents_cursor]

@@ -10,7 +10,7 @@ from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from bdo_daily_bot.core.database.database import Database
+from bdo_daily_bot.core.database.mongo.database import Database
 from bdo_daily_bot.core.raid.raid_item import RaidItem
 from bdo_daily_bot.core.tools.common import MetaSingleton
 from bdo_daily_bot.settings import settings
@@ -33,7 +33,7 @@ class RaidArchiveCollection(metaclass=MetaSingleton):
 
         :return: raid database collection
         """
-        if not self._collection:
+        if self._collection is None:
             self._collection = Database().database[settings.RAID_ARCHIVE_COLLECTION]
             logging.debug("Bot initialization: Collection {} connected".format(settings.RAID_ARCHIVE_COLLECTION))
         return self._collection

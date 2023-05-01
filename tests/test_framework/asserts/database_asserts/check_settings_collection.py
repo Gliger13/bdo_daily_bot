@@ -4,7 +4,7 @@ from test_framework.scripts.database_scripts.find_in_database import find_docume
 from test_framework.scripts.database_scripts.find_in_database import is_data_exist
 from test_framework.scripts.database_scripts.setup_database import setup_database
 
-from bdo_daily_bot.core.database.settings_collection import SettingsCollection
+from bdo_daily_bot.core.database.mongo.settings_collection import SettingsCollection
 
 
 async def check_create_new_settings(settings_collection: SettingsCollection, test_data: dict):

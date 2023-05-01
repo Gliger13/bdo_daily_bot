@@ -1,0 +1,243 @@
+commands:
+  raid:
+    base:
+      name:
+        en: raid
+        ru: рейд
+      description:
+        en: Commands for raid manipulations.
+        ru: Команды для манипуляции с рейдом.
+    create:
+      name:
+        en: create
+        ru: создать
+      description:
+        en: Create new raid.
+        ru: Создать новый рейд.
+      options:
+        server:
+          name:
+            en: server
+            ru: сервер
+          description:
+            en: "The game server where the raid will take place."
+            ru: "Игровой сервер на котором будет отплывать рейд."
+        time_leaving:
+          name:
+            en: time_leaving
+            ru: время_отплытия
+          description:
+            en: "Time when the raid will start. Example: 22:00"
+            ru: "Время когда рейд будет отплывать. Пример: 22:00"
+        time_reservation:
+          name:
+            en: time_reservation
+            ru: время_бронирования
+          description:
+            en: "Time when the raid will be open for joining. Example: 21:00"
+            ru: "Время когда начнёться запись в рейд. Пример: 21:00"
+        reservation_number:
+          name:
+            en: reservation_number
+            ru: забронированных_мест
+          description:
+            en: "Amount of raid places to be blocked for reservation."
+            ru: "Количество заблокированных мест в рейде для бронирования."
+    read:
+      name:
+        en: show
+        ru: показать
+      description:
+        en: Show raid.
+        ru: Показать рейд. Можно использовать как фамилию капитана, так и его юзера.
+      options:
+        captain_name:
+          name:
+            en: captain_name
+            ru: фамилия_капитана
+          description:
+            en: "Game captain surname of the raid to show."
+            ru: "Игровая фамилия капитана рейда, которого необходимо показать."
+        captain_user:
+          name:
+            en: captain_user
+            ru: капитан_юзер
+          description:
+            en: "Discord captain user of the raid to show."
+            ru: "Дискорд юзер капитана рейд для показа."
+    update:
+      name:
+        en: update
+        ru: обновить
+      description:
+        en: Update raid.
+        ru: Обновить рейд.
+      options:
+        captain_name:
+          name:
+            en: captain_name
+            ru: фамилия_капитана
+          description:
+            en: "Game captain surname of the raid to update."
+            ru: "Игровая фамилия капитана рейда, которого необходимо обновить."
+        captain_user:
+          name:
+            en: captain_user
+            ru: капитан_юзер
+          description:
+            en: "Discord captain user of the raid to update."
+            ru: "Дискорд юзер капитана рейд для обновления."
+        server:
+          name:
+            en: server
+            ru: сервер
+          description:
+            en: "The game server where the raid will take place."
+            ru: "Игровой сервер на котором будет отплывать рейд."
+        time_leaving:
+          name:
+            en: time_leaving
+            ru: время_отплытия
+          description:
+            en: "Time when the raid will start. Example: 22:00"
+            ru: "Время когда рейд будет отплывать. Пример: 22:00"
+        time_reservation:
+          name:
+            en: time_reservation
+            ru: время_бронирования
+          description:
+            en: "Time when the raid will be open for joining. Example: 21:00"
+            ru: "Время когда начнёться запись в рейд. Пример: 21:00"
+        reservation_number:
+          name:
+            en: reservation_number
+            ru: забронированных_мест
+          description:
+            en: "Amount of raid places to be blocked for reservation."
+            ru: "Количество заблокированных мест в рейде для бронирования."
+    delete:
+      name:
+        en: delete
+        ru: удалить
+      description:
+        en: Delete existing raid.
+        ru: Удалить существующий рейд.
+      options:
+        captain_name:
+          name:
+            en: captain_name
+            ru: фамилия_капитана
+          description:
+            en: "Game captain surname of the raid to delete."
+            ru: "Игровая фамилия капитана рейда, которого необходимо удалить."
+        captain_user:
+          name:
+            en: captain_user
+            ru: капитан_юзер
+          description:
+            en: "Discord captain user of the raid to delete."
+            ru: "Дискорд юзер капитана рейд для удаления."
+  developer:
+    base:
+      name:
+        en: dev
+        ru: тест
+      description:
+        en: Bot developer commands.
+        ru: Команды разработчика бота.
+    test:
+      name:
+        en: test
+        ru: тест
+      description:
+        en: Just test
+        ru: Просто проверка.
+  user:
+    base:
+      name:
+        en: user
+        ru: моряк
+      description:
+        en: User related manipulations
+        ru: Команда по пользователям
+    create:
+      name:
+        en: registration
+        ru: регистрация
+      description:
+        en: Registrate your Discord user and game nickname with the bot.
+        ru: Зарегистрировать твою игровую фамилию и твой discord аккаунт.
+      options:
+        nickname:
+          name:
+            en: game_surname
+            ru: игровая_фамилия
+          description:
+            en: Your game surname to match you discord user.
+            ru: Твоя игровая фамилия для сопоставление с пользователем дискорда.
+    delete:
+      name:
+        en: delete
+        ru: удалить
+      description:
+        en: Delete your ALL user data from our databases.
+        ru: Удалить твои ВСЕ данные пользователя с базы данных.
+      options:
+        nickname:
+          name:
+            en: game_surname
+            ru: игровая_фамилия
+          description:
+            en: Your game surname to delete all related data.
+            ru: Твоя игровая фамилия для удаления всех связанных данных.
+        discord_user:
+          name:
+            en: discord_user
+            ru: дискорд_пользователь
+          description:
+            en: Discord user to delete all information for
+            ru: Пользователь дискорда для удаления всей информации.
+    update:
+      name:
+        en: update
+        ru: обновить
+      description:
+        en: Delete your ALL user data from our databases.
+        ru: Удалить ВСЕ твои данные пользователя с базы данных.
+      options:
+        discord_user:
+          name:
+            en: discord_user
+            ru: дискорд_юзер
+          description:
+            en: Target discord user to update data.
+            ru: Дискорд пользователь для обновления данных.
+        nickname:
+          name:
+            en: game_surname
+            ru: игровая_фамилия
+          description:
+            en: New game surname for the given discord user.
+            ru: Новая игровая фамилия для данного дискорд юзера.
+    read:
+      name:
+        en: show
+        ru: показать
+      description:
+        en: Show user statistics.
+        ru: Показать статистику пользователя.
+      options:
+        discord_user:
+          name:
+            en: discord_user
+            ru: дискорд_юзер
+          description:
+            en: Target discord user to show stats.
+            ru: Дискорд пользователь для показа статистики.
+        nickname:
+          name:
+            en: game_surname
+            ru: игровая_фамилия
+          description:
+            en: Game surname to show stats.
+            ru: Игровая фамилия для показа статистики.

@@ -1,9 +1,9 @@
 """Contain the database manager that manages all database collections."""
-from bdo_daily_bot.core.database.captain_collection import CaptainCollection
-from bdo_daily_bot.core.database.raid_archive_collection import RaidArchiveCollection
-from bdo_daily_bot.core.database.raid_collection import RaidCollection
-from bdo_daily_bot.core.database.settings_collection import SettingsCollection
-from bdo_daily_bot.core.database.user_collection import UserCollection
+from bdo_daily_bot.core.database.mongo.captain_collection import CaptainCollection
+from bdo_daily_bot.core.database.mongo.raid_archive_collection import RaidArchiveCollection
+from bdo_daily_bot.core.database.mongo.raid_collection import RaidCollection
+from bdo_daily_bot.core.database.mongo.settings_collection import SettingsCollection
+from bdo_daily_bot.core.database.mongo.user_collection import UserCollection
 
 
 class DatabaseManager:

@@ -3,7 +3,7 @@ import pytest
 from test_framework.asserts.database_asserts.check_settings_collection import check_remove_reaction_from_role
 from test_framework.scripts.common.data_factory import get_test_data
 
-from bdo_daily_bot.core.database.settings_collection import SettingsCollection
+from bdo_daily_bot.core.database.mongo.settings_collection import SettingsCollection
 
 
 @pytest.mark.asyncio

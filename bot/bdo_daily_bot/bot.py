@@ -7,9 +7,9 @@ bot client, load bot commands cogs and start discord bot.
 """
 import logging
 
-import discord
 from interactions import Intents
 from interactions.client import Client
+from interactions.client.errors import ExtensionLoadException
 
 from bdo_daily_bot.config.config import Config
 from bdo_daily_bot.core.logger.logger import BotLogger
@@ -64,8 +64,8 @@ class BdoDailyBot(metaclass=MetaSingleton):
         for cog_path in ProjectPathFactory.get_all_cog_paths():
             try:
                 self.bot.load_extension(cog_path)
-            except (discord.ClientException, ModuleNotFoundError):
-                logging.critical("Cog %s not loaded", cog_path)
+            except (ExtensionLoadException, ModuleNotFoundError) as error:
+                logging.critical("Cog %s not loaded. Error: %s", cog_path, error)
 
 
 def start_bot() -> None:

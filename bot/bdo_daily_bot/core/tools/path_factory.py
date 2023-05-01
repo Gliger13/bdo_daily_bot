@@ -7,8 +7,13 @@ class ProjectFileMapping:
     """Contain main directory names"""
 
     ROOT_DIR_NAME = "bdo_daily_bot"
-    COMMANDS_DIR_NAME = "commands"
+    COMMANDS_DIR_NAME = "commands_v2"
     COMMAND_COGS_PATH = f"{ROOT_DIR_NAME}.{COMMANDS_DIR_NAME}"
+
+    LOCALIZATION_PATH = "bdo_daily_bot.config.localization.data"
+    LOCALIZED_COMMANDS_MAP = "commands.yaml"
+    LOCALIZED_MESSAGES_MAP = "messages.yaml"
+    LOCALIZED_VALIDATIONS_MAP = "validations.yaml"
 
     BOT_DATA_DIR_NAME = "bot_data"
     EXCLUDE_DIRS_FROM_SEARCH = {"venv", ".idea", "__pycache__"}

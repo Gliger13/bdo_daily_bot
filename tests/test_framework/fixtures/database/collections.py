@@ -1,10 +1,10 @@
 """Contain fixtures for database collections"""
 import pytest
 
-from bdo_daily_bot.core.database.captain_collection import CaptainCollection
 from bdo_daily_bot.core.database.manager import DatabaseManager
-from bdo_daily_bot.core.database.settings_collection import SettingsCollection
-from bdo_daily_bot.core.database.user_collection import UserCollection
+from bdo_daily_bot.core.database.mongo.captain_collection import CaptainCollection
+from bdo_daily_bot.core.database.mongo.settings_collection import SettingsCollection
+from bdo_daily_bot.core.database.mongo.user_collection import UserCollection
 
 
 @pytest.fixture(scope="session")

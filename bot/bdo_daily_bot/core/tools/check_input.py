@@ -24,8 +24,7 @@ def check_args(**kwargs):
     """
     Check function input arguments from the command via discord message.
     """
-    # Already deprecated
-    return []
+    raise DeprecationWarning
     # errors = []
     # for key, value in kwargs.items():
     #     if value:

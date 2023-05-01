@@ -8,7 +8,7 @@ from discord.ext.commands import Context
 from bdo_daily_bot.core.commands_reporter.command_failure_reasons import CommandFailureReasons
 from bdo_daily_bot.core.commands_reporter.reporter import Reporter
 from bdo_daily_bot.core.database.manager import DatabaseManager
-from bdo_daily_bot.core.database.user_collection import UserExists
+from bdo_daily_bot.core.database.mongo.user_collection import UserExists
 from bdo_daily_bot.core.logger import log_template
 from bdo_daily_bot.core.tools import check_input
 from bdo_daily_bot.messages import command_names

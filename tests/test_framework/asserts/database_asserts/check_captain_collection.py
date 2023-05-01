@@ -1,11 +1,10 @@
 """Contain checks of the database user collection."""
 from test_framework.scripts.common.data_factory import parse_test_sample
 from test_framework.scripts.database_scripts.find_in_database import find_document
-from test_framework.scripts.database_scripts.find_in_database import is_data_exist
 from test_framework.scripts.database_scripts.setup_database import setup_database
 
-from bdo_daily_bot.core.database.captain_collection import CaptainCollection
-from bdo_daily_bot.core.database.user_collection import UserCollection
+from bdo_daily_bot.core.database.mongo.captain_collection import CaptainCollection
+from bdo_daily_bot.core.database.mongo.user_collection import UserCollection
 from bdo_daily_bot.core.raid.raid import Raid
 
 

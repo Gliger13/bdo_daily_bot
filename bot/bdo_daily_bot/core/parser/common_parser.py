@@ -7,11 +7,13 @@ from datetime import time
 from datetime import timedelta
 from enum import Enum
 from re import Match
+from typing import Any
 from typing import Optional
+from typing import Sized
 
-from discord import User
-
+from bdo_daily_bot.config.localization import ValidatorSettings
 from bdo_daily_bot.core.database.manager import DatabaseManager
+from bdo_daily_bot.errors.errors import ValidationError
 from bdo_daily_bot.messages import regex
 
 
@@ -108,7 +110,7 @@ class CommonCommandInputParser:
         return int(number_search_result.group("number"))
 
     @classmethod
-    async def parse_nickname(cls, user: User, nickname: Optional[str]) -> Optional[str]:
+    async def parse_nickname(cls, user: ..., nickname: Optional[str]) -> Optional[str]:
         """
         Parse input nickname
 
@@ -120,3 +122,28 @@ class CommonCommandInputParser:
             return parsed_nickname.group(CommandInputTypes.NAME.name_)
         if captain_name := await cls.__database.user.get_user_nickname(user.id):
             return captain_name
+
+
+class Validator:
+    @classmethod
+    def validate_field(cls, field_value: Any, validator_settings: ValidatorSettings):
+        cls.__validate_min_max_length(field_value, validator_settings)
+        cls.__validate_by_regex(field_value, validator_settings)
+
+    @staticmethod
+    def __validate_min_max_length(field_value: Sized, validation_settings: ValidatorSettings):
+        if validation_settings.min_length and validation_settings.min_length > len(field_value):
+            raise ValidationError(
+                f"Validation Error. Wrong min length for `{validation_settings.field_name}` field. "
+                f"Actual `{len(field_value)}`. Expected `> {validation_settings.min_length}`."
+            )
+        elif validation_settings.max_length and validation_settings.min_length < len(field_value):
+            raise ValidationError(
+                f"Validation Error. Wrong max length for `{validation_settings.field_name}` field. "
+                f"Actual `{len(field_value)}`. Expected `< {validation_settings.max_length}`."
+            )
+
+    @staticmethod
+    def __validate_by_regex(field_value: str, validation_settings: ValidatorSettings):
+        if not re.fullmatch(field_value, validation_settings.regex):
+            raise ValidationError(f"Validation Error for `` field. Invalid value by regex")

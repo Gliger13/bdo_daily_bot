@@ -11,7 +11,6 @@ from bdo_daily_bot.settings import secrets
 # Chose run mode. If False run production mode
 DEBUG = True
 
-
 # ====================================================================================================
 
 # Choose the symbols with which the command start
@@ -23,6 +22,14 @@ PRODUCTION_PREFIX = "!!"
 # Choose language of commands/messages/help and etc
 # Available: 'ru', 'eu'
 LANGUAGE = "ru"
+
+# ====================================================================================================
+
+# Enable functionality for supporting other, not default, game regions.
+# Enabling reduces API performance.
+
+DEFAULT_GAME_REGION = "ru"
+MULTI_GAME_REGION_SUPPORT = False
 
 # ====================================================================================================
 # Database settings

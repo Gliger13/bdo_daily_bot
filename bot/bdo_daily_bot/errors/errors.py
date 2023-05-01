@@ -7,3 +7,7 @@ class BotError(BaseException):
 
 class BotConfigError(BotError):
     """Error when error happened with the bot configuration"""
+
+
+class ValidationError(BaseException):
+    """Validation error for the data model"""

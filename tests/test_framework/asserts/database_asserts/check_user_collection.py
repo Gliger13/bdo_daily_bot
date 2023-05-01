@@ -3,7 +3,7 @@ from test_framework.scripts.common.data_factory import parse_test_sample
 from test_framework.scripts.database_scripts.find_in_database import find_document
 from test_framework.scripts.database_scripts.setup_database import setup_database
 
-from bdo_daily_bot.core.database.user_collection import UserCollection
+from bdo_daily_bot.core.database.mongo.user_collection import UserCollection
 
 
 async def check_first_notification_status(user_collection: UserCollection, test_data: dict):
