@@ -1,18 +1,27 @@
-"""
-Contain common classes
-"""
+"""Common classes."""
+from abc import ABCMeta
+from typing import Any
 
 
 class MetaSingleton(type):
-    """
-    Realize pattern Singleton
-    """
+    """Meta Singleton patter realisation."""
 
     _instances = {}
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args: Any, **kwargs: Any):
         if cls not in cls._instances:
             cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class ABCMetaSingleton(type, metaclass=ABCMeta):
+    """Abstract Meta Singleton patter realisation."""
+
+    _instances = {}
+
+    def __call__(cls, *args: Any, **kwargs: Any):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(ABCMetaSingleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
