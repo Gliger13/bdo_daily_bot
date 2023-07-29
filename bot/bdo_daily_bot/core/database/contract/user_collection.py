@@ -2,7 +2,6 @@
 from abc import ABCMeta
 from abc import abstractmethod
 from typing import Iterable
-from typing import List
 from typing import Optional
 
 from bdo_daily_bot.core.database.contract.base_collection import BaseCollection
@@ -24,7 +23,7 @@ class UserCollection(BaseCollection, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def get_users(self, user_attributes: User, expected_fields: Optional[Iterable[str]] = None) -> List[User]:
+    async def get_users(self, user_attributes: User, expected_fields: Optional[Iterable[str]] = None) -> list[User]:
         """Get users with the given user attributes.
 
         :param user_attributes: Attributes of the user to search and get.

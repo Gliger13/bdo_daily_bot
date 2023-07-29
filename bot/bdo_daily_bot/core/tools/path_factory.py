@@ -36,7 +36,8 @@ class ProjectPathFactory:
         for file_path in cls._get_module_paths(commands_dir_path):
             relative_cog_path = os.path.relpath(file_path, os.path.dirname(project_root_path))
             split_path = os.path.normpath(relative_cog_path).split(os.sep)
-            discord_cogs_paths.append(".".join(split_path)[:-3])
+            if not split_path[-1].startswith("_"):
+                discord_cogs_paths.append(".".join(split_path)[:-3])
         return discord_cogs_paths
 
     @classmethod
