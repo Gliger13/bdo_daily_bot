@@ -12,6 +12,7 @@ class User:
     discord_username: Optional[str] = None
     game_surname: Optional[str] = None
     game_region: Optional[str] = None
+    entries: int = 0
 
     def is_valid(self) -> bool:
         try:

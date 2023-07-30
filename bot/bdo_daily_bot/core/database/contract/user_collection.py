@@ -1,5 +1,4 @@
 """Collection for interacting with user resources."""
-from abc import ABCMeta
 from abc import abstractmethod
 from typing import Iterable
 from typing import Optional
@@ -8,7 +7,7 @@ from bdo_daily_bot.core.database.contract.base_collection import BaseCollection
 from bdo_daily_bot.core.models.user import User
 
 
-class UserCollection(BaseCollection, metaclass=ABCMeta):
+class BaseUserCollection(BaseCollection):
     """Collection for interacting with user resources."""
 
     __slots__ = ()

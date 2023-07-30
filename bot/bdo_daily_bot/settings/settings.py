@@ -37,6 +37,7 @@ MULTI_GAME_REGION_SUPPORT = False
 
 # Cluster name
 #
+DATABASE_TYPE = "mongo"
 CLUSTER_NAME = "discord"
 # For tests purpose
 # CLUSTER_NAME = 'test_discord'

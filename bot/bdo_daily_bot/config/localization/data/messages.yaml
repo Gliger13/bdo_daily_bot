@@ -68,6 +68,11 @@ commands:
               - "I don't know a guy with this name."
           bad_request:
             ru-RU:
-              - "Это точно игровая фамилия? Ты меня проверить решил?"
+              - "Это точно игравая фамилия? Ты меня проверить решил?"
             en-US:
               - "Is it game surname? Are you sure?"
+          embed_title:
+            ru-RU:
+              - "Статистика"
+            en-US:
+              - "Statistics"

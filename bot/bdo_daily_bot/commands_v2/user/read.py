@@ -14,6 +14,7 @@ from requests import codes
 
 from bdo_daily_bot.commands_v2.user._base import user_command_base
 from bdo_daily_bot.commands_v2.user._base import UserExtension
+from bdo_daily_bot.commands_v2.user._embeds import UserStatsEmbedBuilder
 from bdo_daily_bot.config.api import ApiName
 from bdo_daily_bot.config.localization import discord_localization_factory
 from bdo_daily_bot.config.localization import localization_factory
@@ -48,27 +49,28 @@ class UserReadExtension(UserExtension):
         discord_user: Optional[User] = None,
         game_surname: Optional[str] = None,
     ) -> None:
-        """Command to read user stats.
+        """Command to read user statistics.
 
         :param ctx: Slash command context.
         :param discord_user: Target discord user to show statistics.
         :param game_surname: Game surname to show statistics.
         """
         if discord_user:
-            response = await UsersAPI.read_by_id(str(discord_user.id))
+            response = await UsersAPI.read_by_id(str(discord_user.id), internal=True)
         elif game_surname:
             if settings.MULTI_GAME_REGION_SUPPORT:
                 raise NotImplemented("Multi Game Region Support is not implemented for the user read endpoint.")
             else:
                 game_region = settings.DEFAULT_GAME_REGION
-            response = await UsersAPI.read(game_region, game_surname)
+            response = await UsersAPI.read(game_region, game_surname, internal=True)
         else:
-            response = await UsersAPI.read_by_id(str(ctx.user.id))
+            response = await UsersAPI.read_by_id(str(ctx.user.id), internal=True)
 
         message: Optional[str] = None
         embed: Optional[Embed] = None
         if response.status_code == codes.ok and response.data:
-            message = str(response.data)
+            discord_user = self.bot.get_user(response.data.discord_id) if not discord_user else discord_user
+            embed = UserStatsEmbedBuilder.build(response.data, discord_user, {}, ctx.guild_locale)
         elif discord_user and response.status_code == codes.not_found:
             message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_id", ctx.guild_locale)
         elif game_surname and response.status_code == codes.ok and not response.data:

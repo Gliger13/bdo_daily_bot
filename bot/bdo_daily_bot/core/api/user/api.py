@@ -57,18 +57,15 @@ class UsersAPI(BaseApi):
         except ValidationError as validation_error:
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
-        get_user_by_id_response = await cls._database.user.get_user_by_id(discord_id)
-        if get_user_by_id_response.status_code == codes.ok and get_user_by_id_response.data["nickname"] == game_surname:
-            return SimpleResponse(codes.ok, {"message": UsersAPIMessages.USER_NOT_CHANGED})
-        elif get_user_by_id_response.status_code == codes.ok:
-            await cls._database.user.re_register_user(discord_id, discord_username, game_surname)
+        if existent_user := await cls._database.user.get_user(new_user):
+            if new_user.discord_id != existent_user.discord_id:
+                return SimpleResponse(codes.conflict, {"message": UsersAPIMessages.USER_CONFLICT})
+            elif existent_user.game_surname == game_surname:
+                return SimpleResponse(codes.ok, {"message": UsersAPIMessages.USER_NOT_CHANGED})
+            await cls._database.user.update_user(new_user)
             return SimpleResponse(codes.ok, {"message": UsersAPIMessages.USER_UPDATED})
 
-        get_users_response = await cls._database.user.get_users_by_nicknames([game_surname])
-        if get_users_response.status_code == codes.ok and get_users_response.data:
-            return SimpleResponse(codes.conflict, {"message": UsersAPIMessages.USER_CONFLICT})
-
-        await cls._database.user.register_user(discord_id, discord_username, game_surname)
+        await cls._database.user.create_user(new_user)
         return SimpleResponse(codes.created)
 
     @classmethod
@@ -91,18 +88,28 @@ class UsersAPI(BaseApi):
         except ValidationError as validation_error:
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
-        user_data = await cls._database.user.get_user_by_id(user.discord_id)
+        user_data = await cls._database.user.get_user(user)
         if user_data:
-            return SimpleResponse(codes.ok, user_data)
+            if internal:
+                return SimpleResponse(codes.ok, user_data)
+            else:
+                raise NotImplementedError("Not internal use of get user by id is not implemented")
         return SimpleResponse(codes.not_found, {"message": f"User with discord id `{discord_id}` is not found"})
 
     @classmethod
-    async def read(cls, game_region: str, game_surname: str, correlation_id: Optional[str] = None) -> SimpleResponse:
+    async def read(
+        cls,
+        game_region: str,
+        game_surname: str,
+        correlation_id: Optional[str] = None,
+        internal: bool = False,
+    ) -> SimpleResponse:
         """Create new user.
 
         :param game_region: Game region of the user.
         :param game_surname: Game surname to find the record.
         :param correlation_id: ID to track request.
+        :param internal: If True then return not serialized objects.
         :return: HTTP Response
         """
         user = User(game_surname=game_surname, game_region=game_region)
@@ -111,7 +118,7 @@ class UsersAPI(BaseApi):
         except ValidationError as validation_error:
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
-        found_users = await cls._database.user.get_users_by_nicknames([game_surname])
+        found_users = await cls._database.user.get_user(user)
         return SimpleResponse(codes.ok, found_users)
 
     @classmethod

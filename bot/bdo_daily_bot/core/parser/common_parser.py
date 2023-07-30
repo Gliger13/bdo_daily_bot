@@ -12,7 +12,6 @@ from typing import Optional
 from typing import Sized
 
 from bdo_daily_bot.config.localization import ValidatorSettings
-from bdo_daily_bot.core.database.manager import DatabaseManager
 from bdo_daily_bot.errors.errors import ValidationError
 from bdo_daily_bot.messages import regex
 
@@ -44,7 +43,7 @@ class CommonCommandInputParser:
     Response for parsing common commands attributes
     """
 
-    __database = DatabaseManager()
+    # __database = DatabaseManager()
 
     @classmethod
     def parse_simple_time(cls, time_string: str) -> Optional[time]:
@@ -145,5 +144,5 @@ class Validator:
 
     @staticmethod
     def __validate_by_regex(field_value: str, validation_settings: ValidatorSettings):
-        if not re.fullmatch(field_value, validation_settings.regex):
+        if not re.match(validation_settings.regex, field_value):
             raise ValidationError(f"Validation Error for `` field. Invalid value by regex")
