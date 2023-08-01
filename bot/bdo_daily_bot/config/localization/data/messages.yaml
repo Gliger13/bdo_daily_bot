@@ -76,3 +76,13 @@ commands:
               - "Статистика"
             en-US:
               - "Statistics"
+          embed_game_surname:
+            ru-RU:
+              - "Моряк **{game_surname}**"
+            en-US:
+              - "Sailor **{game_surname}**"
+          embed_raids_visited:
+            ru-RU:
+              - "Посетил рейдов **{raids_visited}**"
+            en-US:
+              - "Raids visited **{raids_visited}**"

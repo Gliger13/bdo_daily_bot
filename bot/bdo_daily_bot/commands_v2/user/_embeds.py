@@ -15,41 +15,46 @@ from bdo_daily_bot.core.models.user import User
 
 
 class UserStatsEmbedBuilder:
-    """Builder for user statistics"""
+    """Builder for user statistics."""
 
-    def _build_description(
-        self,
-    ):
-        text_message = messages.no_data
-        if user_info:
-            # Choose a title whichever user drove or not people
-            if captain_info and captain_info.get("raids_created"):
-                text_message = messages.captain_title
-            else:
-                text_message = messages.member_title
+    __slots__ = ()
 
-            # Add the user game nickname
-            text_message += f"**{user_info.get('nickname')}**.\n"
+    @classmethod
+    def _build_user_game_name_message(cls, database_user: User, locale: str) -> str:
+        """Build and return a message with a user's game surname.
 
-            # Add information about whether the user joined raids or not
-            if user_info.get("entries"):
-                text_message += messages.raids_joined.format(entries=user_info.get("entries"))
-            else:
-                text_message += messages.no_raids_joined
+        :param database_user: User model with a game surname to use.
+        :param locale: Short local discord key to localize the message.
+        :return: Built user game surname message.
+        """
+        name_template = discord_localization_factory.get_message(ApiName.USER, "read", "embed_game_surname", locale)
+        return name_template.format(game_surname=database_user.game_surname)
 
-            # Add information about whether the user drove people or not.
-            if captain_info and captain_info.get("raids_created"):
-                raids_created = captain_info.get("raids_created")
-                drove_people = captain_info.get("drove_people")
-                if raids_created < 5:
-                    text_message += messages.drove_raids_l5.format(raids_created=raids_created)
-                else:
-                    text_message += messages.drove_raids_g5.format(raids_created=raids_created)
-                if drove_people < 5:
-                    text_message += messages.drove_people_l5.format(drove_people=captain_info.get("drove_people"))
-                else:
-                    text_message += messages.drove_people_g5.format(drove_people=captain_info.get("drove_people"))
-                text_message += messages.last_time_drove.format(last_created=captain_info.get("last_created"))
+    @classmethod
+    def _build_user_raids_visited_message(cls, database_user: User, locale: str) -> str:
+        """Build and return a message with a number of visited raids.
+
+        :param database_user: User model with visited raids number to use.
+        :param locale: Short local discord key to localize the message.
+        :return: Built user visited raids number message.
+        """
+        entries_template = discord_localization_factory.get_message(ApiName.USER, "read", "embed_raids_visited", locale)
+        return entries_template.format(raids_visited=database_user.entries)
+
+    @classmethod
+    def _build_description(cls, database_user: User, discord_user: DiscordUser, captain: Any, locale: str):
+        """Build description with a statistics for the given user.
+
+        :param database_user: User model with visited raids number to use.
+        :param discord_user: Discord user model.
+        :param locale: Short local discord key to localize the message.
+        :return: Built user statistics.
+        """
+        description_parts = (
+            cls._build_user_game_name_message(database_user, locale),
+            cls._build_user_raids_visited_message(database_user, locale),
+        )
+        return "\n".join(description_parts)
 
     @classmethod
     def build(cls, database_user: User, discord_user: DiscordUser, captain: Any, locale: str) -> Embed:
@@ -57,10 +62,10 @@ class UserStatsEmbedBuilder:
         embed = Embed(
             title=discord_localization_factory.get_message(ApiName.USER, "read", "embed_title", locale),
             color=RoleColors.BLUE,
-            description="TODO",
+            description=cls._build_description(database_user, discord_user, captain, locale),
         )
         embed.set_author(
-            name=str(discord_user),
+            name=discord_user.display_name,
             icon_url=discord_user.avatar.url,
         )
         return embed
