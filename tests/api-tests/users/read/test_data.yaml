@@ -1,0 +1,8 @@
+test_sets:
+  test_ddt_get_by_valid_id:
+    - name: ""
+      users_to_create:
+        - discord_id: "12345"
+          discord_username: test#0
+          game_region: ru
+          game_surname: test
