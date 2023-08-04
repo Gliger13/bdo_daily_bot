@@ -69,8 +69,9 @@ class BaseUserCollection(BaseCollection):
         """
 
     @abstractmethod
-    async def delete(self, discord_id: str) -> None:
+    async def delete(self, discord_id: str) -> bool:
         """Delete given user from the database.
 
         :param discord_id: ID of the user in the discord to delete.
+        :return: True if the user was deleted else False
         """

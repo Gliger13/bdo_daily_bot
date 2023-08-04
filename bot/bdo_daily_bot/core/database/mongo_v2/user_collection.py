@@ -56,5 +56,7 @@ class UserMongoCollection(BaseUserCollection):
     async def update_user_first_notification_status(self, user_id: str, first_notification_status: bool) -> None:
         """Update user notify flag."""
 
-    async def delete(self, discord_id: str) -> None:
+    async def delete(self, discord_id: str) -> bool:
         """Delete given user from the database."""
+        delete_result = await self._collection.delete_one({"discord_id": discord_id})
+        return bool(delete_result.deleted_count)

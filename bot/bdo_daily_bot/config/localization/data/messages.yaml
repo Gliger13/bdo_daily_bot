@@ -86,3 +86,20 @@ commands:
               - "Посетил рейдов **{raids_visited}**"
             en-US:
               - "Raids visited **{raids_visited}**"
+      delete:
+        messages:
+          deleted:
+            ru-RU:
+              - "Я удалил этого пользователя, больше я его не знаю."
+            en-US:
+              - "I have deleted this user. I don't know him anymore."
+          not_found_by_id:
+            ru-RU:
+              - "Я не знаю такого пользователя."
+            en-US:
+              - "I don't know this guy"
+          not_found_by_name:
+            ru-RU:
+              - "Я не знаю такого пользователя с таким именим."
+            en-US:
+              - "I don't know a guy with this name."

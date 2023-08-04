@@ -20,6 +20,7 @@ class UsersAPIMessages:
     USER_NOT_CHANGED = "User attributes were not changed."
     USER_UPDATED = "User attributes were updated."
     USER_CONFLICT = "User with the given game surname already exists."
+    USER_NOT_FOUND = "User with discord id `{}` is not found"
 
 
 class UsersAPI(BaseApi):
@@ -94,7 +95,7 @@ class UsersAPI(BaseApi):
                 return SimpleResponse(codes.ok, user_data)
             else:
                 raise NotImplementedError("Not internal use of get user by id is not implemented")
-        return SimpleResponse(codes.not_found, {"message": f"User with discord id `{discord_id}` is not found"})
+        return SimpleResponse(codes.not_found, {"message": UsersAPIMessages.USER_NOT_FOUND.format(discord_id)})
 
     @classmethod
     async def read(
@@ -110,7 +111,7 @@ class UsersAPI(BaseApi):
         :param game_surname: Game surname to find the record.
         :param correlation_id: ID to track request.
         :param internal: If True then return not serialized objects.
-        :return: HTTP Response
+        :return: HTTP Response.
         """
         user = User(game_surname=game_surname, game_region=game_region)
         try:
@@ -127,6 +128,19 @@ class UsersAPI(BaseApi):
         raise NotImplementedError("Users API update endpoint is not implemented")
 
     @classmethod
-    async def delete(cls) -> SimpleResponse:
-        """Delete user."""
-        raise NotImplementedError("Users API delete endpoint is not implemented")
+    async def delete(cls, discord_id: str) -> SimpleResponse:
+        """Delete user by the given id.
+
+        :param: ID of the discord user to be deleted.
+        :return: HTTP Response.
+        """
+        user = User(discord_id=discord_id)
+        try:
+            user.validate()
+        except ValidationError as validation_error:
+            return SimpleResponse(codes.bad_request, {"message": validation_error})
+
+        is_user_deleted = await cls._database.user.delete(discord_id)
+        if not is_user_deleted:
+            return SimpleResponse(codes.not_found, {"message": UsersAPIMessages.USER_NOT_FOUND.format(discord_id)})
+        return SimpleResponse(codes.no_content)
