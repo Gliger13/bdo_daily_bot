@@ -20,7 +20,7 @@ async def created_users(test_data: dict, users_api: UsersAPI) -> list[User]:
     created_users: list[User] = []
     for user_data in test_data.get("users_to_create", []):
         create_user_response = await users_api.create(**user_data, internal=True)
-        assert create_user_response.status_code != codes.created, (
+        assert create_user_response.status_code == codes.created, (
             "Test setup failed. Can not create an user for tests. "
             "Response status code is not the same. "
             f"Expected Results: `{codes.created}`. "
