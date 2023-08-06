@@ -1,42 +1,17 @@
 test_sets:
   test_ddt_request_by_valid_id:
     data:
-      - test_set_name: "Test get user by valid ID (random 17 digits)"
-        target_user_id: "50891726345089127"
+      - test_set_name: "Test delete user by valid ID (str)"
+        target_user_id: "000000000000000006" # gitleaks:allow
         users_to_create:
-          - discord_id: "50891726345089127" # gitleaks:allow
+          - discord_id: "000000000000000006" # gitleaks:allow
             discord_username: test#0
             game_region: ru
             game_surname: Test
-      - test_set_name: "Test get user by valid ID (random 18 digits)"
-        target_user_id: "492017836295710483"
+      - test_set_name: "Test delete user by valid ID (int)"
+        target_user_id: 000000000000000007 # gitleaks:allow
         users_to_create:
-          - discord_id: "492017836295710483" # gitleaks:allow
-            discord_username: test#0
-            game_region: ru
-            game_surname: Test
-      - test_set_name: "Test get user by valid ID (1 digit)"
-        target_user_id: "0"
-        users_to_create:
-          - discord_id: "0"
-            discord_username: test#0
-            game_region: ru
-            game_surname: Test
-      - test_set_name: "Test get user by valid ID (255 digits)"
-        target_user_id: >
-          71029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561
-          029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561029384756
-        users_to_create:
-          - discord_id: >
-              "710293847562938475610293847561029384756102938475610293847561029384756102938475610293847561029384756102938
-              47561029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561029384756"
-            discord_username: test#0
-            game_region: ru
-            game_surname: Test
-      - test_set_name: "Test get user by valid ID (int)"
-        target_user_id: 000000000000000011
-        users_to_create:
-          - discord_id: "000000000000000011" # gitleaks:allow
+          - discord_id: "000000000000000007" # gitleaks:allow
             discord_username: test#0
             game_region: ru
             game_surname: Test

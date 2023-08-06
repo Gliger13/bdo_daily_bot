@@ -1,0 +1,260 @@
+test_sets:
+  test_ddt_request_by_valid_body:
+    test_name: "Test create user with valid params"
+    data:
+      - test_set_name: "Test create user with valid params (english nickname)"
+        user_to_create:
+          discord_id: "000000000000000001" # gitleaks:allow
+          discord_username: test#0
+          game_region: ru
+          game_surname: Test
+      - test_set_name: "Test create user with valid params (russian nickname)"
+        user_to_create:
+          discord_id: "000000000000000002" # gitleaks:allow
+          discord_username: SuperNickname#0
+          game_region: en
+          game_surname: МАТР8СИК3
+      - test_set_name: "Test create user with valid params (legacy discord username)"
+        user_to_create:
+          discord_id: "000000000000000003" # gitleaks:allow
+          discord_username: Abasd#0
+          game_region: ru
+          game_surname: Test
+      - test_set_name: "Test create user with valid params (nickname length - left)"
+        user_to_create:
+          discord_id: "000000000000000004" # gitleaks:allow
+          discord_username: Test
+          game_region: ru
+          game_surname: Te
+      - test_set_name: "Test create user with valid params (nickname length - right)"
+        user_to_create:
+          discord_id: "000000000000000005" # gitleaks:allow
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with valid params (nickname length - left)"
+        user_to_create:
+          discord_id: "000000000000000004" # gitleaks:allow
+          discord_username: Test
+          game_region: ru
+          game_surname: Te
+      - test_set_name: "Test create user with valid params (int - 17 digits discord id)"
+        user_to_create:
+          discord_id: 50891726345089127 # gitleaks:allow
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with valid params (str - 18 digits discord id )"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with valid params (str - 18 digits discord id )"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+  test_ddt_request_by_invalid_body:
+    data:
+      - test_set_name: "Test create user with invalid params (discord id - symbols)"
+        user_to_create:
+          discord_id: "dsabsad"
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord id - digits + symbols)"
+        user_to_create:
+          discord_id: "adsadsa12321321dsadasd1"
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord id - empty)"
+        user_to_create:
+          discord_id: ""
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord id - null)"
+        user_to_create:
+          discord_id: null
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord id - empty dict)"
+        user_to_create:
+          discord_id: { }
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord id - empty array)"
+        user_to_create:
+          discord_id: [ ]
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord id - boolean)"
+        user_to_create:
+          discord_id: true
+          discord_username: InsaneName#0
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord username - empty string)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: ""
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord username - null)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: null
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord username - boolean)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: true
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord username - dict)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: { }
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (discord username - array)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: [ ]
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (game region - empty string)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ""
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (game region - null)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: null
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (game region - boolean)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: true
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (game region - dict)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: { }
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (game region - array)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: [ ]
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create user with invalid params (game surname - empty string)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: ""
+      - test_set_name: "Test create user with invalid params (game surname - left edge)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: "N"
+      - test_set_name: "Test create user with invalid params (game surname - right edge)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: "MySuperGameNickn"
+      - test_set_name: "Test create user with invalid params (game surname - special symbols)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: "Adsadas#$%^&*()"
+      - test_set_name: "Test create user with invalid params (game surname - null)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: null
+      - test_set_name: "Test create user with invalid params (game surname - boolean)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: true
+      - test_set_name: "Test create user with invalid params (game surname - dict)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: { }
+      - test_set_name: "Test create user with invalid params (game surname - array)"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: [ ]
+  test_ddt_request_with_conflict:
+    data:
+      - test_set_name: "Test create user with conflict nickname"
+        user_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: MySuperTest
+        users_to_create:
+          - discord_id: "000000000000000050" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: MySuperTest
+  test_ddt_request_with_existing_data:
+    data:
+      - test_set_name: "Test create user with updated nickname (only new nickname)"
+        user_to_create:
+          discord_id: "000000000000000055" # gitleaks:allow
+          discord_username: test#0
+          game_region: ru
+          game_surname: MyNewNickname
+        users_to_create:
+          - discord_id: "000000000000000055" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: MyNickname
+      - test_set_name: "Test create user with updated nickname (nickname + username)"
+        user_to_create:
+          discord_id: "000000000000000055" # gitleaks:allow
+          discord_username: su#0
+          game_region: ru
+          game_surname: MyNewNickname
+        users_to_create:
+          - discord_id: "000000000000000055" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: MyNickname
+  test_ddt_request_with_same_data:
+    data:
+      - test_set_name: "Test create user with already exists same data"
+        user_to_create:
+          discord_id: "000000000000000055" # gitleaks:allow
+          discord_username: test#0
+          game_region: ru
+          game_surname: MyNickname
+        users_to_create:
+          - discord_id: "000000000000000055" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: MyNickname

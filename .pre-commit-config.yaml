@@ -44,8 +44,8 @@ repos:
     hooks:
       - id: reorder-python-imports
         args:
-         - --application-directories
-         - .:bot
+          - --application-directories
+          - .:bot
         name: "[Auto Style] Reorder imports"
         types: [ python ]
   - repo: https://github.com/jazzband/pip-tools

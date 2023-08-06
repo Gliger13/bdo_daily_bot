@@ -37,6 +37,7 @@ class UsersAPI(BaseApi):
         game_region: str,
         game_surname: str,
         correlation_id: Optional[str] = None,
+        internal: bool = False,
     ) -> SimpleResponse:
         """Create new user.
 
@@ -45,6 +46,7 @@ class UsersAPI(BaseApi):
         :param game_region: Game region for the new user.
         :param game_surname: Game surname for the new user.
         :param correlation_id: ID to track request.
+        :param internal: If True then return not serialized objects.
         :return: HTTP Response
         """
         new_user = User(
@@ -67,7 +69,10 @@ class UsersAPI(BaseApi):
             return SimpleResponse(codes.ok, {"message": UsersAPIMessages.USER_UPDATED})
 
         await cls._database.user.create_user(new_user)
-        return SimpleResponse(codes.created)
+        if internal:
+            return SimpleResponse(codes.created, new_user)
+        else:
+            raise NotImplementedError("Not internal use of create user is not implemented")
 
     @classmethod
     async def read_by_id(
