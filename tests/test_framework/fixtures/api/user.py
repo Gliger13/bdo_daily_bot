@@ -31,7 +31,7 @@ async def created_users(test_data: dict, users_api: UsersAPI) -> list[User]:
             f"Expected Results: `{codes.created}`. "
             f"Actual Results: `{create_user_response.status_code}`."
         )
-        created_users.append(create_user_response.data)
+        created_users.append(create_user_response.data["data"])
 
     yield created_users
 
@@ -68,8 +68,11 @@ async def actual_create_user_response(test_data: dict, users_api: UsersAPI) -> S
     yield create_user_response
 
     if create_user_response.status_code == codes.created:
-        delete_response = await users_api.delete(create_user_response.data.discord_id)
-        assert delete_response.status_code == codes.no_content, "Test teardown failed. Created user was not delete."
+        delete_response = await users_api.delete(create_user_response.data["data"].discord_id)
+        assert delete_response.status_code == codes.no_content, (
+            "Test teardown failed. Created user was not deleted. Response statis code is not the same. "
+            f"Expected: `{codes.no_content}`.Actual: `{delete_response.status_code}`"
+        )
 
 
 @pytest.fixture

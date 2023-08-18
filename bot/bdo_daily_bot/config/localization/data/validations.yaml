@@ -3,7 +3,10 @@ game_surname:
     regex: "^(?P<name>([А-ЯЁ][А-яЁё,0-9]{1,15}|[A-Z][A-z,0-9]{1,15}))$"
   en:
     regex: "^(?P<name>([A-Z][A-z,0-9]{1,15}))$"
-server:
-  ru:
+game_region:
+  common: &common_game_region
     enum:
-      - ""
+      - "ru"
+      - "en"
+  ru: *common_game_region
+  en: *common_game_region

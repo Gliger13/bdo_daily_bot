@@ -2,6 +2,7 @@
 
 Module contains API for interacting with all user related resources.
 """
+import logging
 from typing import Optional
 
 from requests import codes
@@ -19,8 +20,9 @@ class UsersAPIMessages:
 
     USER_NOT_CHANGED = "User attributes were not changed."
     USER_UPDATED = "User attributes were updated."
+    USER_CREATED = "User created."
     USER_CONFLICT = "User with the given game surname already exists."
-    USER_NOT_FOUND = "User with discord id `{}` is not found"
+    USER_NOT_FOUND = "User with discord id `{}` is not found."
 
 
 class UsersAPI(BaseApi):
@@ -56,23 +58,25 @@ class UsersAPI(BaseApi):
             game_surname=game_surname,
         )
         try:
-            new_user.validate()
+            new_user.validate(ignore_empty=False)
         except ValidationError as validation_error:
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
-        if existent_user := await cls._database.user.get_user(new_user):
+        search_criteria = {"discord_id": discord_id, "game_surname": game_surname}
+        if existent_users := await cls._database.user.get_users(search_criteria, full_match=False):
+            if len(existent_users) > 1:
+                logging.warning("DATABASE INCONSISTENCY. There are users with same discord id or discord surname")
+                return SimpleResponse(codes.conflict, {"message": UsersAPIMessages.USER_CONFLICT})
+            existent_user = existent_users[0]
             if new_user.discord_id != existent_user.discord_id:
                 return SimpleResponse(codes.conflict, {"message": UsersAPIMessages.USER_CONFLICT})
-            elif existent_user.game_surname == game_surname:
-                return SimpleResponse(codes.ok, {"message": UsersAPIMessages.USER_NOT_CHANGED})
+            if existent_user.game_surname == game_surname:
+                return SimpleResponse(codes.ok, {"data": new_user, "message": UsersAPIMessages.USER_NOT_CHANGED})
             await cls._database.user.update_user(new_user)
-            return SimpleResponse(codes.ok, {"message": UsersAPIMessages.USER_UPDATED})
+            return SimpleResponse(codes.ok, {"data": new_user, "message": UsersAPIMessages.USER_UPDATED})
 
         await cls._database.user.create_user(new_user)
-        if internal:
-            return SimpleResponse(codes.created, new_user)
-        else:
-            raise NotImplementedError("Not internal use of create user is not implemented")
+        return SimpleResponse(codes.created, {"data": new_user, "message": UsersAPIMessages.USER_CREATED})
 
     @classmethod
     async def read_by_id(

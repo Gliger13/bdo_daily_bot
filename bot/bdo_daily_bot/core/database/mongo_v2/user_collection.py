@@ -34,8 +34,20 @@ class UserMongoCollection(BaseUserCollection):
             return User(**response)
         return None
 
-    async def get_users(self, user_attributes: User, expected_fields: Optional[Iterable[str]] = None) -> List[User]:
+    async def get_users(
+        self,
+        search_criteria: dict,
+        expected_fields: Optional[Iterable[str]] = None,
+        full_match: bool = False,
+    ) -> list[User]:
         """Get users by the given user attributes."""
+        if full_match:
+            query = {key: value for key, value in search_criteria.items() if value is not None}
+        else:
+            query = {"$or": [{key: value} for key, value in search_criteria.items() if value is not None]}
+        expected_fields = {field_name: 1 for field_name in expected_fields} if expected_fields else {}
+        collection_cursor = self._collection.find(query, {"_id": 0, **expected_fields})
+        return [User(**user_data) async for user_data in collection_cursor]
 
     async def create_user(self, new_user: User) -> None:
         """Create given user in the database."""

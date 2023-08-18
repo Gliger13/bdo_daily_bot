@@ -124,10 +124,18 @@ class CommonCommandInputParser:
 
 
 class Validator:
+    """Common validator for fields."""
+
+    VALIDATION_ERROR_TEMPLATE = "Invalid `{}` field value provided."
+
+    __slots__ = ()
+
     @classmethod
     def validate_field(cls, field_value: Any, validator_settings: ValidatorSettings):
+        """Validate given field value by given validator settings."""
         cls.__validate_min_max_length(field_value, validator_settings)
         cls.__validate_by_regex(field_value, validator_settings)
+        cls.__validate_by_enum(field_value, validator_settings)
 
     @staticmethod
     def __validate_min_max_length(field_value: Sized, validation_settings: ValidatorSettings):
@@ -136,7 +144,7 @@ class Validator:
                 f"Validation Error. Wrong min length for `{validation_settings.field_name}` field. "
                 f"Actual `{len(field_value)}`. Expected `> {validation_settings.min_length}`."
             )
-        elif validation_settings.max_length and validation_settings.min_length < len(field_value):
+        if validation_settings.max_length and validation_settings.min_length < len(field_value):
             raise ValidationError(
                 f"Validation Error. Wrong max length for `{validation_settings.field_name}` field. "
                 f"Actual `{len(field_value)}`. Expected `< {validation_settings.max_length}`."
@@ -144,5 +152,14 @@ class Validator:
 
     @staticmethod
     def __validate_by_regex(field_value: str, validation_settings: ValidatorSettings):
-        if not re.match(validation_settings.regex, field_value):
-            raise ValidationError(f"Validation Error for `` field. Invalid value by regex")
+        if validation_settings.regex and not re.match(validation_settings.regex, field_value):
+            raise ValidationError(
+                f"Validation Error for `{validation_settings.field_name}` field, doesn't match by regex"
+            )
+
+    @staticmethod
+    def __validate_by_enum(field_value: str, validation_settings: ValidatorSettings):
+        if validation_settings.enum and field_value not in validation_settings.enum:
+            raise ValidationError(
+                f"Validation Error for `{validation_settings.field_name}` field, doesn't match by enum"
+            )

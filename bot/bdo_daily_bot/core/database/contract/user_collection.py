@@ -22,11 +22,19 @@ class BaseUserCollection(BaseCollection):
         """
 
     @abstractmethod
-    async def get_users(self, user_attributes: User, expected_fields: Optional[Iterable[str]] = None) -> list[User]:
+    async def get_users(
+        self,
+        search_criteria: dict,
+        expected_fields: Optional[Iterable[str]] = None,
+        full_match: bool = True,
+    ) -> list[User]:
         """Get users with the given user attributes.
 
-        :param user_attributes: Attributes of the user to search and get.
+        :param search_criteria: Attributes of the user to search and get.
         :param expected_fields: Iterable of user fields to return.
+        :param full_match:
+            Find user records with the given attributes only, otherwise users
+            that have at least one matched attribute.
         :return: List of found user models.
         """
 
