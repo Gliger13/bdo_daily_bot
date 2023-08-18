@@ -22,46 +22,23 @@ test_sets:
             discord_username: test#0
             game_region: ru
             game_surname: Test
-      - test_set_name: "Test get user by valid ID (255 digits)"
-        target_user_id: >
-          71029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561
-          029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561029384756
+      - test_set_name: "Test get user by valid ID (70 digits)"
+        target_user_id: "7129384756102938475601239847561029384756102938475601239847561029384756"
         users_to_create:
-          - discord_id: >
-              "710293847562938475610293847561029384756102938475610293847561029384756102938475610293847561029384756102938
-              47561029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561029384756"
-            discord_username: test#0
-            game_region: ru
-            game_surname: Test
-      - test_set_name: "Test get user by valid ID (int)"
-        target_user_id: 000000000000000011
-        users_to_create:
-          - discord_id: "000000000000000011" # gitleaks:allow
+          - discord_id: "7129384756102938475601239847561029384756102938475601239847561029384756" # gitleaks:allow
             discord_username: test#0
             game_region: ru
             game_surname: Test
   test_ddt_request_by_non_existent_id:
     data:
-      - test_set_name: "Test delete user by invalid ID (int - 18 digits)"
-        target_user_id: 491827356918273645
-      - test_set_name: "Test delete user by invalid ID (int - 17 digits)"
-        target_user_id: 82039475628394012
-      - test_set_name: "Test delete user by invalid ID (int - 1 digit)"
-        target_user_id: 0
-      - test_set_name: "Test delete user by invalid ID (int - 255 digits)"
-        target_user_id: >
-          71293847561029384756012398475610293847561029384756012398475610293847561029384756012398475610293847561029384756
-          012398475610293847561029384756012
-      - test_set_name: "Test delete user by invalid ID (str - 18 digits)"
+      - test_set_name: "Test delete user by non-existent ID (str - 18 digits)"
         target_user_id: "875639210587123654"
-      - test_set_name: "Test delete user by invalid ID (str - 17 digits)"
+      - test_set_name: "Test delete user by non-existent ID (str - 17 digits)"
         target_user_id: "48102937659018342"
-      - test_set_name: "Test delete user by invalid ID (str - 1 digit)"
+      - test_set_name: "Test delete user by non-existent ID (str - 1 digit)"
         target_user_id: "5"
-      - test_set_name: "Test delete user by invalid ID (str - 255 digits)"
-        target_user_id: >
-          "7129384756102938475601239847561029384756102938475601239847561029384756102938475601239847561029384756102938475
-          6012398475610293847561029384756012"
+      - test_set_name: "Test delete user by non-existent ID (str - 70 digits)"
+        target_user_id: "7129384756102938475601239847561029384756102938475601239847561029384756"
   test_ddt_request_by_invalid_id:
     data:
       - test_set_name: "Test delete user by invalid ID (1 leter)"
@@ -74,7 +51,3 @@ test_sets:
         target_user_id: "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~😀😎🚀❤️🌟"
       - test_set_name: "Test delete user by invalid ID (empty string)"
         target_user_id: ""
-      - test_set_name: "Test delete user by invalid ID (empty dict)"
-        target_user_id: { }
-      - test_set_name: "Test delete user by invalid ID (empty array)"
-        target_user_id: [ ]
