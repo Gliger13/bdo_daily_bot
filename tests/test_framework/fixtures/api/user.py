@@ -24,7 +24,7 @@ async def created_users(test_data: dict, users_api: UsersAPI) -> list[User]:
     """Initialize and return Users API in pytest session scope."""
     created_users: list[User] = []
     for user_data in test_data.get("users_to_create", []):
-        create_user_response = await users_api.create(**user_data, internal=True)
+        create_user_response = await users_api.create(**user_data)
         assert create_user_response.status_code == codes.created, (
             "Test setup failed. Can not create an user for tests. "
             "Response status code is not the same. "
@@ -63,7 +63,7 @@ async def actual_create_user_response(test_data: dict, users_api: UsersAPI) -> S
     :return: Response to the create user request.
     """
     user_to_create = test_data["user_to_create"]
-    create_user_response = await users_api.create(**user_to_create, internal=True)
+    create_user_response = await users_api.create(**user_to_create)
 
     yield create_user_response
 
@@ -96,7 +96,7 @@ async def actual_update_user_response(test_data: dict, users_api: UsersAPI) -> S
     """
     target_user_id = test_data["target_user_id"]
     new_user_attributes = test_data["new_user_attributes"]
-    return await users_api.update(target_user_id, **new_user_attributes, internal=True)
+    return await users_api.update(target_user_id, **new_user_attributes)
 
 
 @pytest.fixture

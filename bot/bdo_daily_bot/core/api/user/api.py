@@ -8,7 +8,9 @@ from typing import Optional
 from requests import codes
 
 from bdo_daily_bot.core.api.base.base import BaseApi
+from bdo_daily_bot.core.api.base.base import handle_server_errors
 from bdo_daily_bot.core.api.base.base import SimpleResponse
+from bdo_daily_bot.core.logger.api import log_api_request
 from bdo_daily_bot.core.models.user import User
 from bdo_daily_bot.errors.errors import ValidationError
 
@@ -31,6 +33,8 @@ class UsersAPI(BaseApi):
     __slots__ = ()
 
     @classmethod
+    @log_api_request
+    @handle_server_errors
     async def create(
         cls,
         *,
@@ -39,7 +43,6 @@ class UsersAPI(BaseApi):
         game_region: str,
         game_surname: str,
         correlation_id: Optional[str] = None,
-        internal: bool = False,
     ) -> SimpleResponse:
         """Create new user.
 
@@ -48,7 +51,6 @@ class UsersAPI(BaseApi):
         :param game_region: Game region for the new user.
         :param game_surname: Game surname for the new user.
         :param correlation_id: ID to track request.
-        :param internal: If True then return not serialized objects.
         :return: HTTP Response
         """
         new_user = User(
@@ -79,17 +81,13 @@ class UsersAPI(BaseApi):
         return SimpleResponse(codes.created, {"data": new_user, "message": UsersAPIMessages.USER_CREATED})
 
     @classmethod
-    async def read_by_id(
-        cls,
-        discord_id: str,
-        correlation_id: Optional[str] = None,
-        internal: bool = False,
-    ) -> SimpleResponse:
+    @log_api_request
+    @handle_server_errors
+    async def read_by_id(cls, discord_id: str, correlation_id: Optional[str] = None) -> SimpleResponse:
         """Read user by discord id.
 
-        :param discord_id: Discord ID of the user record to ger.
+        :param discord_id: Discord ID of the user record to get.
         :param correlation_id: ID to track request.
-        :param internal: If True then return not serialized objects.
         :return: HTTP Response
         """
         user = User(discord_id=discord_id)
@@ -98,28 +96,24 @@ class UsersAPI(BaseApi):
         except ValidationError as validation_error:
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
-        user_data = await cls._database.user.get_user(user)
-        if user_data:
-            if internal:
-                return SimpleResponse(codes.ok, user_data)
-            else:
-                raise NotImplementedError("Not internal use of get user by id is not implemented")
+        if user_data := await cls._database.user.get_user(user):
+            return SimpleResponse(codes.ok, user_data)
         return SimpleResponse(codes.not_found, {"message": UsersAPIMessages.USER_NOT_FOUND.format(discord_id)})
 
     @classmethod
+    @log_api_request
+    @handle_server_errors
     async def read(
         cls,
         game_region: str,
         game_surname: str,
         correlation_id: Optional[str] = None,
-        internal: bool = False,
     ) -> SimpleResponse:
         """Create new user.
 
         :param game_region: Game region of the user.
         :param game_surname: Game surname to find the record.
         :param correlation_id: ID to track request.
-        :param internal: If True then return not serialized objects.
         :return: HTTP Response.
         """
         user = User(game_surname=game_surname, game_region=game_region)
@@ -132,15 +126,20 @@ class UsersAPI(BaseApi):
         return SimpleResponse(codes.ok, found_users)
 
     @classmethod
-    async def update(cls) -> SimpleResponse:
+    @log_api_request
+    @handle_server_errors
+    async def update(cls, discord_id: str, correlation_id: Optional[str] = None) -> SimpleResponse:
         """Update user."""
         raise NotImplementedError("Users API update endpoint is not implemented")
 
     @classmethod
-    async def delete(cls, discord_id: str) -> SimpleResponse:
+    @log_api_request
+    @handle_server_errors
+    async def delete(cls, discord_id: str, correlation_id: Optional[str] = None) -> SimpleResponse:
         """Delete user by the given id.
 
         :param: ID of the discord user to be deleted.
+        :param correlation_id: ID to track request.
         :return: HTTP Response.
         """
         user = User(discord_id=discord_id)

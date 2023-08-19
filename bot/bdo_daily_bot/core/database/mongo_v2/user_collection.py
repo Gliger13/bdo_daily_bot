@@ -22,7 +22,7 @@ class UserMongoCollection(BaseUserCollection):
         :return: MongoDb collection for user resources.
         """
         user_collection_name = self._config["user_collection_name"]
-        collection = self._database.client.database[user_collection_name]
+        collection = self._database.client[user_collection_name]
         logging.info("Bot initialization: Collection %s connected", user_collection_name)
         return collection
 

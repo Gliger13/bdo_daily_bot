@@ -56,15 +56,15 @@ class UserReadExtension(UserExtension):
         :param game_surname: Game surname to show statistics.
         """
         if discord_user:
-            response = await UsersAPI.read_by_id(str(discord_user.id), internal=True)
+            response = await UsersAPI.read_by_id(str(discord_user.id))
         elif game_surname:
             if settings.MULTI_GAME_REGION_SUPPORT:
                 raise NotImplemented("Multi Game Region Support is not implemented for the user read endpoint.")
             else:
                 game_region = settings.DEFAULT_GAME_REGION
-            response = await UsersAPI.read(game_region, game_surname, internal=True)
+            response = await UsersAPI.read(game_region, game_surname)
         else:
-            response = await UsersAPI.read_by_id(str(ctx.user.id), internal=True)
+            response = await UsersAPI.read_by_id(str(ctx.user.id))
 
         message: Optional[str] = None
         embed: Optional[Embed] = None
