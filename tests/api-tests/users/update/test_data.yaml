@@ -4,309 +4,260 @@ test_sets:
       - test_set_name: "Test update user by valid ID (random 17 digits)"
         target_user_id: "50891726345089127"
         new_user_attributes:
-          game_surname: NewName
+          game_surname: NewTest1
+          game_region: ru
         users_to_create:
           - discord_id: "50891726345089127" # gitleaks:allow
             discord_username: test#0
             game_region: ru
-            game_surname: Test
+            game_surname: Test41
       - test_set_name: "Test update user by valid ID (random 18 digits)"
         target_user_id: "492017836295710483"
         new_user_attributes:
-          game_surname: NewName
+          game_surname: NewTest2
+          game_region: ru
           discord_username: test#1
         users_to_create:
           - discord_id: "492017836295710483" # gitleaks:allow
             discord_username: test#0
             game_region: ru
-            game_surname: Test
+            game_surname: Test42
       - test_set_name: "Test update user by valid ID (1 digit)"
         target_user_id: "0"
         new_user_attributes:
-          game_surname: NewName
-          game_region: eu
+          game_surname: NewTest3
+          game_region: en
         users_to_create:
           - discord_id: "0"
             discord_username: test#0
             game_region: ru
-            game_surname: Test
-      - test_set_name: "Test update user by valid ID (255 digits)"
-        target_user_id: >
-          71029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561
-          029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561029384756
+            game_surname: Test43
+      - test_set_name: "Test update user by valid ID (94 digits)"
+        target_user_id: "1029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938"
         new_user_attributes:
-          game_surname: NewName
+          game_surname: NewTest4
+          game_region: ru
         users_to_create:
-          - discord_id: >
-              "710293847562938475610293847561029384756102938475610293847561029384756102938475610293847561029384756102938
-              47561029384756102938475610293847561029384756102938475610293847561029384756102938475610293847561029384756"
+          - discord_id: "1029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938"
             discord_username: test#0
             game_region: ru
-            game_surname: Test
-      - test_set_name: "Test update user by valid ID (int)"
-        target_user_id: 000000000000000011
+            game_surname: Test44
+      - test_set_name: "Test update user by valid ID (entries - 0)"
+        target_user_id: "321321321321312312"
         new_user_attributes:
-          game_surname: NewName
+          entries: 0
         users_to_create:
-          - discord_id: "000000000000000011" # gitleaks:allow
+          - discord_id: "321321321321312312" # gitleaks:allow
             discord_username: test#0
             game_region: ru
-            game_surname: Test
+            game_surname: Test45
+      - test_set_name: "Test update user by valid ID (entries - max 8 bit int - 1)"
+        target_user_id: "821321321321312312"
+        new_user_attributes:
+          entries: 9223372036854775807
+        users_to_create:
+          - discord_id: "821321321321312312" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test46
+      - test_set_name: "Test update user by valid ID (entries - not notify - False)"
+        target_user_id: "921321321321312312"
+        new_user_attributes:
+          not_notify: false
+        users_to_create:
+          - discord_id: "921321321321312312" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test47
+      - test_set_name: "Test update user by valid ID (entries - not notify - True)"
+        target_user_id: "921321321321313312"
+        new_user_attributes:
+          not_notify: true
+        users_to_create:
+          - discord_id: "921321321321313312" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test48
+      - test_set_name: "Test update user by valid ID (entries - first notification - False)"
+        target_user_id: "922221321321312312"
+        new_user_attributes:
+          first_notification: false
+        users_to_create:
+          - discord_id: "922221321321312312" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test49
+      - test_set_name: "Test update user by valid ID (entries - first notification - True)"
+        target_user_id: "921321321321313311"
+        new_user_attributes:
+          first_notification: true
+        users_to_create:
+          - discord_id: "921321321321313311" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test50
   test_ddt_request_by_non_existent_id:
     data:
-      - test_set_name: "Test delete user by invalid ID (int - 18 digits)"
-        new_user_attributes:
-          game_surname: NewName
-        target_user_id: 491827356918273645
-      - test_set_name: "Test delete user by invalid ID (int - 17 digits)"
-        new_user_attributes:
-          game_surname: NewName
-        target_user_id: 82039475628394012
-      - test_set_name: "Test delete user by invalid ID (int - 1 digit)"
-        new_user_attributes:
-          game_surname: NewName
-        target_user_id: 0
-      - test_set_name: "Test delete user by invalid ID (int - 255 digits)"
-        new_user_attributes:
-          game_surname: NewName
-        target_user_id: >
-          71293847561029384756012398475610293847561029384756012398475610293847561029384756012398475610293847561029384756
-          012398475610293847561029384756012
       - test_set_name: "Test delete user by invalid ID (str - 18 digits)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "875639210587123654"
       - test_set_name: "Test delete user by invalid ID (str - 17 digits)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "48102937659018342"
       - test_set_name: "Test delete user by invalid ID (str - 1 digit)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "5"
       - test_set_name: "Test delete user by invalid ID (str - 255 digits)"
         new_user_attributes:
           game_surname: NewName
-        target_user_id: >
-          "7129384756102938475601239847561029384756102938475601239847561029384756102938475601239847561029384756102938475
-          6012398475610293847561029384756012"
+          game_region: ru
+        target_user_id: "1029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938"
   test_ddt_request_by_invalid_id:
     data:
       - test_set_name: "Test delete user by invalid ID (1 letter)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "A"
       - test_set_name: "Test delete user by invalid ID (90 letters)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       - test_set_name: "Test delete user by invalid ID (valid id + 1 letter)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "00000000000000001A"
       - test_set_name: "Test delete user by invalid ID (special symbols)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~😀😎🚀❤️🌟"
       - test_set_name: "Test delete user by invalid ID (empty string)"
         new_user_attributes:
           game_surname: NewName
+          game_region: ru
         target_user_id: ""
-      - test_set_name: "Test delete user by invalid ID (empty dict)"
-        new_user_attributes:
-          game_surname: NewName
-        target_user_id: { }
-      - test_set_name: "Test delete user by invalid ID (empty array)"
-        new_user_attributes:
-          game_surname: NewName
-        target_user_id: [ ]
   test_ddt_request_with_conflict:
     data:
       - test_set_name: "Test update user with conflict nickname"
+        target_user_id: "508917263450819127"
         new_user_attributes:
           discord_id: "508917263450819127" # gitleaks:allow
           discord_username: su#0
           game_region: ru
-          game_surname: MySuperTest
+          game_surname: Test0002
         users_to_create:
           - discord_id: "000000000000000050" # gitleaks:allow
             discord_username: test#0
             game_region: ru
-            game_surname: MySuperTest
+            game_surname: Test0002
+          - discord_id: "508917263450819127" # gitleaks:allow
+            discord_username: su#0
+            game_region: ru
+            game_surname: Test0003
   test_ddt_request_by_invalid_body:
     data:
       - test_set_name: "Test update user with invalid params (discord id - symbols)"
-        target_user_id: 82039475628394012
         new_user_attributes:
-          discord_id: "dsabsad"
+          discord_id: "SDFGHBNMJKJM"
           discord_username: InsaneName#0
           game_region: ru
-          game_surname: MySuperGameNick
+          game_surname: Test41
+        target_user_id: "82039475628394012"
+        users_to_create:
+          - discord_id: "82039475628334012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test221
       - test_set_name: "Test update user with invalid params (discord id - digits + symbols)"
-        target_user_id: 82039475628394012
         new_user_attributes:
           discord_id: "adsadsa12321321dsadasd1"
           discord_username: InsaneName#0
           game_region: ru
           game_surname: MySuperGameNick
+        target_user_id: "82039475118394012"
+        users_to_create:
+          - discord_id: "82039475118394012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test222
       - test_set_name: "Test update user with invalid params (discord id - empty)"
-        target_user_id: 82039475628394012
         new_user_attributes:
           discord_id: ""
           discord_username: InsaneName#0
           game_region: ru
           game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord id - null)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: null
-          discord_username: InsaneName#0
-          game_region: ru
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord id - empty dict)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: { }
-          discord_username: InsaneName#0
-          game_region: ru
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord id - empty array)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: [ ]
-          discord_username: InsaneName#0
-          game_region: ru
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord id - boolean)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: true
-          discord_username: InsaneName#0
-          game_region: ru
-          game_surname: MySuperGameNick
+        target_user_id: "82239475628394012"
+        users_to_create:
+          - discord_id: "82239475628394012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test223
       - test_set_name: "Test update user with invalid params (discord username - empty string)"
-        target_user_id: 82039475628394012
         new_user_attributes:
           discord_id: "508917263450819127" # gitleaks:allow
           discord_username: ""
           game_region: ru
           game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord username - null)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: null
-          game_region: ru
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord username - boolean)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: true
-          game_region: ru
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord username - dict)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: { }
-          game_region: ru
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (discord username - array)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: [ ]
-          game_region: ru
-          game_surname: MySuperGameNick
+        target_user_id: "82039415628394012"
+        users_to_create:
+          - discord_id: "82039415628394012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test224
       - test_set_name: "Test update user with invalid params (game region - empty string)"
-        target_user_id: 82039475628394012
         new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
+          discord_id: "508917263450819327" # gitleaks:allow
           discord_username: su#0
           game_region: ""
           game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (game region - null)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: null
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (game region - boolean)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: true
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (game region - dict)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: { }
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (game region - array)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: [ ]
-          game_surname: MySuperGameNick
-      - test_set_name: "Test update user with invalid params (game surname - empty string)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: ru
-          game_surname: ""
+        target_user_id: "82039475628393012"
+        users_to_create:
+          - discord_id: "82039475628393012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test225
       - test_set_name: "Test update user with invalid params (game surname - left edge)"
-        target_user_id: 82039475628394012
         new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
+          discord_id: "501917263450819127" # gitleaks:allow
           discord_username: su#0
           game_region: ru
           game_surname: "N"
+        target_user_id: "82031475628394012"
+        users_to_create:
+          - discord_id: "82031475628394012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test226
       - test_set_name: "Test update user with invalid params (game surname - right edge)"
-        target_user_id: 82039475628394012
         new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
+          discord_id: "508933263450819127" # gitleaks:allow
           discord_username: su#0
           game_region: ru
-          game_surname: "MySuperGameNickn"
+          game_surname: "MySuperGameNickna"
+        target_user_id: "82039475621194012"
+        users_to_create:
+          - discord_id: "82039475621194012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test227
       - test_set_name: "Test update user with invalid params (game surname - special symbols)"
-        target_user_id: 82039475628394012
         new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
+          discord_id: "508917263450229127" # gitleaks:allow
           discord_username: su#0
           game_region: ru
           game_surname: "Adsadas#$%^&*()"
-      - test_set_name: "Test update user with invalid params (game surname - null)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: ru
-          game_surname: null
-      - test_set_name: "Test update user with invalid params (game surname - boolean)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: ru
-          game_surname: true
-      - test_set_name: "Test update user with invalid params (game surname - dict)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: ru
-          game_surname: { }
-      - test_set_name: "Test update user with invalid params (game surname - array)"
-        target_user_id: 82039475628394012
-        new_user_attributes:
-          discord_id: "508917263450819127" # gitleaks:allow
-          discord_username: su#0
-          game_region: ru
-          game_surname: [ ]
+        target_user_id: "80039475628394012"
+        users_to_create:
+          - discord_id: "80039475628394012" # gitleaks:allow
+            discord_username: test#0
+            game_region: ru
+            game_surname: Test229

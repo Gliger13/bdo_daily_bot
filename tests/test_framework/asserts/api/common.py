@@ -1,10 +1,10 @@
 """Response related asserts and soft checks."""
-import logging
 from typing import Collection
 from typing import Iterable
 from typing import Optional
 from typing import Union
 
+import bson
 from deepdiff import DeepDiff
 from requests import codes
 from test_framework.test_tools.soft_asserts.soft_assert import expect
@@ -47,7 +47,13 @@ def soft_check_response_json_attributes(
     if not ignore_actual_fields:
         ignore_actual_fields = []
 
-    difference = DeepDiff(response.data, expected_attributes, exclude_paths=ignore_actual_fields, view="text")
+    difference = DeepDiff(
+        t1=response.data,
+        t2=expected_attributes,
+        exclude_paths=ignore_actual_fields,
+        view="text",
+        ignore_type_in_groups=[(int, bson.int64.Int64)],
+    )
     pretty_difference = "\n".join({str(item) for item in difference.to_dict().items()})
     return expect(
         not difference,

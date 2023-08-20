@@ -23,6 +23,7 @@ class UsersAPIMessages:
 
     USER_NOT_CHANGED = "User attributes were not changed."
     USER_UPDATED = "User attributes were updated."
+    INVALID_USER = "Invalid user provided."
     USER_CREATED = "User created."
     USER_CONFLICT = "User with the given game surname already exists."
     USER_NOT_FOUND = "User with discord id `{}` is not found."
@@ -128,10 +129,41 @@ class UsersAPI(BaseApi):
 
     @classmethod
     @log_api_request
-    @handle_server_errors
-    async def update(cls, discord_id: str, correlation_id: Optional[str] = None) -> SimpleResponse:
-        """Update user."""
-        raise NotImplementedError("Users API update endpoint is not implemented")
+    async def update(
+        cls,
+        discord_id: str,
+        updated_attributes: dict,
+        correlation_id: Optional[str] = None,
+    ) -> SimpleResponse:
+        """Update user.
+
+        :param discord_id: ID of the new user in Discord.
+        :param updated_attributes: Updated user attributes to set.
+        :param correlation_id: ID to track request.
+        :return: HTTP Response
+        """
+        try:
+            user_to_update = User(discord_id=discord_id)
+            user_to_update.validate()
+            updated_user = User(**updated_attributes)
+            updated_user.validate()
+        except ValidationError or TypeError as validation_error:
+            message = UsersAPIMessages.INVALID_USER if isinstance(validation_error, TypeError) else validation_error
+            return SimpleResponse(codes.bad_request, {"message": message})
+
+        search_criteria = {"discord_id": discord_id}
+        if game_surname := updated_attributes.get("game_surname"):
+            search_criteria["game_surname"] = game_surname
+
+        found_users = await cls._database.user.get_users(search_criteria, full_match=False)
+        if not any(user.discord_id == discord_id for user in found_users):
+            return SimpleResponse(codes.not_found, {"message": UsersAPIMessages.USER_NOT_FOUND.format(discord_id)})
+        if len(found_users) > 1:
+            return SimpleResponse(codes.conflict, {"message": UsersAPIMessages.USER_CONFLICT})
+
+        updated_user = User(**{**asdict(found_users[0]), **updated_attributes})
+        await cls._database.user.update_user(updated_user)
+        return SimpleResponse(codes.ok, {"data": updated_user, "message": UsersAPIMessages.USER_UPDATED})
 
     @classmethod
     @log_api_request

@@ -4,9 +4,10 @@ from typing import Any
 from typing import Optional
 
 from bdo_daily_bot.config.localization import localization_factory
-from bdo_daily_bot.core.models.game_region import GameRegion
 from bdo_daily_bot.core.parser.common_parser import Validator
 from bdo_daily_bot.errors.errors import ValidationError
+
+MAX_INT_8_BYTE = 9223372036854775807
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -22,6 +23,8 @@ class User:
     game_surname: Optional[str] = None
     game_region: Optional[str] = None
     entries: int = 0
+    first_notification: Optional[bool] = False
+    not_notify: Optional[bool] = None
 
     def __bool__(self) -> bool:
         """Return True if any of the field values is not None, otherwise False."""
@@ -52,6 +55,9 @@ class User:
         self._validate_discord_username()
         self._validate_game_region()
         self._validate_game_surname()
+        self._validate_entries()
+        self._validate_first_notification()
+        self._validate_not_notify()
 
     @staticmethod
     def _validate_fields_are_not_empty(**fields: Any) -> None:
@@ -77,6 +83,8 @@ class User:
     def _validate_game_surname(self) -> None:
         """Validate given game surname."""
         if self.game_surname is not None:
+            if not self.game_region:
+                raise ValidationError(Validator.VALIDATION_ERROR_TEMPLATE.format("game_region"))
             validator_settings = localization_factory.get_validator("game_surname", self.game_region)
             Validator.validate_field(self.game_surname, validator_settings)
 
@@ -85,6 +93,24 @@ class User:
         if self.game_region is not None:
             validator_settings = localization_factory.get_validator("game_region", "common")
             Validator.validate_field(self.game_region, validator_settings)
+
+    def _validate_entries(self) -> None:
+        """Validate given entries."""
+        if self.entries is not None:
+            if not isinstance(self.entries, int) or self.entries < 0 or self.entries > MAX_INT_8_BYTE:
+                raise ValidationError(Validator.VALIDATION_ERROR_TEMPLATE.format("entries"))
+
+    def _validate_first_notification(self) -> None:
+        """Validate given entries."""
+        if self.first_notification is not None:
+            if not isinstance(self.first_notification, bool):
+                raise ValidationError(Validator.VALIDATION_ERROR_TEMPLATE.format("first_notification"))
+
+    def _validate_not_notify(self) -> None:
+        """Validate given entries."""
+        if self.not_notify is not None:
+            if not isinstance(self.not_notify, bool):
+                raise ValidationError(Validator.VALIDATION_ERROR_TEMPLATE.format("not_notify"))
 
     @staticmethod
     def __validate_string_field(field_name: str, field_value: Any) -> None:

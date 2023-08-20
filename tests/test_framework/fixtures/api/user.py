@@ -96,7 +96,7 @@ async def actual_update_user_response(test_data: dict, users_api: UsersAPI) -> S
     """
     target_user_id = test_data["target_user_id"]
     new_user_attributes = test_data["new_user_attributes"]
-    return await users_api.update(target_user_id, **new_user_attributes)
+    return await users_api.update(target_user_id, new_user_attributes)
 
 
 @pytest.fixture
