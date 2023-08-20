@@ -3,6 +3,7 @@
 Module contains API for interacting with all user related resources.
 """
 import logging
+from dataclasses import asdict
 from typing import Optional
 
 from requests import codes
@@ -97,7 +98,7 @@ class UsersAPI(BaseApi):
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
         if user_data := await cls._database.user.get_user(user):
-            return SimpleResponse(codes.ok, user_data)
+            return SimpleResponse(codes.ok, {"data": user_data})
         return SimpleResponse(codes.not_found, {"message": UsersAPIMessages.USER_NOT_FOUND.format(discord_id)})
 
     @classmethod
@@ -122,8 +123,8 @@ class UsersAPI(BaseApi):
         except ValidationError as validation_error:
             return SimpleResponse(codes.bad_request, {"message": validation_error})
 
-        found_users = await cls._database.user.get_user(user)
-        return SimpleResponse(codes.ok, found_users)
+        found_users = await cls._database.user.get_users({"game_region": game_region, "game_surname": game_surname})
+        return SimpleResponse(codes.ok, {"data": found_users})
 
     @classmethod
     @log_api_request
@@ -138,7 +139,7 @@ class UsersAPI(BaseApi):
     async def delete(cls, discord_id: str, correlation_id: Optional[str] = None) -> SimpleResponse:
         """Delete user by the given id.
 
-        :param: ID of the discord user to be deleted.
+        :param discord_id: ID of the discord user to be deleted.
         :param correlation_id: ID to track request.
         :return: HTTP Response.
         """

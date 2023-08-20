@@ -81,11 +81,12 @@ class UserDeletionExtension(UserExtension):
             raise NotImplemented("Multi Game Region Support is not implemented for the user read endpoint.")
         else:
             game_region = settings.DEFAULT_GAME_REGION
-        response = await UsersAPI.read(game_region, game_surname, internal=True)
-        if response.status_code == codes.ok and response.data:
-            return response.data.discord_id
+        response = await UsersAPI.read(game_region, game_surname)
+        user_data = response.data.get("data")
+        if response.status_code == codes.ok and user_data:
+            return user_data.discord_id
 
-        if response.status_code == codes.ok and not response.data:
+        if response.status_code == codes.ok and not user_data:
             message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_name", ctx.guild_locale)
         elif response.status_code == codes.bad_request:
             message = localization_factory.get_message(ApiName.USER, "read", "bad_request", ctx.guild_locale)

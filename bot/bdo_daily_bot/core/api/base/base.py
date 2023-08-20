@@ -2,6 +2,7 @@
 import logging
 from abc import ABCMeta
 from dataclasses import dataclass
+from dataclasses import field
 from functools import wraps
 from typing import Callable
 from typing import Optional
@@ -18,7 +19,7 @@ class SimpleResponse:
     """Represents simple API response."""
 
     status_code: int
-    data: Optional[dict or list] = None
+    data: dict = field(default_factory=dict)
 
 
 class BaseApi(metaclass=ABCMeta):

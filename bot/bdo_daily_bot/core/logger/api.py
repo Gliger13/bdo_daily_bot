@@ -26,11 +26,12 @@ def log_api_request(api_function: Callable) -> Callable:
         )
         api_response = await api_function(cls, *args, correlation_id=correlation_id, **kwargs)
         logging.info(
-            "%s | %s | %s | Request processed with `%s` status code",
+            "%s | %s | %s | Request processed with `%s` status code%s",
             correlation_id,
             cls.__name__,
             api_function.__name__,
             api_response.status_code,
+            f", message: `{message}`" if (message := api_response.data.get("message")) else "",
         )
         return api_response
 

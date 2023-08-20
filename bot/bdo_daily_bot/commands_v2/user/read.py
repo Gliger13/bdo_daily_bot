@@ -65,15 +65,16 @@ class UserReadExtension(UserExtension):
             response = await UsersAPI.read(game_region, game_surname)
         else:
             response = await UsersAPI.read_by_id(str(ctx.user.id))
+        user_data = response.data.get("data")
 
         message: Optional[str] = None
         embed: Optional[Embed] = None
-        if response.status_code == codes.ok and response.data:
-            discord_user = self.bot.get_user(response.data.discord_id) if not discord_user else discord_user
-            embed = UserStatsEmbedBuilder.build(response.data, discord_user, {}, ctx.guild_locale)
-        elif discord_user and response.status_code == codes.not_found:
+        if response.status_code == codes.ok and user_data:
+            discord_user = self.bot.get_user(user_data.discord_id) if not discord_user else discord_user
+            embed = UserStatsEmbedBuilder.build(user_data, discord_user, {}, ctx.guild_locale)
+        elif response.status_code == codes.not_found:
             message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_id", ctx.guild_locale)
-        elif game_surname and response.status_code == codes.ok and not response.data:
+        elif game_surname and response.status_code == codes.ok and not user_data:
             message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_name", ctx.guild_locale)
         elif response.status_code == codes.bad_request:
             message = localization_factory.get_message(ApiName.USER, "read", "bad_request", ctx.guild_locale)
