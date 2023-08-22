@@ -18,6 +18,8 @@ from bdo_daily_bot.config.api import ApiName
 from bdo_daily_bot.config.localization import discord_localization_factory
 from bdo_daily_bot.config.localization import localization_factory
 from bdo_daily_bot.core.api.user.api import UsersAPI
+from bdo_daily_bot.core.logger.discord import log_discord_command
+from bdo_daily_bot.core.tools.discord import handle_command_errors
 from bdo_daily_bot.settings import settings
 
 
@@ -42,25 +44,32 @@ class UserDeletionExtension(UserExtension):
         opt_type=OptionType.USER,
         required=False,
     )
+    @log_discord_command
+    @handle_command_errors
     async def user_delete_command(
-        self, ctx: SlashContext, discord_user: Optional[User] = None, game_surname: Optional[str] = None
+        self,
+        ctx: SlashContext,
+        discord_user: Optional[User] = None,
+        game_surname: Optional[str] = None,
+        correlation_id: Optional[str] = None,
     ) -> None:
         """Command to delete all user data.
 
         :param ctx: Slash command context.
         :param discord_user: Target discord user to clean all the data.
         :param game_surname: Game surname to match with the discord user.
+        :param correlation_id: ID to track request.
         """
         if discord_user:
             target_discord_id = str(discord_user.id)
         elif game_surname:
-            target_discord_id = await self.__get_discord_id_by_game_surname(ctx, game_surname)
+            target_discord_id = await self.__get_discord_id_by_game_surname(ctx, game_surname, correlation_id)
             if not target_discord_id:
                 return None
         else:
             target_discord_id = str(ctx.author.id)
 
-        delete_user_response = await UsersAPI.delete(target_discord_id)
+        delete_user_response = await UsersAPI.delete(target_discord_id, correlation_id=correlation_id)
         if delete_user_response.status_code == codes.no_content:
             message = localization_factory.get_message(ApiName.USER, "delete", "deleted", ctx.guild_locale)
         elif delete_user_response.status_code == codes.not_found:
@@ -70,7 +79,9 @@ class UserDeletionExtension(UserExtension):
         await ctx.send(message)
 
     @staticmethod
-    async def __get_discord_id_by_game_surname(ctx: SlashContext, game_surname: str) -> Optional[str]:
+    async def __get_discord_id_by_game_surname(
+        ctx: SlashContext, game_surname: str, correlation_id: str
+    ) -> Optional[str]:
         """Get discord ID by the given game surname.
 
         :param ctx: Slash command context.
@@ -81,7 +92,7 @@ class UserDeletionExtension(UserExtension):
             raise NotImplemented("Multi Game Region Support is not implemented for the user read endpoint.")
         else:
             game_region = settings.DEFAULT_GAME_REGION
-        response = await UsersAPI.read(game_region, game_surname)
+        response = await UsersAPI.read(game_region, game_surname, correlation_id=correlation_id)
         user_data = response.data.get("data")
         if response.status_code == codes.ok and user_data:
             return user_data.discord_id

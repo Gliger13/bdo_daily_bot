@@ -56,6 +56,11 @@ commands:
               - "Bad game surname. Try one again with the real one."
       read:
         messages:
+          too_many_options:
+            ru-RU:
+              - "Слишком много информации. Мне нужен либо игровая фамилия, либо дискорд юзер. Не всё вместе"
+            en-US:
+              - "Too many arguments provided. Please use game_surname only or discord_user only"
           not_found_by_id:
             ru-RU:
               - "Я не знаю такого пользователя."

@@ -14,6 +14,8 @@ from bdo_daily_bot.commands_v2.user._base import user_command_base
 from bdo_daily_bot.commands_v2.user._base import UserExtension
 from bdo_daily_bot.config.api import ApiName
 from bdo_daily_bot.config.localization import discord_localization_factory
+from bdo_daily_bot.core.logger.discord import log_discord_command
+from bdo_daily_bot.core.tools.discord import handle_command_errors
 
 
 class UserUpdateExtension(UserExtension):
@@ -37,17 +39,21 @@ class UserUpdateExtension(UserExtension):
         opt_type=OptionType.USER,
         required=False,
     )
+    @log_discord_command
+    @handle_command_errors
     async def user_update_command(
         self,
         ctx: SlashContext,
         discord_user: Optional[User] = None,
         game_surname: Optional[str] = None,
+        correlation_id: Optional[str] = None,
     ) -> None:
         """Command to update user data.
 
         :param ctx: Slash command context.
         :param discord_user: Target discord user to update data.
         :param game_surname: Game surname to update data.
+        :param correlation_id: ID to track request.
         """
         await ctx.send(f"User update command: {discord_user} or {game_surname}")
 

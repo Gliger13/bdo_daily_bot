@@ -53,30 +53,6 @@ class BaseUserCollection(BaseCollection):
         """
 
     @abstractmethod
-    async def increment_users_entries(self, user_ids: Iterable[str], increment: int) -> None:
-        """Increment given user ids entries.
-
-        :param user_ids: Iterable of user ids to increment entries.
-        :param increment: Number to add to users entries.
-        """
-
-    @abstractmethod
-    async def update_user_notify_flag(self, user_id: str, notify_flag: bool) -> None:
-        """Update user notify flag.
-
-        :param user_id: ID of the user to update notify flag.
-        :param notify_flag: Notify flag to set.
-        """
-
-    @abstractmethod
-    async def update_user_first_notification_status(self, user_id: str, first_notification_status: bool) -> None:
-        """Update user first notification flag.
-
-        :param user_id: ID of the user to update first notification status.
-        :param first_notification_status: Notify flag to set.
-        """
-
-    @abstractmethod
     async def delete(self, discord_id: str) -> bool:
         """Delete given user from the database.
 

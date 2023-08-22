@@ -19,6 +19,8 @@ from bdo_daily_bot.config.api import ApiName
 from bdo_daily_bot.config.localization import discord_localization_factory
 from bdo_daily_bot.config.localization import localization_factory
 from bdo_daily_bot.core.api.user.api import UsersAPI
+from bdo_daily_bot.core.logger.discord import log_discord_command
+from bdo_daily_bot.core.tools.discord import handle_command_errors
 from bdo_daily_bot.settings import settings
 
 
@@ -43,29 +45,40 @@ class UserReadExtension(UserExtension):
         opt_type=OptionType.USER,
         required=False,
     )
+    @log_discord_command
+    @handle_command_errors
     async def user_read_command(
         self,
         ctx: SlashContext,
         discord_user: Optional[User] = None,
         game_surname: Optional[str] = None,
+        correlation_id: Optional[str] = None,
     ) -> None:
         """Command to read user statistics.
 
         :param ctx: Slash command context.
         :param discord_user: Target discord user to show statistics.
         :param game_surname: Game surname to show statistics.
+        :param correlation_id: ID to track request.
         """
+        if discord_user and game_surname:
+            message = localization_factory.get_message(ApiName.USER, "read", "too_many_options", ctx.guild_locale)
+            await ctx.send(message)
+            return None
+
         if discord_user:
-            response = await UsersAPI.read_by_id(str(discord_user.id))
+            response = await UsersAPI.read_by_id(str(discord_user.id), correlation_id=correlation_id)
+            user_data = response.data.get("data")
         elif game_surname:
             if settings.MULTI_GAME_REGION_SUPPORT:
                 raise NotImplemented("Multi Game Region Support is not implemented for the user read endpoint.")
             else:
                 game_region = settings.DEFAULT_GAME_REGION
-            response = await UsersAPI.read(game_region, game_surname)
+            response = await UsersAPI.read(game_region, game_surname, correlation_id=correlation_id)
+            user_data = data[0] if (data := response.data.get("data")) else None
         else:
-            response = await UsersAPI.read_by_id(str(ctx.user.id))
-        user_data = response.data.get("data")
+            response = await UsersAPI.read_by_id(str(ctx.user.id), correlation_id=correlation_id)
+            user_data = response.data.get("data")
 
         message: Optional[str] = None
         embed: Optional[Embed] = None
