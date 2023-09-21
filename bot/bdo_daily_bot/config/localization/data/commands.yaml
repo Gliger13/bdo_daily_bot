@@ -221,8 +221,8 @@ commands:
             ru: Новая игровая фамилия для данного дискорд юзера.
     read:
       name:
-        en: show
-        ru: показать
+        en: stat
+        ru: стат
       description:
         en: Show user statistics.
         ru: Показать статистику пользователя.

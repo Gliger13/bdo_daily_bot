@@ -5,21 +5,21 @@ description = "Discord Bot for organizing and collecting daily sea raids for the
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = ["bdo", "discord", "bot"]
-authors = [{name = "Andrei Zaneuski", email = "zanevskiyandrey@gmail.com"}]
+authors = [{ name = "Andrei Zaneuski", email = "zanevskiyandrey@gmail.com" }]
 classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Programming Language :: Python :: 3.11",
-  "Topic :: Software Development :: Version Control :: Git",
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Version Control :: Git",
 ]
 
 dependencies = [
-  "discord-py-interactions",
-  "pyyaml",
-  "motor",
-  "numpy",
-  "opencv-python",
-  "Pillow",
-  "pymongo",
+    "discord-py-interactions",
+    "pyyaml",
+    "motor",
+    "numpy",
+    "opencv-python",
+    "Pillow",
+    "pymongo",
 ]
 
 
@@ -29,7 +29,7 @@ dev = [
     "mypy",
     "pip-tools",
     "pre-commit",
-    "pylint"
+    "pylint",
 ]
 
 [tool.setuptools.package-data]

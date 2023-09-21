@@ -7,6 +7,7 @@ import logging
 from typing import Optional
 
 from interactions import OptionType
+from interactions import slash_command
 from interactions import slash_option
 from interactions import SlashContext
 from interactions.client import Client
@@ -27,9 +28,9 @@ from bdo_daily_bot.settings import settings
 class UserCreateExtension(UserExtension):
     """Command extension for user creation."""
 
-    @user_command_base.subcommand(
-        sub_cmd_name=discord_localization_factory.get_command_name(ApiName.USER, "create"),
-        sub_cmd_description=discord_localization_factory.get_command_description(ApiName.USER, "create"),
+    @slash_command(
+        name=discord_localization_factory.get_command_name(ApiName.USER, "create"),
+        description=discord_localization_factory.get_command_description(ApiName.USER, "create"),
     )
     @slash_option(
         name=discord_localization_factory.get_command_option_name(ApiName.USER, "create", "nickname"),
@@ -65,18 +66,18 @@ class UserCreateExtension(UserExtension):
             )
 
         if response.status_code == codes.created:
-            message = localization_factory.get_message(ApiName.USER, "create", "created", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "create", "created", ctx.locale)
         elif response.status_code == codes.bad_request:
-            message = localization_factory.get_message(ApiName.USER, "create", "bad_request", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "create", "bad_request", ctx.locale)
         elif response.status_code == codes.conflict:
-            message = localization_factory.get_message(ApiName.USER, "create", "conflict", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "create", "conflict", ctx.locale)
         elif response.status_code == codes.ok and response.data["message"] == UsersAPIMessages.USER_UPDATED:
-            message = localization_factory.get_message(ApiName.USER, "create", "updated", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "create", "updated", ctx.locale)
         elif response.status_code == codes.ok and response.data["message"] == UsersAPIMessages.USER_NOT_CHANGED:
-            message = localization_factory.get_message(ApiName.USER, "create", "not_changed", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "create", "not_changed", ctx.locale)
         else:
             logging.error("Something went wrong during user creation command")
-            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.locale)
         await ctx.send(message)
 
 

@@ -6,6 +6,7 @@ from typing import Optional
 
 from interactions import Embed
 from interactions import OptionType
+from interactions import slash_command
 from interactions import slash_option
 from interactions import SlashContext
 from interactions import User
@@ -27,9 +28,9 @@ from bdo_daily_bot.settings import settings
 class UserReadExtension(UserExtension):
     """Command extension for user read."""
 
-    @user_command_base.subcommand(
-        sub_cmd_name=discord_localization_factory.get_command_name(ApiName.USER, "read"),
-        sub_cmd_description=discord_localization_factory.get_command_description(ApiName.USER, "read"),
+    @slash_command(
+        name=discord_localization_factory.get_command_name(ApiName.USER, "read"),
+        description=discord_localization_factory.get_command_description(ApiName.USER, "read"),
     )
     @slash_option(
         name=discord_localization_factory.get_command_option_name(ApiName.USER, "read", "nickname"),
@@ -62,7 +63,7 @@ class UserReadExtension(UserExtension):
         :param correlation_id: ID to track request.
         """
         if discord_user and game_surname:
-            message = localization_factory.get_message(ApiName.USER, "read", "too_many_options", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "read", "too_many_options", ctx.locale)
             await ctx.send(message)
             return None
 
@@ -84,15 +85,15 @@ class UserReadExtension(UserExtension):
         embed: Optional[Embed] = None
         if response.status_code == codes.ok and user_data:
             discord_user = self.bot.get_user(user_data.discord_id) if not discord_user else discord_user
-            embed = UserStatsEmbedBuilder.build(user_data, discord_user, {}, ctx.guild_locale)
+            embed = UserStatsEmbedBuilder.build(user_data, discord_user, {}, ctx.locale)
         elif response.status_code == codes.not_found:
-            message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_id", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_id", ctx.locale)
         elif game_surname and response.status_code == codes.ok and not user_data:
-            message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_name", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_name", ctx.locale)
         elif response.status_code == codes.bad_request:
-            message = localization_factory.get_message(ApiName.USER, "read", "bad_request", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "read", "bad_request", ctx.locale)
         else:
-            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.locale)
         await ctx.send(message, embed=embed)
 
 

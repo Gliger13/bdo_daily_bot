@@ -5,6 +5,8 @@ Module contains the user update extension with all user update related commands.
 from typing import Optional
 
 from interactions import OptionType
+from interactions import Permissions
+from interactions import slash_default_member_permission
 from interactions import slash_option
 from interactions import SlashContext
 from interactions import User
@@ -39,6 +41,7 @@ class UserUpdateExtension(UserExtension):
         opt_type=OptionType.USER,
         required=False,
     )
+    @slash_default_member_permission(Permissions.ADMINISTRATOR)
     @log_discord_command
     @handle_command_errors
     async def user_update_command(

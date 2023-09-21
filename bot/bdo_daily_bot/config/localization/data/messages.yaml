@@ -6,10 +6,10 @@ commands:
       create:
         messages:
           not_all_args_provided:
-            ru-RU:
+            ru:
               - ""
               - ""
-            en-US:
+            en:
               - ""
               - ""
   user:
@@ -17,94 +17,94 @@ commands:
       errors:
         messages:
           panic:
-            ru-RU:
+            ru:
               - "Что-то пошло не так. Попробуй ещё раз."
               - "Что-то пошло не так. Кажется твоя сила что-то сломала."
-            en-US:
+            en:
               - "Something went wrong. Try again later."
               - "Something went wrong. Your power broke something."
       create:
         messages:
           created:
-            ru-RU:
+            ru:
               - "Пользователь зарегистрирован. Теперь можно попасть в рейд через сердечко."
               - "Пользователь зарегистрирован. Тыкни на сердечко под любым рейдом, чтобы попасть в него."
-            en-US:
+            en:
               - "User registered. Now you can join raids HYPERS."
               - "User registered. Good luck."
           conflict:
-            ru-RU:
+            ru:
               - "Пользователь с такой игровой фамилией уже существует. Ты пытаешься сделать что-то плохое? STARE."
               - "Пользователь с такой игровой фамилией уже существует. Кто-то тебя уже опередил, пора пинать админов."
-            en-US:
+            en:
               - "User with the given game surname already registered. Are you trying to do bad things? STARE."
               - "User with the given game surname already registered. Someone was faster than you. Time to punch mods."
           updated:
-            ru-RU:
+            ru:
               - "Ты уже зарегистрирован у меня, но я обновил твою игровую фамилию."
-            en-US:
+            en:
               - "You're already registered, but I have updated your game nickname."
           not_changed:
-            ru-RU:
+            ru:
               - "Ты уже зарегистрирован у меня с точно такой же фамилией. Сердечко уже тебя ждёт."
-            en-US:
+            en:
               - "You're already registered with the same game surname"
           bad_request:
-            ru-RU:
+            ru:
               - "Никнейм неправильный. Попробуй ещё раз, теперь настоящий."
-            en-US:
+            en:
               - "Bad game surname. Try one again with the real one."
       read:
         messages:
           too_many_options:
-            ru-RU:
+            ru:
               - "Слишком много информации. Мне нужен либо игровая фамилия, либо дискорд юзер. Не всё вместе"
-            en-US:
+            en:
               - "Too many arguments provided. Please use game_surname only or discord_user only"
           not_found_by_id:
-            ru-RU:
+            ru:
               - "Я не знаю такого пользователя."
-            en-US:
+            en:
               - "I don't know this guy"
           not_found_by_name:
-            ru-RU:
+            ru:
               - "Я не знаю такого пользователя с таким именим."
-            en-US:
+            en:
               - "I don't know a guy with this name."
           bad_request:
-            ru-RU:
+            ru:
               - "Это точно игравая фамилия? Ты меня проверить решил?"
-            en-US:
+            en:
               - "Is it game surname? Are you sure?"
           embed_title:
-            ru-RU:
+            ru:
               - "Статистика"
-            en-US:
+            en:
               - "Statistics"
           embed_game_surname:
-            ru-RU:
+            ru:
               - "Моряк **{game_surname}**"
-            en-US:
+            en:
               - "Sailor **{game_surname}**"
           embed_raids_visited:
-            ru-RU:
+            ru:
               - "Посетил рейдов **{raids_visited}**"
-            en-US:
+            en:
               - "Raids visited **{raids_visited}**"
       delete:
         messages:
           deleted:
-            ru-RU:
+            ru:
               - "Я удалил этого пользователя, больше я его не знаю."
-            en-US:
+            en:
               - "I have deleted this user. I don't know him anymore."
           not_found_by_id:
-            ru-RU:
+            ru:
               - "Я не знаю такого пользователя."
-            en-US:
+            en:
               - "I don't know this guy"
           not_found_by_name:
-            ru-RU:
+            ru:
               - "Я не знаю такого пользователя с таким именим."
-            en-US:
+            en:
               - "I don't know a guy with this name."

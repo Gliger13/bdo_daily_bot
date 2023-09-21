@@ -6,6 +6,8 @@ commands.
 from typing import Optional
 
 from interactions import OptionType
+from interactions import Permissions
+from interactions import slash_default_member_permission
 from interactions import slash_option
 from interactions import SlashContext
 from interactions import User
@@ -44,6 +46,7 @@ class UserDeletionExtension(UserExtension):
         opt_type=OptionType.USER,
         required=False,
     )
+    @slash_default_member_permission(Permissions.ADMINISTRATOR)
     @log_discord_command
     @handle_command_errors
     async def user_delete_command(
@@ -71,11 +74,11 @@ class UserDeletionExtension(UserExtension):
 
         delete_user_response = await UsersAPI.delete(target_discord_id, correlation_id=correlation_id)
         if delete_user_response.status_code == codes.no_content:
-            message = localization_factory.get_message(ApiName.USER, "delete", "deleted", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "delete", "deleted", ctx.locale)
         elif delete_user_response.status_code == codes.not_found:
-            message = localization_factory.get_message(ApiName.USER, "delete", "not_found_by_name", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "delete", "not_found_by_name", ctx.locale)
         else:
-            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.locale)
         await ctx.send(message)
 
     @staticmethod
@@ -95,14 +98,14 @@ class UserDeletionExtension(UserExtension):
         response = await UsersAPI.read(game_region, game_surname, correlation_id=correlation_id)
         user_data = response.data.get("data")
         if response.status_code == codes.ok and user_data:
-            return user_data.discord_id
+            return user_data[0].discord_id
 
         if response.status_code == codes.ok and not user_data:
-            message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_name", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_name", ctx.locale)
         elif response.status_code == codes.bad_request:
-            message = localization_factory.get_message(ApiName.USER, "read", "bad_request", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "read", "bad_request", ctx.locale)
         else:
-            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.guild_locale)
+            message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.locale)
         await ctx.send(message)
 
 
