@@ -1,5 +1,6 @@
 """Base class for all project APIs."""
 import logging
+import traceback
 from abc import ABCMeta
 from dataclasses import dataclass
 from dataclasses import field
@@ -10,6 +11,7 @@ from typing import Optional
 from requests import codes
 
 from bdo_daily_bot.core.database.manager import DatabaseFactory
+from bdo_daily_bot.core.logger import logger
 from bdo_daily_bot.settings import secrets
 from bdo_daily_bot.settings import settings
 
@@ -49,12 +51,13 @@ def handle_server_errors(api_function: Callable) -> Callable:
         try:
             return await api_function(cls, *args, correlation_id=correlation_id, **kwargs)
         except Exception as error:
-            logging.critical(
-                "%s | %s | %s | Unhandled API error. Message: %s",
+            logging.exception(
+                "%s | %s | %s | Unhandled API error. Message: %s. Full error message:\n %s",
                 correlation_id,
                 cls.__name__,
                 api_function.__name__,
                 str(error),
+                traceback.format_exc(),
             )
         return SimpleResponse(status_code=codes.internal_server_error)
 
