@@ -26,8 +26,10 @@ class BdoDailyBot(metaclass=MetaSingleton):
 
     def __init__(self) -> None:
         """Initialize and configure bot."""
+        logging.info("Starting bot initialization...")
         self.bot = self.__create_bot_client()
         self.__load_cogs()
+        logging.info("Bot initialization is finished.")
 
     def start(self) -> None:
         """Run discord bot event loop"""

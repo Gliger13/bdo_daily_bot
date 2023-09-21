@@ -14,3 +14,4 @@ class ApiName(Enum):
     FUN = "fun"
     RAID = "raid"
     USER = "user"
+    CAPTAIN = "captain"

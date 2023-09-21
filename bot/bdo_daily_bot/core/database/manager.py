@@ -13,6 +13,7 @@ from bdo_daily_bot.core.database.mongo.raid_archive_collection import RaidArchiv
 from bdo_daily_bot.core.database.mongo.raid_collection import RaidCollection
 from bdo_daily_bot.core.database.mongo.settings_collection import SettingsCollection
 from bdo_daily_bot.core.database.mongo.user_collection import UserCollection
+from bdo_daily_bot.core.database.mongo_v2.captain_collection import CaptainMongoCollection
 from bdo_daily_bot.core.database.mongo_v2.database import MongoDatabase
 from bdo_daily_bot.core.database.mongo_v2.user_collection import UserMongoCollection
 from bdo_daily_bot.core.tools.common import MetaSingleton
@@ -44,7 +45,9 @@ class DatabaseFactory(metaclass=MetaSingleton):
     __USER_COLLECTIONS: Mapping[str, type[BaseUserCollection]] = {
         "mongo": UserMongoCollection,
     }
-    __CAPTAIN_COLLECTIONS: Mapping[str, type[BaseCaptainCollection]] = {"mongo": ...}
+    __CAPTAIN_COLLECTIONS: Mapping[str, type[BaseCaptainCollection]] = {
+        "mongo": CaptainMongoCollection,
+    }
     __SETTINGS_COLLECTIONS: Mapping[str, type[BaseSettingsCollection]] = {"mongo": ...}
     __RAID_COLLECTIONS: Mapping[str, type[BaseRaidCollection]] = {"mongo": ...}
     __RAID_ARCHIVE_COLLECTIONS: Mapping[str, type[BaseRaidArchiveCollection]] = {"mongo": ...}
@@ -58,7 +61,7 @@ class DatabaseFactory(metaclass=MetaSingleton):
         self.__database = self.__DATABASES[database_type](config)
         logging.info("Bot initialization: Starting collections initialization...")
         self.user = self.__USER_COLLECTIONS[database_type](self.__database, config)
-        # self.captain = self.__CAPTAIN_COLLECTIONS[database_type](self.__database, config)
+        self.captain = self.__CAPTAIN_COLLECTIONS[database_type](self.__database, config)
         # self.settings = self.__SETTINGS_COLLECTIONS[database_type](self.__database, config)
         # self.raid = self.__RAID_COLLECTIONS[database_type](self.__database, config)
         # self.raid_archive = self.__RAID_ARCHIVE_COLLECTIONS[database_type](self.__database, config)

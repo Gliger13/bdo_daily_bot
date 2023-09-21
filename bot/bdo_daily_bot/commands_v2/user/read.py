@@ -18,8 +18,10 @@ from bdo_daily_bot.commands_v2.user._embeds import UserStatsEmbedBuilder
 from bdo_daily_bot.config.api import ApiName
 from bdo_daily_bot.config.localization import discord_localization_factory
 from bdo_daily_bot.config.localization import localization_factory
+from bdo_daily_bot.core.api.captain.api import CaptainsAPI
 from bdo_daily_bot.core.api.user.api import UsersAPI
 from bdo_daily_bot.core.logger.discord import log_discord_command
+from bdo_daily_bot.core.models.captain import Captain
 from bdo_daily_bot.core.tools.discord import handle_command_errors
 from bdo_daily_bot.settings import settings
 
@@ -84,7 +86,8 @@ class UserReadExtension(UserExtension):
         embed: Optional[Embed] = None
         if response.status_code == codes.ok and user_data:
             discord_user = self.bot.get_user(user_data.discord_id) if not discord_user else discord_user
-            embed = UserStatsEmbedBuilder.build(user_data, discord_user, {}, ctx.locale)
+            captain = await self._get_captain(user_data.discord_id, correlation_id=correlation_id)
+            embed = UserStatsEmbedBuilder.build(user_data, discord_user, captain, ctx.locale)
         elif response.status_code == codes.not_found:
             message = localization_factory.get_message(ApiName.USER, "read", "not_found_by_id", ctx.locale)
         elif game_surname and response.status_code == codes.ok and not user_data:
@@ -94,6 +97,18 @@ class UserReadExtension(UserExtension):
         else:
             message = localization_factory.get_message(ApiName.USER, "errors", "panic", ctx.locale)
         await ctx.send(message, embed=embed)
+
+    async def _get_captain(self, discord_id: str, correlation_id: str) -> Optional[Captain]:
+        """Get captain model for the given discord id.
+
+        :param discord_id: Discord ID of the captain.
+        :param correlation_id: ID to track request.
+        :return: Captain if found, otherwise None.
+        """
+        response = await CaptainsAPI.read_by_id(discord_id, correlation_id=correlation_id)
+        if response.status_code == codes.ok:
+            return response.data.get("data")
+        return None
 
 
 def setup(bot: Client) -> None:

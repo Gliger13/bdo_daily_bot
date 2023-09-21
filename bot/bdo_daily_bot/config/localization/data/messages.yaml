@@ -132,3 +132,27 @@ commands:
               - "Я не знаю такого пользователя с таким именим."
             en:
               - "I don't know a guy with this name."
+  captain:
+    subcommands:
+      read:
+        messages:
+          embed_game_surname:
+            ru:
+              - "Капитан **{game_surname}**"
+            en:
+              - "Captain **{game_surname}**"
+          embed_raids_created:
+            ru:
+              - "Отвёз **{raids_created}** рейдов"
+            en:
+              - "Sailed **{raids_created}** raids"
+          embed_drove_people:
+            ru:
+              - "Всего **{drove_people}** человек отвёз"
+            en:
+              - "Droved **{drove_people}** people"
+          embed_last_created:
+            ru:
+              - "Последний отвезённый рейд был **{last_created}**"
+            en:
+              - "Last raid was **{last_created}**"
