@@ -13,7 +13,6 @@ from interactions import User
 from interactions.client import Client
 from requests import codes
 
-from bdo_daily_bot.commands_v2.user._base import user_command_base
 from bdo_daily_bot.commands_v2.user._base import UserExtension
 from bdo_daily_bot.commands_v2.user._embeds import UserStatsEmbedBuilder
 from bdo_daily_bot.config.api import ApiName

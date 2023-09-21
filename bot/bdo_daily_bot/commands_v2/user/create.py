@@ -13,7 +13,6 @@ from interactions import SlashContext
 from interactions.client import Client
 from requests import codes
 
-from bdo_daily_bot.commands_v2.user._base import user_command_base
 from bdo_daily_bot.commands_v2.user._base import UserExtension
 from bdo_daily_bot.config.api import ApiName
 from bdo_daily_bot.config.localization import discord_localization_factory
