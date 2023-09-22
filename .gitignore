@@ -1,26 +1,48 @@
-# Git files
-.git/
+# Python cache / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-# Virtual environment
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environments
 venv/
 
-# Byte-compiled
-__pycache__/
+# Tools cache
+.mypy_cache/
+.pytest_cache/
 
-# Distribution / packaging / PyInstaller
-*.spec
+# PyCharm
 .idea/
-build/
-*.egg-info/
+
+# Local git config
+.git/
+
+# log files
+logs/
+log/
+*.log
 
 # Files created by script and user data
 bot_data/
 
-# Files by static code analysis - SonarQube
-.scannerwork/
-
 # Secrets
 bot/bdo_daily_bot/settings/secrets.py
-
-# Pytest logs
-pytest.log

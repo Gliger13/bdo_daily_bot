@@ -1,0 +1,37 @@
+test_sets:
+  test_ddt_request_by_valid_id:
+    data:
+      - test_set_name: "Test delete captain by valid ID (18 digits)"
+        target_captain_id: "875639210587123654"
+        captains_to_create:
+          - discord_id: "875639210587123654" # gitleaks:allow
+            game_region: ru
+            game_surname: Test
+      - test_set_name: "Test delete captain by valid ID (17 digits)"
+        target_captain_id: "48102937659018342"
+        captains_to_create:
+          - discord_id: "48102937659018342" # gitleaks:allow
+            game_region: ru
+            game_surname: Test
+  test_ddt_request_by_non_existent_id:
+    data:
+      - test_set_name: "Test delete captain by non-existent ID (18 digits)"
+        target_captain_id: "875639210587123654"
+      - test_set_name: "Test delete captain by non-existent ID (17 digits)"
+        target_captain_id: "48102937659018342"
+      - test_set_name: "Test delete captain by non-existent ID (str - 1 digit)"
+        target_captain_id: "5"
+      - test_set_name: "Test delete captain by non-existent ID (str - 94 digits)"
+        target_captain_id: "7129384756102938475601239847561029384756102938475601239847561029384756102938475601239847561029"
+  test_ddt_request_by_invalid_id:
+    data:
+      - test_set_name: "Test delete captain by invalid ID (1 leter)"
+        target_captain_id: "A"
+      - test_set_name: "Test delete captain by invalid ID (90 leters)"
+        target_captain_id: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      - test_set_name: "Test delete captain by invalid ID (valid id + 1 letter)"
+        target_captain_id: "00000000000000001A"
+      - test_set_name: "Test delete captain by invalid ID (special symbols)"
+        target_captain_id: "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~😀😎🚀❤️🌟"
+      - test_set_name: "Test delete captain by invalid ID (empty string)"
+        target_captain_id: ""

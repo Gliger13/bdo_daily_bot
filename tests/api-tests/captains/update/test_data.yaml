@@ -1,0 +1,207 @@
+test_sets:
+  test_ddt_request_by_valid_body:
+    data:
+      - test_set_name: "Test update captain by valid ID (random 17 digits)"
+        target_captain_id: "50891726345089127"
+        new_captain_attributes:
+          game_surname: NewTest1
+          game_region: ru
+        captains_to_create:
+          - discord_id: "50891726345089127" # gitleaks:allow
+            game_region: ru
+            game_surname: Test41
+      - test_set_name: "Test update captain by valid ID (random 18 digits)"
+        target_captain_id: "492017836295710483"
+        new_captain_attributes:
+          game_surname: NewTest2
+          game_region: ru
+        captains_to_create:
+          - discord_id: "492017836295710483" # gitleaks:allow
+            game_region: ru
+            game_surname: Test42
+      - test_set_name: "Test update captain by valid ID (1 digit)"
+        target_captain_id: "0"
+        new_captain_attributes:
+          game_surname: NewTest3
+          game_region: en
+        captains_to_create:
+          - discord_id: "0"
+            game_region: ru
+            game_surname: Test43
+      - test_set_name: "Test update captain by valid ID (94 digits)"
+        target_captain_id: "1029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938"
+        new_captain_attributes:
+          game_surname: NewTest4
+          game_region: ru
+        captains_to_create:
+          - discord_id: "1029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938"
+            game_region: ru
+            game_surname: Test44
+      - test_set_name: "Test update captain by valid ID (drove_people - 0)"
+        target_captain_id: "321321321321312312"
+        new_captain_attributes:
+          drove_people: 0
+        captains_to_create:
+          - discord_id: "321321321321312312" # gitleaks:allow
+            game_region: ru
+            game_surname: Test45
+      - test_set_name: "Test update captain by valid ID (drove_people - max 8 bit int - 1)"
+        target_captain_id: "821321321321312312"
+        new_captain_attributes:
+          drove_people: 9223372036854775807
+        captains_to_create:
+          - discord_id: "821321321321312312" # gitleaks:allow
+            game_region: ru
+            game_surname: Test46
+      - test_set_name: "Test update captain by valid ID (raids_created - 0)"
+        target_captain_id: "321321321321312312"
+        new_captain_attributes:
+          raids_created: 0
+        captains_to_create:
+          - discord_id: "321321321321312312" # gitleaks:allow
+            game_region: ru
+            game_surname: Test45
+      - test_set_name: "Test update captain by valid ID (raids_created - max 8 bit int - 1)"
+        target_captain_id: "821321321321312312"
+        new_captain_attributes:
+          raids_created: 9223372036854775807
+        captains_to_create:
+          - discord_id: "821321321321312312" # gitleaks:allow
+            game_region: ru
+            game_surname: Test46
+  test_ddt_request_by_non_existent_id:
+    data:
+      - test_set_name: "Test delete captain by invalid ID (str - 18 digits)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "875639210587123654"
+      - test_set_name: "Test delete captain by invalid ID (str - 17 digits)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "48102937659018342"
+      - test_set_name: "Test delete captain by invalid ID (str - 1 digit)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "5"
+      - test_set_name: "Test delete captain by invalid ID (str - 255 digits)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "1029384756293847561029384756102938475610293847561029384756102938475610293847561029384756102938"
+  test_ddt_request_by_invalid_id:
+    data:
+      - test_set_name: "Test delete captain by invalid ID (1 letter)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "A"
+      - test_set_name: "Test delete captain by invalid ID (90 letters)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      - test_set_name: "Test delete captain by invalid ID (valid id + 1 letter)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "00000000000000001A"
+      - test_set_name: "Test delete captain by invalid ID (special symbols)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~😀😎🚀❤️🌟"
+      - test_set_name: "Test delete captain by invalid ID (empty string)"
+        new_captain_attributes:
+          game_surname: NewName
+          game_region: ru
+        target_captain_id: ""
+  test_ddt_request_with_conflict:
+    data:
+      - test_set_name: "Test update captain with conflict nickname"
+        target_captain_id: "508917263450819127"
+        new_captain_attributes:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: Test0002
+        captains_to_create:
+          - discord_id: "000000000000000050" # gitleaks:allow
+            game_region: ru
+            game_surname: Test0002
+          - discord_id: "508917263450819127" # gitleaks:allow
+            game_region: ru
+            game_surname: Test0003
+  test_ddt_request_by_invalid_body:
+    data:
+      - test_set_name: "Test update captain with invalid params (discord id - symbols)"
+        new_captain_attributes:
+          discord_id: "SDFGHBNMJKJM"
+          game_region: ru
+          game_surname: Test41
+        target_captain_id: "82039475628394012"
+        captains_to_create:
+          - discord_id: "82039475628334012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test221
+      - test_set_name: "Test update captain with invalid params (discord id - digits + symbols)"
+        new_captain_attributes:
+          discord_id: "adsadsa12321321dsadasd1"
+          game_region: ru
+          game_surname: MySuperGameNick
+        target_captain_id: "82039475118394012"
+        captains_to_create:
+          - discord_id: "82039475118394012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test222
+      - test_set_name: "Test update captain with invalid params (discord id - empty)"
+        new_captain_attributes:
+          discord_id: ""
+          game_region: ru
+          game_surname: MySuperGameNick
+        target_captain_id: "82239475628394012"
+        captains_to_create:
+          - discord_id: "82239475628394012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test223
+      - test_set_name: "Test update captain with invalid params (game region - empty string)"
+        new_captain_attributes:
+          discord_id: "508917263450819327" # gitleaks:allow
+          game_region: ""
+          game_surname: MySuperGameNick
+        target_captain_id: "82039475628393012"
+        captains_to_create:
+          - discord_id: "82039475628393012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test225
+      - test_set_name: "Test update captain with invalid params (game surname - left edge)"
+        new_captain_attributes:
+          discord_id: "501917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: "N"
+        target_captain_id: "82031475628394012"
+        captains_to_create:
+          - discord_id: "82031475628394012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test226
+      - test_set_name: "Test update captain with invalid params (game surname - right edge)"
+        new_captain_attributes:
+          discord_id: "508933263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: "MySuperGameNickna"
+        target_captain_id: "82039475621194012"
+        captains_to_create:
+          - discord_id: "82039475621194012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test227
+      - test_set_name: "Test update captain with invalid params (game surname - special symbols)"
+        new_captain_attributes:
+          discord_id: "508917263450229127" # gitleaks:allow
+          game_region: ru
+          game_surname: "Adsadas#$%^&*()"
+        target_captain_id: "80039475628394012"
+        captains_to_create:
+          - discord_id: "80039475628394012" # gitleaks:allow
+            game_region: ru
+            game_surname: Test229

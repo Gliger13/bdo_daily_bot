@@ -1,0 +1,129 @@
+test_sets:
+  test_ddt_request_by_valid_body:
+    test_name: "Test create captain with valid params"
+    data:
+      - test_set_name: "Test create captain with valid params (english nickname)"
+        captain_to_create:
+          discord_id: "000000000000000001" # gitleaks:allow
+          game_region: ru
+          game_surname: Test1
+      - test_set_name: "Test create captain with valid params (russian nickname)"
+        captain_to_create:
+          discord_id: "000000000000000002" # gitleaks:allow
+          game_region: ru
+          game_surname: МАТР8СИК3
+      - test_set_name: "Test create captain with valid params (nickname length - left)"
+        captain_to_create:
+          discord_id: "000000000000000004" # gitleaks:allow
+          game_region: ru
+          game_surname: Te
+      - test_set_name: "Test create captain with valid params (nickname length - right)"
+        captain_to_create:
+          discord_id: "000000000000000005" # gitleaks:allow
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with valid params (nickname length - left)"
+        captain_to_create:
+          discord_id: "000000000000000004" # gitleaks:allow
+          game_region: ru
+          game_surname: Te
+      - test_set_name: "Test create captain with valid params (int - 17 digits discord id)"
+        captain_to_create:
+          discord_id: "5089172634508912" # gitleaks:allow
+          game_region: en
+          game_surname: Test4
+      - test_set_name: "Test create captain with valid params (str - 18 digits discord id)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: Test5
+  test_ddt_request_by_invalid_body:
+    data:
+      - test_set_name: "Test create captain with invalid params (discord id - symbols)"
+        captain_to_create:
+          discord_id: "dsabsad"
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with invalid params (discord id - digits + symbols)"
+        captain_to_create:
+          discord_id: "adsadsa12321321dsadasd1"
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with invalid params (discord id - empty)"
+        captain_to_create:
+          discord_id: ""
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with invalid params (discord id - null)"
+        captain_to_create:
+          discord_id: null
+          game_region: ru
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with invalid params (game region - empty string)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ""
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with invalid params (game region - null)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: null
+          game_surname: MySuperGameNick
+      - test_set_name: "Test create captain with invalid params (game surname - empty string)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: ""
+      - test_set_name: "Test create captain with invalid params (game surname - left edge)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: "N"
+      - test_set_name: "Test create captain with invalid params (game surname - right edge)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: "MySuperGameNickna"
+      - test_set_name: "Test create captain with invalid params (game surname - special symbols)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: "Adsadas#$%^&*()"
+      - test_set_name: "Test create captain with invalid params (game surname - null)"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: null
+  test_ddt_request_with_conflict:
+    data:
+      - test_set_name: "Test create captain with conflict nickname"
+        captain_to_create:
+          discord_id: "508917263450819127" # gitleaks:allow
+          game_region: ru
+          game_surname: MySuperTest
+        captains_to_create:
+          - discord_id: "000000000000000050" # gitleaks:allow
+            game_region: ru
+            game_surname: MySuperTest
+  test_ddt_request_with_existing_data:
+    data:
+      - test_set_name: "Test create captain with updated nickname"
+        captain_to_create:
+          discord_id: "000000000000000055" # gitleaks:allow
+          game_region: ru
+          game_surname: MyNewNickname
+        captains_to_create:
+          - discord_id: "000000000000000055" # gitleaks:allow
+            game_region: ru
+            game_surname: MyNickname
+  test_ddt_request_with_same_data:
+    data:
+      - test_set_name: "Test create captain with already exists same data"
+        captain_to_create:
+          discord_id: "000000000000000055" # gitleaks:allow
+          game_region: ru
+          game_surname: MyNickname
+        captains_to_create:
+          - discord_id: "000000000000000055" # gitleaks:allow
+            game_region: ru
+            game_surname: MyNickname
